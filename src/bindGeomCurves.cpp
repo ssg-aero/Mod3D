@@ -11,14 +11,11 @@
 #include <gp_Trsf.hxx>
 #include <Geom_Geometry.hxx>
 #include <Geom_Curve.hxx>
-// #include <Geom_Conic.hxx>
-// #include <Geom_Circle.hxx>
 #include <Geom_Line.hxx>
 #include <Geom_BoundedCurve.hxx>
 #include <Geom_TrimmedCurve.hxx>
-// #include <Geom_BSplineCurve.hxx>
-// #include <Geom_BezierCurve.hxx>
 #include <GeomAbs_Shape.hxx>
+#include <Geom_OffsetCurve.hxx>
 
 // #include "array_utils.hpp"
 
@@ -119,5 +116,51 @@ void bind_geom_curves(py::module_ &m)
     ;
 
     bind_geom_curves_splines(m);
+
+    py::class_<Geom_OffsetCurve, opencascade::handle<Geom_OffsetCurve>, Geom_Curve>(m, "OffsetCurve",
+        "Describes an offset curve in 3D space.\n"
+        "An offset curve is a curve at constant distance (Offset) from a basis curve\n"
+        "in a reference direction V. The offset curve takes its parametrization from\n"
+        "the basis curve. The offset direction is N = T ^ V / ||T ^ V||, where T is\n"
+        "the first derivative of the basis curve.\n"
+        "Formula: Value(U) = BasisCurve.Value(U) + (Offset * (T ^ V)) / ||T ^ V||\n"
+        "Note: The offset curve can be self-intersecting even if the basis curve is not.\n"
+        "Continuity is one degree less than the basis curve.")
+        
+        // Constructor
+        .def(py::init([](const opencascade::handle<Geom_Curve>& c, 
+                         double offset, 
+                         const gp_Dir& v,
+                         bool is_not_check_c0) {
+            return opencascade::handle<Geom_OffsetCurve>(
+                new Geom_OffsetCurve(c, offset, v, is_not_check_c0));
+        }), py::arg("basis_curve"), py::arg("offset"), py::arg("direction"),
+            py::arg("is_not_check_c0") = false,
+            "Creates an offset curve from a basis curve.\n"
+            "basis_curve: The basis curve (must be at least C1)\n"
+            "offset: Distance from the basis curve (positive or negative)\n"
+            "direction: Fixed reference direction V for offset computation\n"
+            "is_not_check_c0: If True, skip C0 continuity check\n"
+            "Raises exception if basis curve is not at least C1.\n"
+            "Warning: No check is done that ||T^V|| != 0 at any point")
+        
+        // Method with optional parameter (cannot be a simple property)
+        .def("set_basis_curve", &Geom_OffsetCurve::SetBasisCurve,
+             py::arg("basis_curve"), py::arg("is_not_check_c0") = false,
+             "Changes the basis curve of this offset curve.\n"
+             "Raises exception if the curve is not at least C1 continuous")
+        
+        // Informational method
+        .def("get_basis_curve_continuity", &Geom_OffsetCurve::GetBasisCurveContinuity,
+             "Returns the continuity of the basis curve")
+        
+        // Properties
+        .def_property("offset", &Geom_OffsetCurve::Offset, &Geom_OffsetCurve::SetOffsetValue,
+                      "Offset distance from the basis curve")
+        .def_property("direction", &Geom_OffsetCurve::Direction, &Geom_OffsetCurve::SetDirection,
+                      "Reference direction used to compute the offset direction")
+        .def_property_readonly("basis_curve", &Geom_OffsetCurve::BasisCurve,
+                               "Basis curve of this offset curve (can itself be an offset curve)")
+    ;
 
 }

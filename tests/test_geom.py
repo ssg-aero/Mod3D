@@ -589,3 +589,235 @@ def test_bezier_numpy_constructor_mixed():
     assert curve.nb_poles() == 3
     assert curve.degree() == 2
     assert curve.is_rational()
+
+# ==================== OffsetCurve Tests ====================
+
+def test_offset_curve_creation():
+    """Test creating an offset curve from a line."""
+    import math
+    
+    # Create a simple line as basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve with offset in Z direction
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Verify basic properties
+    assert offset_curve.offset == offset_distance
+    assert offset_curve.basis_curve is not None
+
+
+def test_offset_curve_from_circle():
+    """Test creating an offset curve from a circle."""
+    import math
+    
+    # Create a circle as basis curve
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circle = Geom.Circle(ax2, 10.0)
+    
+    # Create offset curve (offset in the plane normal direction)
+    offset_distance = 2.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    
+    offset_curve = Geom.OffsetCurve(circle, offset_distance, offset_direction)
+    
+    assert offset_curve.offset == offset_distance
+    assert offset_curve.basis_curve is not None
+
+
+def test_offset_curve_properties():
+    """Test offset curve properties and setters."""
+    # Create basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Test offset property (getter)
+    assert offset_curve.offset == offset_distance
+    
+    # Test offset property (setter)
+    new_offset = 10.0
+    offset_curve.offset = new_offset
+    assert offset_curve.offset == new_offset
+    
+    # Test using property syntax
+    offset_curve.offset = 7.5
+    assert offset_curve.offset == 7.5
+    
+    # Test direction property
+    dir_result = offset_curve.direction
+    assert dir_result is not None
+
+
+def test_offset_curve_direction_change():
+    """Test changing the offset direction."""
+    # Create basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction1 = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction1)
+    
+    # Change direction using property
+    offset_direction2 = gp.Dir(0.0, 1.0, 0.0)
+    offset_curve.direction = offset_direction2
+    
+    # Verify direction was changed
+    new_dir = offset_curve.direction
+    assert new_dir is not None
+
+
+def test_offset_curve_basis_curve_change():
+    """Test changing the basis curve of an offset curve."""
+    # Create first basis curve (line)
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    d1 = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p1, d1)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Create second basis curve (different line)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    d2 = gp.Dir(0.0, 1.0, 0.0)
+    basis_line2 = Geom.Line(p2, d2)
+    
+    # Change basis curve (using method since it has optional parameter)
+    offset_curve.set_basis_curve(basis_line2)
+    
+    # Verify basis curve was changed
+    new_basis = offset_curve.basis_curve
+    assert new_basis is not None
+
+
+def test_offset_curve_evaluation():
+    """Test evaluating points on an offset curve."""
+    import math
+    
+    # Create a simple line
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve in Y direction
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Evaluate at parameter u=0
+    point = offset_curve.value(0.0)
+    assert point is not None
+    
+    # The offset should be in the direction of T ^ V
+    # For line in X direction and offset direction in Z, offset should be in Y
+    # Point should be offset in Y direction by offset_distance
+    assert abs(point.y - offset_distance) < 1e-6 or abs(point.y + offset_distance) < 1e-6
+
+
+def test_offset_curve_continuity():
+    """Test continuity of offset curve."""
+    # Create basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Test continuity
+    continuity = offset_curve.continuity()
+    assert continuity is not None
+    
+    # Test basis curve continuity
+    basis_continuity = offset_curve.get_basis_curve_continuity()
+    assert basis_continuity is not None
+
+
+def test_offset_curve_derivatives():
+    """Test derivative evaluation on offset curve."""
+    # Create basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Test D0 (point only)
+    point = offset_curve.d0(0.0)
+    assert point is not None
+    
+    # Test D1 (point and first derivative)
+    result = offset_curve.d1(0.0)
+    assert len(result) == 2
+    point, v1 = result
+    assert point is not None
+    assert v1 is not None
+
+
+def test_offset_curve_parameter_bounds():
+    """Test parameter bounds of offset curve."""
+    # Create basis curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    basis_line = Geom.Line(p, d)
+    
+    # Create offset curve
+    offset_distance = 5.0
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
+    
+    # Test parameter bounds (should match basis curve)
+    first_param = offset_curve.first_parameter()
+    last_param = offset_curve.last_parameter()
+    
+    assert first_param is not None
+    assert last_param is not None
+
+
+def test_offset_curve_from_bspline():
+    """Test creating an offset curve from a B-spline."""
+    # Create a simple B-spline curve
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 1.0, 0.0),
+        gp.Pnt(2.0, 1.0, 0.0),
+        gp.Pnt(3.0, 0.0, 0.0)
+    ]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]
+    degree = 2
+    
+    bspline = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+    
+    # Create offset curve
+    offset_distance = 0.5
+    offset_direction = gp.Dir(0.0, 0.0, 1.0)
+    
+    offset_curve = Geom.OffsetCurve(bspline, offset_distance, offset_direction)
+    
+    assert offset_curve.offset == offset_distance
+    assert offset_curve.basis_curve is not None
+    
+    # Evaluate at a point
+    point = offset_curve.value(1.0)
+    assert point is not None

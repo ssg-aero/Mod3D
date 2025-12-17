@@ -566,3 +566,302 @@ def test_make_revol_edge():
     
     shape = revol_maker.shape()
     assert not shape.is_null()
+
+
+# ==================== MakeEdge Tests ====================
+
+def test_make_edge_from_points():
+    """Test creating an edge from two points."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    
+    edge_maker = BRepBuilderAPI.MakeEdge(p1, p2)
+    assert edge_maker.is_done()
+    
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Check vertices
+    v1 = edge_maker.vertex1()
+    v2 = edge_maker.vertex2()
+    assert not v1.is_null()
+    assert not v2.is_null()
+
+
+def test_make_edge_from_gp_lin():
+    """Test creating edges from gp_Lin (line)."""
+    # Create a line
+    line = gp.Lin(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(1.0, 0.0, 0.0))
+    
+    # Test 1: Edge with parameter bounds
+    edge_maker = BRepBuilderAPI.MakeEdge(line, 0.0, 10.0)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Test 2: Edge with point bounds
+    p1 = gp.Pnt(2.0, 0.0, 0.0)
+    p2 = gp.Pnt(8.0, 0.0, 0.0)
+    edge_maker2 = BRepBuilderAPI.MakeEdge(line, p1, p2)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+
+
+def test_make_edge_from_gp_circ():
+    """Test creating edges from gp_Circ (circle)."""
+    # Create a circle
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circle = gp.Circ(ax2, 5.0)
+    
+    # Test 1: Full circle edge
+    edge_maker = BRepBuilderAPI.MakeEdge(circle)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Test 2: Arc with parameter bounds (quarter circle)
+    edge_maker2 = BRepBuilderAPI.MakeEdge(circle, 0.0, math.pi / 2.0)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+    
+    # Test 3: Arc with point bounds
+    p1 = gp.Pnt(5.0, 0.0, 0.0)
+    p2 = gp.Pnt(0.0, 5.0, 0.0)
+    edge_maker3 = BRepBuilderAPI.MakeEdge(circle, p1, p2)
+    assert edge_maker3.is_done()
+    edge3 = edge_maker3.edge()
+    assert not edge3.is_null()
+
+
+def test_make_edge_from_gp_elips():
+    """Test creating edges from gp_Elips (ellipse)."""
+    # Create an ellipse
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    ellipse = gp.Elips(ax2, 8.0, 5.0)  # major=8, minor=5
+    
+    # Test 1: Full ellipse edge
+    edge_maker = BRepBuilderAPI.MakeEdge(ellipse)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Test 2: Ellipse arc with parameter bounds
+    edge_maker2 = BRepBuilderAPI.MakeEdge(ellipse, 0.0, math.pi)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+
+
+def test_make_edge_from_gp_hypr():
+    """Test creating edges from gp_Hypr (hyperbola)."""
+    # Create a hyperbola
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    hyperbola = gp.Hypr(ax2, 3.0, 2.0)  # major=3, minor=2
+    
+    # Hyperbola edge with parameter bounds
+    edge_maker = BRepBuilderAPI.MakeEdge(hyperbola, -2.0, 2.0)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+
+
+def test_make_edge_from_gp_parab():
+    """Test creating edges from gp_Parab (parabola)."""
+    # Create a parabola
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    parabola = gp.Parab(ax2, 2.0)  # focal=2
+    
+    # Parabola edge with parameter bounds
+    edge_maker = BRepBuilderAPI.MakeEdge(parabola, -5.0, 5.0)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+
+
+def test_make_edge_from_geom_curve():
+    """Test creating edges from Geom_Curve."""
+    # Create a Geom_Line
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    geom_line = Geom.Line(p, d)
+    
+    # Test 1: Edge with parameter bounds
+    edge_maker = BRepBuilderAPI.MakeEdge(geom_line, 0.0, 10.0)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Test 2: Edge with point bounds
+    p1 = gp.Pnt(1.0, 0.0, 0.0)
+    p2 = gp.Pnt(9.0, 0.0, 0.0)
+    edge_maker2 = BRepBuilderAPI.MakeEdge(geom_line, p1, p2)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+
+
+def test_make_edge_from_geom_circle():
+    """Test creating edges from Geom_Circle."""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    geom_circle = Geom.Circle(ax2, 5.0)
+    
+    # Full circle
+    edge_maker = BRepBuilderAPI.MakeEdge(geom_circle)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+
+
+def test_make_edge_from_bspline():
+    """Test creating an edge from a B-spline curve."""
+    # Create a simple B-spline curve
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 2.0, 0.0),
+        gp.Pnt(2.0, 2.0, 0.0),
+        gp.Pnt(3.0, 0.0, 0.0)
+    ]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]
+    degree = 2
+    
+    bspline = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+    
+    edge_maker = BRepBuilderAPI.MakeEdge(bspline)
+    assert edge_maker.is_done()
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+
+
+def test_make_edge_init_method():
+    """Test the init method for reinitializing edge maker."""
+    # Create initial edge maker
+    edge_maker = BRepBuilderAPI.MakeEdge()
+    
+    # Initialize with a curve
+    p = gp.Pnt(0.0, 0.0, 0.0)
+    d = gp.Dir(1.0, 0.0, 0.0)
+    geom_line = Geom.Line(p, d)
+    
+    edge_maker.init(geom_line, 0.0, 10.0)
+    assert edge_maker.is_done()
+    
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Reinitialize with different parameters
+    edge_maker.init(geom_line, 5.0, 15.0)
+    assert edge_maker.is_done()
+    
+    edge2 = edge_maker.edge()
+    assert not edge2.is_null()
+
+
+def test_make_edge_error_status():
+    """Test error status reporting."""
+    # Create a valid edge
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    
+    edge_maker = BRepBuilderAPI.MakeEdge(p1, p2)
+    assert edge_maker.is_done()
+    
+    # Check error status
+    error = edge_maker.error()
+    assert error == BRepBuilderAPI.EdgeError.EdgeDone
+
+
+def test_make_edge_with_vertices():
+    """Test creating edges with explicit vertices."""
+    # Create vertices
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    
+    v1 = BRepBuilderAPI.MakeVertex(p1).vertex()
+    v2 = BRepBuilderAPI.MakeVertex(p2).vertex()
+    
+    # Create edge with vertices
+    edge_maker = BRepBuilderAPI.MakeEdge(v1, v2)
+    assert edge_maker.is_done()
+    
+    edge = edge_maker.edge()
+    assert not edge.is_null()
+    
+    # Verify vertices
+    result_v1 = edge_maker.vertex1()
+    result_v2 = edge_maker.vertex2()
+    assert not result_v1.is_null()
+    assert not result_v2.is_null()
+
+
+def test_make_edge_ellipse_full_and_arc():
+    """Test creating full ellipse and ellipse arc."""
+    ax2 = gp.Ax2(gp.Pnt(5.0, 5.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    ellipse = gp.Elips(ax2, 6.0, 4.0)
+    
+    # Full ellipse
+    edge_maker1 = BRepBuilderAPI.MakeEdge(ellipse)
+    assert edge_maker1.is_done()
+    edge1 = edge_maker1.edge()
+    assert not edge1.is_null()
+    
+    # Half ellipse (arc)
+    edge_maker2 = BRepBuilderAPI.MakeEdge(ellipse, 0.0, math.pi)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+    
+    # Quarter ellipse
+    edge_maker3 = BRepBuilderAPI.MakeEdge(ellipse, 0.0, math.pi / 2.0)
+    assert edge_maker3.is_done()
+    edge3 = edge_maker3.edge()
+    assert not edge3.is_null()
+
+
+def test_make_edge_complex_bspline():
+    """Test creating edge from complex B-spline with varying knot multiplicities."""
+    # Create a more complex B-spline
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 2.0, 0.0),
+        gp.Pnt(2.0, 2.0, 1.0),
+        gp.Pnt(3.0, 1.0, 1.0),
+        gp.Pnt(4.0, 0.0, 0.0)
+    ]
+    knots = [0.0, 0.25, 0.5, 0.75, 1.0]
+    multiplicities = [4, 1, 1, 1, 4]
+    degree = 3
+    
+    bspline = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+    
+    # Create full edge
+    edge_maker1 = BRepBuilderAPI.MakeEdge(bspline)
+    assert edge_maker1.is_done()
+    edge1 = edge_maker1.edge()
+    assert not edge1.is_null()
+    
+    # Create partial edge with parameter bounds
+    edge_maker2 = BRepBuilderAPI.MakeEdge(bspline, 0.2, 0.8)
+    assert edge_maker2.is_done()
+    edge2 = edge_maker2.edge()
+    assert not edge2.is_null()
+
+
+def test_make_edge_line_with_vertex_bounds():
+    """Test creating line edge with vertex bounds."""
+    # Create line and vertices
+    line = gp.Lin(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(1.0, 1.0, 0.0))
+    
+    p1 = gp.Pnt(1.0, 1.0, 0.0)
+    p2 = gp.Pnt(3.0, 3.0, 0.0)
+    v1 = BRepBuilderAPI.MakeVertex(p1).vertex()
+    v2 = BRepBuilderAPI.MakeVertex(p2).vertex()
+    
+    # Create edge with vertices
+    edge_maker = BRepBuilderAPI.MakeEdge(line, v1, v2)
+    assert edge_maker.is_done()
+    
+    edge = edge_maker.edge()
+    assert not edge.is_null()

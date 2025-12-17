@@ -1,4 +1,14 @@
 #include <gp.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Vec.hxx>
+#include <gp_Ax1.hxx>
+#include <gp_Ax2.hxx>
+#include <gp_Lin.hxx>
+#include <gp_Circ.hxx>
+#include <gp_Elips.hxx>
+#include <gp_Hypr.hxx>
+#include <gp_Parab.hxx>
 #include <gp_Cylinder.hxx>
 #include <gp_Cone.hxx>
 #include <gp_Sphere.hxx>
@@ -94,12 +104,141 @@ void bind_brepbuilderapi(py::module_ &m)
         .export_values();
 
 
-    py::class_<BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeShape>(m, "MakeEdge")
-        .def(py::init<const gp_Pnt&, const gp_Pnt&>(), py::arg("Pnt1"), py::arg("Pnt2"))
-        .def("edge", &BRepBuilderAPI_MakeEdge::Edge)
-        .def("vertex1", &BRepBuilderAPI_MakeEdge::Vertex1)
-        .def("vertex2", &BRepBuilderAPI_MakeEdge::Vertex2)
-        .def("error_status", &BRepBuilderAPI_MakeEdge::Error)
+    py::class_<BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeShape>(m, "MakeEdge",
+        "Provides methods to build edges.\n"
+        "An edge can be created from:\n"
+        "- Two vertices or two points\n"
+        "- A curve (gp_Lin, gp_Circ, gp_Elips, gp_Hypr, gp_Parab, or Geom_Curve)\n"
+        "- A curve with parameter bounds or vertex/point bounds\n"
+        "- A 2D curve on a surface")
+        
+        // Empty constructor
+        .def(py::init<>(), "Creates an empty edge")
+        
+        // From vertices
+        .def(py::init<const TopoDS_Vertex&, const TopoDS_Vertex&>(), 
+             py::arg("V1"), py::arg("V2"),
+             "Creates a straight edge between two vertices")
+        
+        // From points
+        .def(py::init<const gp_Pnt&, const gp_Pnt&>(), 
+             py::arg("P1"), py::arg("P2"),
+             "Creates a straight edge between two points")
+        
+        // From gp_Lin (line)
+        .def(py::init<const gp_Lin&>(), py::arg("L"),
+             "Creates an infinite edge on the line L")
+        .def(py::init<const gp_Lin&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the line L between parameters p1 and p2")
+        .def(py::init<const gp_Lin&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the line L between points P1 and P2")
+        .def(py::init<const gp_Lin&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the line L between vertices V1 and V2")
+        
+        // From gp_Circ (circle)
+        .def(py::init<const gp_Circ&>(), py::arg("L"),
+             "Creates a closed edge on the circle L")
+        .def(py::init<const gp_Circ&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the circle L between parameters p1 and p2")
+        .def(py::init<const gp_Circ&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the circle L between points P1 and P2")
+        .def(py::init<const gp_Circ&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the circle L between vertices V1 and V2")
+        
+        // From gp_Elips (ellipse)
+        .def(py::init<const gp_Elips&>(), py::arg("L"),
+             "Creates a closed edge on the ellipse L")
+        .def(py::init<const gp_Elips&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the ellipse L between parameters p1 and p2")
+        .def(py::init<const gp_Elips&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the ellipse L between points P1 and P2")
+        .def(py::init<const gp_Elips&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the ellipse L between vertices V1 and V2")
+        
+        // From gp_Hypr (hyperbola)
+        .def(py::init<const gp_Hypr&>(), py::arg("L"),
+             "Creates an infinite edge on the hyperbola L")
+        .def(py::init<const gp_Hypr&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the hyperbola L between parameters p1 and p2")
+        .def(py::init<const gp_Hypr&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the hyperbola L between points P1 and P2")
+        .def(py::init<const gp_Hypr&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the hyperbola L between vertices V1 and V2")
+        
+        // From gp_Parab (parabola)
+        .def(py::init<const gp_Parab&>(), py::arg("L"),
+             "Creates an infinite edge on the parabola L")
+        .def(py::init<const gp_Parab&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the parabola L between parameters p1 and p2")
+        .def(py::init<const gp_Parab&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the parabola L between points P1 and P2")
+        .def(py::init<const gp_Parab&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the parabola L between vertices V1 and V2")
+        
+        // From Geom_Curve
+        .def(py::init<const opencascade::handle<Geom_Curve>&>(), py::arg("L"),
+             "Creates an edge on the curve L with natural bounds")
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const double, const double>(),
+             py::arg("L"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the curve L between parameters p1 and p2")
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const gp_Pnt&, const gp_Pnt&>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"),
+             "Creates an edge on the curve L between points P1 and P2")
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"),
+             "Creates an edge on the curve L between vertices V1 and V2")
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const gp_Pnt&, const gp_Pnt&, const double, const double>(),
+             py::arg("L"), py::arg("P1"), py::arg("P2"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the curve L between points P1, P2 with parameters p1, p2")
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const TopoDS_Vertex&, const TopoDS_Vertex&, const double, const double>(),
+             py::arg("L"), py::arg("V1"), py::arg("V2"), py::arg("p1"), py::arg("p2"),
+             "Creates an edge on the curve L between vertices V1, V2 with parameters p1, p2")
+        
+        // Init methods for reinitialization
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), "Reinitializes with curve C")
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&, const double, const double>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), py::arg("p1"), py::arg("p2"),
+             "Reinitializes with curve C between parameters p1 and p2")
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&, const gp_Pnt&, const gp_Pnt&>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), py::arg("P1"), py::arg("P2"),
+             "Reinitializes with curve C between points P1 and P2")
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&, const TopoDS_Vertex&, const TopoDS_Vertex&>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), py::arg("V1"), py::arg("V2"),
+             "Reinitializes with curve C between vertices V1 and V2")
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&, const gp_Pnt&, const gp_Pnt&, const double, const double>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), py::arg("P1"), py::arg("P2"), py::arg("p1"), py::arg("p2"),
+             "Reinitializes with curve C between points P1, P2 with parameters p1, p2")
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Curve>&, const TopoDS_Vertex&, const TopoDS_Vertex&, const double, const double>(&BRepBuilderAPI_MakeEdge::Init),
+             py::arg("C"), py::arg("V1"), py::arg("V2"), py::arg("p1"), py::arg("p2"),
+             "Reinitializes with curve C between vertices V1, V2 with parameters p1, p2")
+        
+        // Result methods
+        .def("edge", &BRepBuilderAPI_MakeEdge::Edge,
+             "Returns the constructed edge")
+        .def("vertex1", &BRepBuilderAPI_MakeEdge::Vertex1,
+             "Returns the first vertex of the edge (may be null)")
+        .def("vertex2", &BRepBuilderAPI_MakeEdge::Vertex2,
+             "Returns the second vertex of the edge (may be null)")
+        
+        // Status
+        .def("error", &BRepBuilderAPI_MakeEdge::Error,
+             "Returns the construction status")
     ;
 
     m.def("make_edge", [](const gp_Pnt& Pnt1, const gp_Pnt& Pnt2) {
@@ -166,23 +305,23 @@ void bind_brepbuilderapi(py::module_ &m)
         .def(py::init<const gp_Torus&>(), py::arg("T"))
         
         // From Geom_Surface
-        .def(py::init<const opencascade::handle<Geom_Surface>&, Standard_Real>(), 
+        .def(py::init<const opencascade::handle<Geom_Surface>&, double>(), 
              py::arg("S"), py::arg("TolDegen"))
         
         // From elementary surfaces with bounds
-        .def(py::init<const gp_Pln&, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const gp_Pln&, double, double, double, double>(),
              py::arg("P"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"))
-        .def(py::init<const gp_Cylinder&, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const gp_Cylinder&, double, double, double, double>(),
              py::arg("C"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"))
-        .def(py::init<const gp_Cone&, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const gp_Cone&, double, double, double, double>(),
              py::arg("C"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"))
-        .def(py::init<const gp_Sphere&, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const gp_Sphere&, double, double, double, double>(),
              py::arg("S"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"))
-        .def(py::init<const gp_Torus&, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const gp_Torus&, double, double, double, double>(),
              py::arg("T"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"))
         
         // From Geom_Surface with bounds
-        .def(py::init<const opencascade::handle<Geom_Surface>&, Standard_Real, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(),
+        .def(py::init<const opencascade::handle<Geom_Surface>&, double, double, double, double, double>(),
              py::arg("S"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"), py::arg("TolDegen"))
         
         // From wire (find surface automatically)
@@ -209,9 +348,9 @@ void bind_brepbuilderapi(py::module_ &m)
         
         // Init methods
         .def("init", py::overload_cast<const TopoDS_Face&>(&BRepBuilderAPI_MakeFace::Init), py::arg("F"))
-        .def("init", py::overload_cast<const opencascade::handle<Geom_Surface>&, Standard_Boolean, Standard_Real>(&BRepBuilderAPI_MakeFace::Init),
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Surface>&, Standard_Boolean, double>(&BRepBuilderAPI_MakeFace::Init),
              py::arg("S"), py::arg("Bound"), py::arg("TolDegen"))
-        .def("init", py::overload_cast<const opencascade::handle<Geom_Surface>&, Standard_Real, Standard_Real, Standard_Real, Standard_Real, Standard_Real>(&BRepBuilderAPI_MakeFace::Init),
+        .def("init", py::overload_cast<const opencascade::handle<Geom_Surface>&, double, double, double, double, double>(&BRepBuilderAPI_MakeFace::Init),
              py::arg("S"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"), py::arg("TolDegen"))
         
         // Add wire (hole)
@@ -256,7 +395,7 @@ void bind_brepbuilderapi(py::module_ &m)
         .def(py::init<>())
         .def(py::init<const opencascade::handle<Geom_Surface>&, Standard_Boolean>(),
              py::arg("S"), py::arg("Segment") = false)
-        .def(py::init<const opencascade::handle<Geom_Surface>&, Standard_Real, Standard_Real, Standard_Real, Standard_Real, Standard_Boolean>(),
+        .def(py::init<const opencascade::handle<Geom_Surface>&, double, double, double, double, Standard_Boolean>(),
              py::arg("S"), py::arg("UMin"), py::arg("UMax"), py::arg("VMin"), py::arg("VMax"), py::arg("Segment") = false)
         
         // Init
@@ -281,20 +420,20 @@ void bind_brepbuilderapi(py::module_ &m)
     ;
 
     py::class_<BRepPrimAPI_MakeCone, BRepPrimAPI_MakeOneAxis>(m, "MakeCone")
-        .def(py::init<const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const double, const double, const double>(),
              py::arg("R1"), py::arg("R2"), py::arg("H"))
-        .def(py::init<const Standard_Real, const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const double, const double, const double, const double>(),
              py::arg("R1"), py::arg("R2"), py::arg("H"), py::arg("angle"))
-        .def(py::init<const gp_Ax2&, const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const gp_Ax2&, const double, const double, const double>(),
              py::arg("Axes"), py::arg("R1"), py::arg("R2"), py::arg("H"))
     ;
 
     py::class_<BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeOneAxis>(m, "MakeCylinder")
-        .def(py::init<const Standard_Real, const Standard_Real>(),
+        .def(py::init<const double, const double>(),
              py::arg("R"), py::arg("H"))
-        .def(py::init<const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const double, const double, const double>(),
              py::arg("R"), py::arg("H"), py::arg("angle"))
-        .def(py::init<const gp_Ax2&, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const gp_Ax2&, const double, const double>(),
              py::arg("Axes"), py::arg("R"), py::arg("H"))
     ;
 
@@ -302,21 +441,21 @@ void bind_brepbuilderapi(py::module_ &m)
         // Constructors without axes (uses default Z axis)
         .def(py::init<const opencascade::handle<Geom_Curve>&>(),
              py::arg("meridian"))
-        .def(py::init<const opencascade::handle<Geom_Curve>&, const Standard_Real>(),
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const double>(),
              py::arg("meridian"), py::arg("angle"))
-        .def(py::init<const opencascade::handle<Geom_Curve>&, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const double, const double>(),
              py::arg("meridian"), py::arg("v_min"), py::arg("v_max"))
-        .def(py::init<const opencascade::handle<Geom_Curve>&, const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const opencascade::handle<Geom_Curve>&, const double, const double, const double>(),
              py::arg("meridian"), py::arg("v_min"), py::arg("v_max"), py::arg("angle"))
         
         // Constructors with custom axes
         .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&>(),
              py::arg("axes"), py::arg("meridian"))
-        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const Standard_Real>(),
+        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const double>(),
              py::arg("axes"), py::arg("meridian"), py::arg("angle"))
-        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const double, const double>(),
              py::arg("axes"), py::arg("meridian"), py::arg("v_min"), py::arg("v_max"))
-        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const Standard_Real, const Standard_Real, const Standard_Real>(),
+        .def(py::init<const gp_Ax2&, const opencascade::handle<Geom_Curve>&, const double, const double, const double>(),
              py::arg("axes"), py::arg("meridian"), py::arg("v_min"), py::arg("v_max"), py::arg("angle"))
         
         // Methods
@@ -472,7 +611,7 @@ void bind_brepbuilderapi(py::module_ &m)
 
     py::class_<BRepPrimAPI_MakeRevol, BRepPrimAPI_MakeSweep>(m, "MakeRevol")
         // Constructors
-        .def(py::init<const TopoDS_Shape&, const gp_Ax1&, const Standard_Real, const Standard_Boolean>(),
+        .def(py::init<const TopoDS_Shape&, const gp_Ax1&, const double, const Standard_Boolean>(),
              py::arg("shape"), py::arg("axis"), py::arg("angle"), py::arg("copy") = false,
              "Builds the Revol of base S, axis A and angle D. If Copy is true, S is copied")
         .def(py::init<const TopoDS_Shape&, const gp_Ax1&, const Standard_Boolean>(),
