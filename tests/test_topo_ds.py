@@ -1,6 +1,8 @@
-from mod3d import BRepBuilderAPI
-from mod3d import gp
-from mod3d import Geom
+from mod3d import (
+    gp,
+    Geom,
+    BRepBuilderAPI,
+)
 
 
 def test_MakeVertex():

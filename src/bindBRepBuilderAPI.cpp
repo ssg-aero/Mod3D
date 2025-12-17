@@ -18,8 +18,9 @@
 
 namespace py = pybind11;
 
-// // Declare opencascade::handle as a holder type for pybind11
-// PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
+// Declare opencascade::handle as a holder type for pybind11
+// Required to process opencascade::handle<T> as arguments/return types
+PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 template<typename T>
 auto process_container(const T& container) {
@@ -30,13 +31,8 @@ auto process_container(const T& container) {
     return py_list;
 };
 
-PYBIND11_MODULE(BRepBuilderAPI, m)
+void bind_brepbuilderapi(py::module_ &m)
 {
-    m.doc() = "Bindings for BRepBuilderAPI module";
-    
-    // // Import modules to ensure types are registered
-    py::module_::import("mod3d.TopoDS");
-    // py::module_::import("mod3d.Geom");
 
     py::class_<BRepBuilderAPI_Command>(m, "Command")
         .def("is_done", &BRepBuilderAPI_Command::IsDone)

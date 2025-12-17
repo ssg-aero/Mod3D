@@ -12,8 +12,10 @@ namespace py = pybind11;
 
 // Forward declaration from sub binding fonctions
 
-// void bind_shapes(py::module &m);
-// void bind_gp(py::module &m);
+void bind_gp(py::module_ &m);
+void bind_geom(py::module_ &m);
+void bind_topods(py::module_ &m);
+void bind_brepbuilderapi(py::module_ &m);
 
 static py::dict create_box_summary(double dx, double dy, double dz)
 {
@@ -44,7 +46,14 @@ static py::dict create_box_summary(double dx, double dy, double dz)
 
 PYBIND11_MODULE(mod3d, m)
 {
-    // bind_shapes(m);
+    m.doc() = "Mod3D - OpenCASCADE bindings";
+    
+    // Create submodules
+    py::module_ gp = m.def_submodule("gp", "Geometric primitives");
+    py::module_ Geom = m.def_submodule("Geom", "Geom module");
+    py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
+    py::module_ BRepBuilderAPI = m.def_submodule("BRepBuilderAPI", "BRep builder API");
+    
 
     m.doc() = "Open Cascade helpers exposed via pybind11 as part of the mod3d package.";
 
@@ -72,4 +81,10 @@ PYBIND11_MODULE(mod3d, m)
         py::arg("dz") = 10.0,
         "Create and return a box shape with the given dimensions.   "
     );
+
+    // Bind submodules
+    bind_gp(gp);
+    bind_geom(Geom);
+    bind_topods(TopoDS);
+    bind_brepbuilderapi(BRepBuilderAPI);
 }

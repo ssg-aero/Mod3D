@@ -22,11 +22,11 @@
 namespace py = pybind11;
 
 // Declare opencascade::handle as a holder type for pybind11
+// Required to process opencascade::handle<T> as arguments/return types
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
-void bind_shapes(py::module &m) {
-    // Import geom module so Geom_Curve type is registered
-    py::module_::import("mod3d.Geom");
+void bind_shapes(py::module_ &m) {
+
     
 /*
 Public Member Functions

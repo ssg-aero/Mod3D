@@ -17,7 +17,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(gp, m)
+void bind_gp(py::module_ &m)
 {
     py::class_<gp_XYZ>(m, "XYZ")
         .def(py::init<>())

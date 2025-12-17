@@ -5,8 +5,10 @@ namespace py = pybind11;
 
 void bind_shapes(py::module &m);
 
-PYBIND11_MODULE(TopoDS, m)
+
+void bind_topods(py::module_ &m)
 {
 
     bind_shapes(m);
+    
 }

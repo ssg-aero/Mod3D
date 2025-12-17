@@ -21,11 +21,8 @@ namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
-PYBIND11_MODULE(Geom, m)
+void bind_geom(py::module_ &m)
 {
-    m.doc() = "Bindings for Geom module";
-
-    py::module_::import("mod3d.gp");
 
     py::class_<Geom_Geometry, opencascade::handle<Geom_Geometry>>(m, "Geometry")
         // Transformations (in-place)
