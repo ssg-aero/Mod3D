@@ -14,6 +14,7 @@ namespace py = pybind11;
 
 void bind_gp(py::module_ &m);
 void bind_geom(py::module_ &m);
+void bind_geom_fill(py::module_ &m);
 void bind_topods(py::module_ &m);
 void bind_brepbuilderapi(py::module_ &m);
 void bind_brepprim(py::module_ &m);
@@ -52,6 +53,7 @@ PYBIND11_MODULE(mod3d, m)
     // Create submodules
     py::module_ gp = m.def_submodule("gp", "Geometric primitives");
     py::module_ Geom = m.def_submodule("Geom", "Geom module");
+    py::module_ GeomFill = m.def_submodule("GeomFill", "GeomFill module");
     py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
     py::module_ BRepBuilderAPI = m.def_submodule("BRepBuilderAPI", "BRep builder API");
     py::module_ BRepPrim = m.def_submodule("BRepPrim", "BRep primitive shapes");
@@ -85,6 +87,7 @@ PYBIND11_MODULE(mod3d, m)
 
     // Bind submodules
     bind_gp(gp);
+    bind_geom_fill(GeomFill);
     bind_geom(Geom);
     bind_topods(TopoDS);
     bind_brepprim(BRepPrim);
