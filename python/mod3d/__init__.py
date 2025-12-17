@@ -9,6 +9,7 @@ from .mod3d import gp
 from .mod3d import Geom
 from .mod3d import TopoDS
 from .mod3d import BRepBuilderAPI
+from .mod3d import BRepPrim
 
 __all__ = [
     "create_box_summary",
@@ -17,4 +18,5 @@ __all__ = [
     "Geom",
     "TopoDS",
     "BRepBuilderAPI",
+    "BRepPrim",
 ]

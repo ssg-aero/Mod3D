@@ -16,6 +16,7 @@ void bind_gp(py::module_ &m);
 void bind_geom(py::module_ &m);
 void bind_topods(py::module_ &m);
 void bind_brepbuilderapi(py::module_ &m);
+void bind_brepprim(py::module_ &m);
 
 static py::dict create_box_summary(double dx, double dy, double dz)
 {
@@ -53,7 +54,7 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ Geom = m.def_submodule("Geom", "Geom module");
     py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
     py::module_ BRepBuilderAPI = m.def_submodule("BRepBuilderAPI", "BRep builder API");
-    
+    py::module_ BRepPrim = m.def_submodule("BRepPrim", "BRep primitive shapes");
 
     m.doc() = "Open Cascade helpers exposed via pybind11 as part of the mod3d package.";
 
@@ -86,5 +87,6 @@ PYBIND11_MODULE(mod3d, m)
     bind_gp(gp);
     bind_geom(Geom);
     bind_topods(TopoDS);
+    bind_brepprim(BRepPrim);
     bind_brepbuilderapi(BRepBuilderAPI);
 }

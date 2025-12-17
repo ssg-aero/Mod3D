@@ -25,6 +25,7 @@ pybind11_add_module(mod3d
     src/bindGeom.cpp
     src/bindTopoDS.cpp
     src/bindShapes.cpp
+    src/bindBRepPrim.cpp
     src/bindBRepBuilderAPI.cpp
 )
 target_compile_definitions(mod3d PRIVATE VERSION_INFO=\"${PROJECT_VERSION}\")
