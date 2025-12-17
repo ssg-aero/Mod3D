@@ -550,3 +550,320 @@ def test_gp_pln_repr():
     assert "loc" in repr_str
     assert "normal" in repr_str
 
+
+# ============================================================================
+# Conic Tests
+# ============================================================================
+
+def test_gp_circ_construction():
+    """Test gp_Circ construction"""
+    # Default constructor
+    c1 = gp.Circ()
+    
+    # From Ax2 and radius
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    c2 = gp.Circ(ax2, 5.0)
+    assert pytest.approx(c2.radius) == 5.0
+    assert pytest.approx(c2.location.x) == 0.0
+    assert pytest.approx(c2.location.y) == 0.0
+    assert pytest.approx(c2.location.z) == 0.0
+
+def test_gp_circ_properties():
+    """Test gp_Circ properties"""
+    ax2 = gp.Ax2(gp.Pnt(1.0, 2.0, 3.0), gp.Dir(0.0, 0.0, 1.0))
+    circ = gp.Circ(ax2, 10.0)
+    
+    # Test radius property
+    assert pytest.approx(circ.radius) == 10.0
+    circ.radius = 15.0
+    assert pytest.approx(circ.radius) == 15.0
+    
+    # Test location property
+    assert pytest.approx(circ.location.x) == 1.0
+    assert pytest.approx(circ.location.y) == 2.0
+    assert pytest.approx(circ.location.z) == 3.0
+    
+    # Test axis property
+    assert pytest.approx(circ.axis.direction.z) == 1.0
+    
+    # Test x_axis and y_axis (read-only)
+    x_axis = circ.x_axis
+    y_axis = circ.y_axis
+    assert x_axis is not None
+    assert y_axis is not None
+
+def test_gp_circ_geometric_properties():
+    """Test gp_Circ geometric calculations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circ = gp.Circ(ax2, 5.0)
+    
+    # Test area (π * r²)
+    import math
+    expected_area = math.pi * 25.0
+    assert pytest.approx(circ.area()) == expected_area
+    
+    # Test length (2π * r)
+    expected_length = 2.0 * math.pi * 5.0
+    assert pytest.approx(circ.length()) == expected_length
+
+def test_gp_circ_distance():
+    """Test gp_Circ distance calculations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circ = gp.Circ(ax2, 5.0)
+    
+    # Point at center
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    dist1 = circ.distance(p1)
+    assert pytest.approx(dist1) == 5.0  # Distance from center to circumference
+    
+    # Point on circumference
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    dist2 = circ.distance(p2)
+    assert pytest.approx(dist2, abs=1e-6) == 0.0
+    
+    # Point outside
+    p3 = gp.Pnt(10.0, 0.0, 0.0)
+    dist3 = circ.distance(p3)
+    assert pytest.approx(dist3) == 5.0
+
+def test_gp_circ_contains():
+    """Test gp_Circ containment"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circ = gp.Circ(ax2, 5.0)
+    
+    # Point on circumference
+    p1 = gp.Pnt(5.0, 0.0, 0.0)
+    assert circ.contains(p1, 1e-6)
+    
+    # Point not on circumference
+    p2 = gp.Pnt(3.0, 0.0, 0.0)
+    assert not circ.contains(p2, 1e-6)
+
+def test_gp_circ_transformations():
+    """Test gp_Circ transformations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    circ = gp.Circ(ax2, 5.0)
+    
+    # Test translation
+    vec = gp.Vec(10.0, 0.0, 0.0)
+    circ_translated = circ.translated(vec)
+    assert pytest.approx(circ_translated.location.x) == 10.0
+    assert pytest.approx(circ_translated.radius) == 5.0
+    
+    # Test scaling
+    circ_scaled = circ.scaled(gp.Pnt(0.0, 0.0, 0.0), 2.0)
+    assert pytest.approx(circ_scaled.radius) == 10.0
+
+def test_gp_elips_construction():
+    """Test gp_Elips construction"""
+    # Default constructor
+    e1 = gp.Elips()
+    
+    # From Ax2 and radii
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    e2 = gp.Elips(ax2, 10.0, 5.0)
+    assert pytest.approx(e2.major_radius) == 10.0
+    assert pytest.approx(e2.minor_radius) == 5.0
+
+def test_gp_elips_properties():
+    """Test gp_Elips properties"""
+    ax2 = gp.Ax2(gp.Pnt(1.0, 2.0, 3.0), gp.Dir(0.0, 0.0, 1.0))
+    elips = gp.Elips(ax2, 10.0, 5.0)
+    
+    # Test radius properties
+    assert pytest.approx(elips.major_radius) == 10.0
+    assert pytest.approx(elips.minor_radius) == 5.0
+    
+    elips.major_radius = 12.0
+    elips.minor_radius = 6.0
+    assert pytest.approx(elips.major_radius) == 12.0
+    assert pytest.approx(elips.minor_radius) == 6.0
+    
+    # Test location
+    assert pytest.approx(elips.location.x) == 1.0
+    assert pytest.approx(elips.location.y) == 2.0
+    assert pytest.approx(elips.location.z) == 3.0
+
+def test_gp_elips_geometric_properties():
+    """Test gp_Elips geometric calculations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    elips = gp.Elips(ax2, 10.0, 5.0)
+    
+    # Test area (π * a * b)
+    import math
+    expected_area = math.pi * 10.0 * 5.0
+    assert pytest.approx(elips.area()) == expected_area
+    
+    # Test eccentricity (sqrt(1 - (b²/a²)))
+    expected_ecc = math.sqrt(1.0 - (5.0**2 / 10.0**2))
+    assert pytest.approx(elips.eccentricity()) == expected_ecc
+    
+    # Test focal distance
+    focal = elips.focal()
+    assert focal > 0.0
+    
+    # Test foci
+    f1 = elips.focus1()
+    f2 = elips.focus2()
+    assert f1 is not None
+    assert f2 is not None
+
+def test_gp_parab_construction():
+    """Test gp_Parab construction"""
+    # Default constructor
+    p1 = gp.Parab()
+    
+    # From Ax2 and focal length
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    p2 = gp.Parab(ax2, 5.0)
+    assert pytest.approx(p2.focal) == 5.0
+    
+    # From directrix and focus
+    directrix = gp.Ax1(gp.Pnt(-5.0, 0.0, 0.0), gp.Dir(0.0, 1.0, 0.0))
+    focus = gp.Pnt(5.0, 0.0, 0.0)
+    p3 = gp.Parab(directrix, focus)
+    assert p3 is not None
+
+def test_gp_parab_properties():
+    """Test gp_Parab properties"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    parab = gp.Parab(ax2, 5.0)
+    
+    # Test focal property
+    assert pytest.approx(parab.focal) == 5.0
+    parab.focal = 8.0
+    assert pytest.approx(parab.focal) == 8.0
+    
+    # Test location (apex)
+    assert pytest.approx(parab.location.x) == 0.0
+    assert pytest.approx(parab.location.y) == 0.0
+    assert pytest.approx(parab.location.z) == 0.0
+
+def test_gp_parab_geometric_properties():
+    """Test gp_Parab geometric calculations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    parab = gp.Parab(ax2, 5.0)
+    
+    # Test parameter (2 * focal)
+    expected_param = 2.0 * 5.0
+    assert pytest.approx(parab.parameter()) == expected_param
+    
+    # Test focus
+    focus = parab.focus()
+    assert focus is not None
+    
+    # Test directrix
+    directrix = parab.directrix()
+    assert directrix is not None
+
+
+def test_gp_hypr_properties():
+    """Test gp_Hypr properties"""
+    ax2 = gp.Ax2(gp.Pnt(1.0, 2.0, 3.0), gp.Dir(0.0, 0.0, 1.0))
+    hypr = gp.Hypr(ax2, 10.0, 5.0)
+    
+    # Test radius properties
+    assert pytest.approx(hypr.major_radius) == 10.0
+    assert pytest.approx(hypr.minor_radius) == 5.0
+    
+    hypr.major_radius = 12.0
+    hypr.minor_radius = 6.0
+    assert pytest.approx(hypr.major_radius) == 12.0
+    assert pytest.approx(hypr.minor_radius) == 6.0
+    
+    # Test location
+    assert pytest.approx(hypr.location.x) == 1.0
+    assert pytest.approx(hypr.location.y) == 2.0
+    assert pytest.approx(hypr.location.z) == 3.0
+
+def test_gp_hypr_geometric_properties():
+    """Test gp_Hypr geometric calculations"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    hypr = gp.Hypr(ax2, 10.0, 5.0)
+    
+    # Test eccentricity (e > 1 for hyperbola)
+    ecc = hypr.eccentricity()
+    assert ecc > 1.0
+    
+    # Test focal distance
+    focal = hypr.focal()
+    assert focal > 0.0
+    
+    # Test foci
+    f1 = hypr.focus1()
+    f2 = hypr.focus2()
+    assert f1 is not None
+    assert f2 is not None
+    
+    # Test asymptotes
+    asymp1 = hypr.asymptote1()
+    asymp2 = hypr.asymptote2()
+    assert asymp1 is not None
+    assert asymp2 is not None
+    
+    # Test other branch
+    other = hypr.other_branch()
+    assert other is not None
+    
+    # Test conjugate branches
+    conj1 = hypr.conjugate_branch1()
+    conj2 = hypr.conjugate_branch2()
+    assert conj1 is not None
+    assert conj2 is not None
+
+
+def test_gp_conic_transformations():
+    """Test transformations work for all conics"""
+    ax2 = gp.Ax2(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    
+    # Circle
+    circ = gp.Circ(ax2, 5.0)
+    circ_rot = circ.rotated(gp.Ax1(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0)), 1.57)
+    assert circ_rot is not None
+    
+    # Ellipse
+    elips = gp.Elips(ax2, 10.0, 5.0)
+    elips_rot = elips.rotated(gp.Ax1(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0)), 1.57)
+    assert elips_rot is not None
+    
+    # Parabola
+    parab = gp.Parab(ax2, 5.0)
+    parab_rot = parab.rotated(gp.Ax1(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0)), 1.57)
+    assert parab_rot is not None
+    
+    # Hyperbola
+    hypr = gp.Hypr(ax2, 10.0, 5.0)
+    hypr_rot = hypr.rotated(gp.Ax1(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0)), 1.57)
+    assert hypr_rot is not None
+
+def test_gp_conic_repr():
+    """Test __repr__ for all conics"""
+    ax2 = gp.Ax2(gp.Pnt(1.0, 2.0, 3.0), gp.Dir(0.0, 0.0, 1.0))
+    
+    # Circle
+    circ = gp.Circ(ax2, 5.0)
+    circ_repr = repr(circ)
+    assert "gp_Circ" in circ_repr
+    assert "center" in circ_repr
+    assert "radius" in circ_repr
+    
+    # Ellipse
+    elips = gp.Elips(ax2, 10.0, 5.0)
+    elips_repr = repr(elips)
+    assert "gp_Elips" in elips_repr
+    assert "major_radius" in elips_repr
+    assert "minor_radius" in elips_repr
+    
+    # Parabola
+    parab = gp.Parab(ax2, 5.0)
+    parab_repr = repr(parab)
+    assert "gp_Parab" in parab_repr
+    assert "apex" in parab_repr
+    assert "focal" in parab_repr
+    
+    # Hyperbola
+    hypr = gp.Hypr(ax2, 10.0, 5.0)
+    hypr_repr = repr(hypr)
+    assert "gp_Hypr" in hypr_repr
+    assert "major_radius" in hypr_repr
+    assert "minor_radius" in hypr_repr

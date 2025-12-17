@@ -11,15 +11,8 @@
 #include <gp_Lin.hxx>
 #include <gp_Trsf.hxx>
 #include <Geom_Geometry.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom_Line.hxx>
-#include <Geom_BoundedCurve.hxx>
-#include <Geom_TrimmedCurve.hxx>
-#include <Geom_BSplineCurve.hxx>
-#include <Geom_BezierCurve.hxx>
 #include <GeomAbs_Shape.hxx>
 
-#include "array_utils.hpp"
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);

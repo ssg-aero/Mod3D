@@ -1,3 +1,4 @@
+#include <BRepLib_MakeEdge.hxx>
 #include <Bnd_Box.hxx>
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h> // for py::self * py::self etc.
@@ -12,6 +13,10 @@
 #include <gp_Ax3.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
+#include <gp_Circ.hxx>
+#include <gp_Elips.hxx>
+#include <gp_Hypr.hxx>
+#include <gp_Parab.hxx>
 // #include <gp_Ax3.hxx>
 // #include <gp_Trsf.hxx>
 
@@ -562,4 +567,353 @@ void bind_gp(py::module_ &m)
                    std::to_string(dir.Z()) + "))";
         })
     ;
+
+    py::class_<gp_Circ>(m, "Circ")
+        // Constructors
+        .def(py::init<>(), "Creates an indefinite circle")
+        .def(py::init<const gp_Ax2&, const Standard_Real>(), 
+             py::arg("a2"), py::arg("radius"),
+             "Constructs a circle with a2 locating the circle and giving its orientation:\n"
+             "- center is the origin of a2\n"
+             "- origin, X Direction and Y Direction of a2 define the plane\n"
+             "Note: Radius can be 0.0. Raises exception if radius < 0")
+        
+        // Properties
+        .def_property("axis", &gp_Circ::Axis, &gp_Circ::SetAxis,
+                      "Get or set the main axis of the circle (perpendicular to the plane, passing through center)")
+        .def_property("location", &gp_Circ::Location, &gp_Circ::SetLocation,
+                      "Get or set the center of the circle (Location point of the local coordinate system)")
+        .def_property("position", &gp_Circ::Position, &gp_Circ::SetPosition,
+                      "Get or set the position (local coordinate system) of the circle")
+        .def_property("radius", &gp_Circ::Radius, &gp_Circ::SetRadius,
+                      "Get or set the radius of this circle")
+        
+        // Read-only properties
+        .def_property_readonly("x_axis", &gp_Circ::XAxis,
+                               "Returns the XAxis of the circle (perpendicular to main axis, defines parametrization origin)")
+        .def_property_readonly("y_axis", &gp_Circ::YAxis,
+                               "Returns the YAxis of the circle (perpendicular to XAxis, completes the plane)")
+        .def("area", &gp_Circ::Area,
+             "Computes the area of the circle (π * r²)")
+        .def("length", &gp_Circ::Length,
+             "Computes the circumference of the circle (2π * r)")
+        
+        // Distance and containment
+        .def("distance", &gp_Circ::Distance, py::arg("p"),
+             "Computes the minimum distance between point p and any point on the circumference")
+        .def("square_distance", &gp_Circ::SquareDistance, py::arg("p"),
+             "Computes the square distance between the circle and point p")
+        .def("contains", &gp_Circ::Contains, py::arg("p"), py::arg("linear_tolerance"),
+             "Returns True if point p is on the circumference within the given tolerance")
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Circ::Mirror), py::arg("p"),
+             "Performs symmetrical transformation with respect to point p")
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Circ::Mirror), py::arg("a1"),
+             "Performs symmetrical transformation with respect to axis a1")
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Circ::Mirror), py::arg("a2"),
+             "Performs symmetrical transformation with respect to plane defined by a2")
+        .def("rotate", &gp_Circ::Rotate, py::arg("a1"), py::arg("ang"),
+             "Rotates the circle around axis a1 by angle ang (in radians)")
+        .def("scale", &gp_Circ::Scale, py::arg("p"), py::arg("s"),
+             "Scales the circle with center p and scale factor s.\n"
+             "If s is negative, radius stays positive but XAxis and YAxis are reversed")
+        .def("transform", &gp_Circ::Transform, py::arg("t"),
+             "Transforms the circle with the transformation t")
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Circ::Translate), py::arg("v"),
+             "Translates the circle in the direction of vector v")
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Circ::Translate),
+             py::arg("p1"), py::arg("p2"),
+             "Translates the circle from point p1 to point p2")
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Circ::Mirrored, py::const_), py::arg("p"),
+             "Returns a mirrored copy with respect to point p")
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Circ::Mirrored, py::const_), py::arg("a1"),
+             "Returns a mirrored copy with respect to axis a1")
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Circ::Mirrored, py::const_), py::arg("a2"),
+             "Returns a mirrored copy with respect to plane defined by a2")
+        .def("rotated", &gp_Circ::Rotated, py::arg("a1"), py::arg("ang"),
+             "Returns a rotated copy around axis a1 by angle ang (in radians)")
+        .def("scaled", &gp_Circ::Scaled, py::arg("p"), py::arg("s"),
+             "Returns a scaled copy with center p and scale factor s")
+        .def("transformed", &gp_Circ::Transformed, py::arg("t"),
+             "Returns a transformed copy with transformation t")
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Circ::Translated, py::const_), py::arg("v"),
+             "Returns a translated copy in the direction of vector v")
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Circ::Translated, py::const_),
+             py::arg("p1"), py::arg("p2"),
+             "Returns a translated copy from point p1 to point p2")
+        
+        .def("__repr__", [](const gp_Circ& self) {
+            const gp_Pnt& loc = self.Location();
+            const gp_Dir& dir = self.Axis().Direction();
+            return "gp_Circ(center=(" + std::to_string(loc.X()) + ", " + 
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) + 
+                   "), normal=(" + std::to_string(dir.X()) + ", " + 
+                   std::to_string(dir.Y()) + ", " + std::to_string(dir.Z()) + 
+                   "), radius=" + std::to_string(self.Radius()) + ")";
+        })
+    ;
+
+    py::class_<gp_Elips>(m, "Elips",
+        "Describes an ellipse in 3D space.\n"
+        "An ellipse is defined by its major and minor radii and positioned with a\n"
+        "right-handed coordinate system where:\n"
+        "- origin is the center of the ellipse\n"
+        "- X Direction defines the major axis\n"
+        "- Y Direction defines the minor axis\n"
+        "Parameterization: P(U) = O + MajorRad*Cos(U)*XDir + MinorRad*Sin(U)*YDir\n"
+        "Parameter range: [0, 2*Pi), period = 2*Pi")
+        
+        // Constructors
+        .def(py::init<>(), "Creates an indefinite ellipse")
+        .def(py::init<const gp_Ax2&, const Standard_Real, const Standard_Real>(),
+             py::arg("a2"), py::arg("major_radius"), py::arg("minor_radius"),
+             "Constructs an ellipse with given major and minor radii, where a2 locates the ellipse:\n"
+             "- center is the origin of a2\n"
+             "- X Direction defines the major axis\n"
+             "- Y Direction defines the minor axis\n"
+             "Raises exception if major_radius < minor_radius or minor_radius < 0")
+        
+        // Properties
+        .def_property("axis", &gp_Elips::Axis, &gp_Elips::SetAxis,
+                      "Get or set the main axis of the ellipse (perpendicular to the plane, passing through center)")
+        .def_property("location", &gp_Elips::Location, &gp_Elips::SetLocation,
+                      "Get or set the center of the ellipse")
+        .def_property("position", &gp_Elips::Position, &gp_Elips::SetPosition,
+                      "Get or set the position (local coordinate system) of the ellipse")
+        .def_property("major_radius", &gp_Elips::MajorRadius, &gp_Elips::SetMajorRadius,
+                      "Get or set the major radius of the ellipse")
+        .def_property("minor_radius", &gp_Elips::MinorRadius, &gp_Elips::SetMinorRadius,
+                      "Get or set the minor radius of the ellipse")
+        
+        // Read-only properties
+        .def_property_readonly("x_axis", &gp_Elips::XAxis,
+                               "Returns the major axis of the ellipse")
+        .def_property_readonly("y_axis", &gp_Elips::YAxis,
+                               "Returns the minor axis of the ellipse")
+        
+        // Geometric properties
+        .def("area", &gp_Elips::Area,
+             "Computes the area of the ellipse")
+        .def("focal", &gp_Elips::Focal,
+             "Computes the focal distance (distance between the two foci)")
+        .def("focus1", &gp_Elips::Focus1,
+             "Returns the first focus (on positive side of major axis)")
+        .def("focus2", &gp_Elips::Focus2,
+             "Returns the second focus (on negative side of major axis)")
+        .def("directrix1", &gp_Elips::Directrix1,
+             "Returns the first directrix of the ellipse")
+        .def("directrix2", &gp_Elips::Directrix2,
+             "Returns the second directrix of the ellipse")
+        .def("eccentricity", &gp_Elips::Eccentricity,
+             "Returns the eccentricity of the ellipse (0 < e < 1, or 0 if circle)")
+        .def("parameter", &gp_Elips::Parameter,
+             "Returns p = (1 - e²) * MajorRadius where e is the eccentricity")
+
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Elips::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Elips::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Elips::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Elips::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Elips::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Elips::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Elips::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Elips::Translate),
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Elips::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Elips::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Elips::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Elips::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Elips::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Elips::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Elips::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Elips::Translated, py::const_),
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Elips& self) {
+            const gp_Pnt& loc = self.Location();
+            return "gp_Elips(center=(" + std::to_string(loc.X()) + ", " +
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) +
+                   "), major_radius=" + std::to_string(self.MajorRadius()) +
+                   ", minor_radius=" + std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+
+    py::class_<gp_Parab>(m, "Parab",
+        "Describes a parabola in 3D space.\n"
+        "A parabola is defined by its focal length and positioned with a\n"
+        "right-handed coordinate system where:\n"
+        "- origin is the apex of the parabola\n"
+        "- X Axis defines the axis of symmetry (parabola on positive side)\n"
+        "- Y Direction is parallel to the directrix\n"
+        "Parameterization: P(U) = O + U²/(4*F)*XDir + U*YDir\n"
+        "where F is the focal length. Parameter range: ]-infinite, +infinite[")
+        
+        // Constructors
+        .def(py::init<>(), "Creates an indefinite parabola")
+        .def(py::init<const gp_Ax2&, const Standard_Real>(),
+             py::arg("a2"), py::arg("focal"),
+             "Constructs a parabola with its local coordinate system a2 and focal length.\n"
+             "The XDirection defines the axis of symmetry.\n"
+             "The YDirection is parallel to the directrix.\n"
+             "The Location point is the vertex (apex) of the parabola.\n"
+             "Raises exception if focal < 0")
+        .def(py::init<const gp_Ax1&, const gp_Pnt&>(),
+             py::arg("d"), py::arg("f"),
+             "Constructs a parabola from directrix d and focus point f")
+        
+        // Properties
+        .def_property("axis", &gp_Parab::Axis, &gp_Parab::SetAxis,
+                      "Get or set the symmetry axis of the parabola (perpendicular to directrix, passing through apex)")
+        .def_property("location", &gp_Parab::Location, &gp_Parab::SetLocation,
+                      "Get or set the apex (vertex) of the parabola")
+        .def_property("position", &gp_Parab::Position, &gp_Parab::SetPosition,
+                      "Get or set the position (local coordinate system) of the parabola")
+        .def_property("focal", &gp_Parab::Focal, &gp_Parab::SetFocal,
+                      "Get or set the focal length of the parabola")
+        
+        // Read-only properties
+        .def_property_readonly("x_axis", &gp_Parab::XAxis,
+                               "Returns the symmetry axis of the parabola")
+        .def_property_readonly("y_axis", &gp_Parab::YAxis,
+                               "Returns the YAxis of the parabola (parallel to directrix)")
+        
+        // Geometric properties
+        .def("directrix", &gp_Parab::Directrix,
+             "Returns the directrix of the parabola (on negative side of symmetry axis)")
+        .def("focus", &gp_Parab::Focus,
+             "Returns the focus of the parabola (on positive side of symmetry axis)")
+        .def("parameter", &gp_Parab::Parameter,
+             "Returns the parameter p (distance between focus and directrix = 2*focal)")
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Parab::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Parab::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Parab::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Parab::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Parab::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Parab::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Parab::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Parab::Translate),
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Parab::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Parab::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Parab::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Parab::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Parab::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Parab::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Parab::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Parab::Translated, py::const_),
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Parab& self) {
+            const gp_Pnt& loc = self.Location();
+            return "gp_Parab(apex=(" + std::to_string(loc.X()) + ", " +
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) +
+                   "), focal=" + std::to_string(self.Focal()) + ")";
+        })
+    ;
+
+    py::class_<gp_Hypr>(m, "Hypr",
+        "Describes a branch of a hyperbola in 3D space.\n"
+        "A hyperbola is defined by its major and minor radii and positioned with a\n"
+        "right-handed coordinate system where:\n"
+        "- origin is the center of the hyperbola\n"
+        "- X Direction defines the major axis\n"
+        "- Y Direction defines the minor axis\n"
+        "The branch described is on the positive side of the major axis.\n"
+        "Parameterization: P(U) = O + MajRad*Cosh(U)*XDir + MinRad*Sinh(U)*YDir\n"
+        "Parameter range: ]-infinite, +infinite[")
+        
+        // Constructors
+        .def(py::init<>(), "Creates an indefinite hyperbola")
+        .def(py::init<const gp_Ax2&, const Standard_Real, const Standard_Real>(),
+             py::arg("a2"), py::arg("major_radius"), py::arg("minor_radius"),
+             "Constructs a hyperbola with given major and minor radii, where a2 locates the hyperbola:\n"
+             "- center is the origin of a2\n"
+             "- X Direction defines the major axis\n"
+             "- Y Direction defines the minor axis\n"
+             "Raises exception if major_radius < 0 or minor_radius < 0")
+        
+        // Properties
+        .def_property("axis", &gp_Hypr::Axis, &gp_Hypr::SetAxis,
+                      "Get or set the main axis of the hyperbola (perpendicular to the plane, passing through center)")
+        .def_property("location", &gp_Hypr::Location, &gp_Hypr::SetLocation,
+                      "Get or set the center of the hyperbola")
+        .def_property("position", &gp_Hypr::Position, &gp_Hypr::SetPosition,
+                      "Get or set the position (local coordinate system) of the hyperbola")
+        .def_property("major_radius", &gp_Hypr::MajorRadius, &gp_Hypr::SetMajorRadius,
+                      "Get or set the major radius of the hyperbola")
+        .def_property("minor_radius", &gp_Hypr::MinorRadius, &gp_Hypr::SetMinorRadius,
+                      "Get or set the minor radius of the hyperbola")
+        
+        // Read-only properties
+        .def_property_readonly("x_axis", &gp_Hypr::XAxis,
+                               "Returns the major axis of the hyperbola")
+        .def_property_readonly("y_axis", &gp_Hypr::YAxis,
+                               "Returns the minor axis of the hyperbola")
+        
+        // Geometric properties
+        .def("asymptote1", &gp_Hypr::Asymptote1,
+             "Returns the first asymptote of the hyperbola")
+        .def("asymptote2", &gp_Hypr::Asymptote2,
+             "Returns the second asymptote of the hyperbola")
+        .def("conjugate_branch1", &gp_Hypr::ConjugateBranch1,
+             "Returns the conjugate branch on the positive side of the YAxis")
+        .def("conjugate_branch2", &gp_Hypr::ConjugateBranch2,
+             "Returns the conjugate branch on the negative side of the YAxis")
+        .def("directrix1", &gp_Hypr::Directrix1,
+             "Returns the first directrix of the hyperbola")
+        .def("directrix2", &gp_Hypr::Directrix2,
+             "Returns the second directrix of the hyperbola")
+        .def("eccentricity", &gp_Hypr::Eccentricity,
+             "Returns the eccentricity of the hyperbola (e > 1)")
+        .def("focal", &gp_Hypr::Focal,
+             "Computes the focal distance (distance between the two foci)")
+        .def("focus1", &gp_Hypr::Focus1,
+             "Returns the first focus (on positive side of major axis)")
+        .def("focus2", &gp_Hypr::Focus2,
+             "Returns the second focus (on negative side of major axis)")
+        .def("other_branch", &gp_Hypr::OtherBranch,
+             "Returns the other branch of this hyperbola (symmetrical w.r.t. center)")
+        .def("parameter", &gp_Hypr::Parameter,
+             "Returns p = (e² - 1) * MajorRadius where e is the eccentricity")
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Hypr::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Hypr::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Hypr::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Hypr::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Hypr::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Hypr::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Hypr::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Hypr::Translate),
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Hypr::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Hypr::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Hypr::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Hypr::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Hypr::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Hypr::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Hypr::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Hypr::Translated, py::const_),
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Hypr& self) {
+            const gp_Pnt& loc = self.Location();
+            return "gp_Hypr(center=(" + std::to_string(loc.X()) + ", " +
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) +
+                   "), major_radius=" + std::to_string(self.MajorRadius()) +
+                   ", minor_radius=" + std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+    
 }
