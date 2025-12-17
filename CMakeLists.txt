@@ -23,6 +23,7 @@ pybind11_add_module(mod3d
     src/mod3d.cpp
     src/bindGp.cpp
     src/bindGeomFill.cpp
+    src/bindGeomCurves.cpp
     src/bindGeom.cpp
     src/bindTopoDS.cpp
     src/bindShapes.cpp
