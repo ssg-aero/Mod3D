@@ -6,7 +6,7 @@ namespace py = pybind11;
 
 void bind_geom_abs(py::module_ &m)
 {
-    py::enum_<GeomAbs_Shape>(m, "GeomAbs_Shape")
+    py::enum_<GeomAbs_Shape>(m, "Shape")
         .value("GeomAbs_C0", GeomAbs_C0)
         .value("GeomAbs_C1", GeomAbs_C1)
         .value("GeomAbs_C2", GeomAbs_C2)

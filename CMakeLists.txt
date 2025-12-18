@@ -32,7 +32,11 @@ pybind11_add_module(mod3d
     src/bindTopoDS.cpp
     src/bindShapes.cpp
     src/bindBRepPrim.cpp
+    src/bindBRepPrimAPI.cpp
+    src/bindBRepPrimAPIOneAxis.cpp
+    src/bindBRepPrimAPISweep.cpp
     src/bindBRepBuilderAPI.cpp
+    src/bindBRepExtrema.cpp
 )
 target_compile_definitions(mod3d PRIVATE VERSION_INFO=\"${PROJECT_VERSION}\")
 target_link_libraries(mod3d PRIVATE

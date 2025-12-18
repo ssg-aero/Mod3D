@@ -104,4 +104,13 @@ namespace {
     }
     return py_list;
     }
+
+    template<typename T>
+    auto occt_container_to_py_list(const T& container) {
+        auto py_list = py::list();
+        for (const auto& item : container) {
+            py_list.append(item);
+        }
+        return py_list;
+    };
 } // namespace
