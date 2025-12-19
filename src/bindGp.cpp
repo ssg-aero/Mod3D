@@ -1,5 +1,4 @@
-#include <BRepLib_MakeEdge.hxx>
-#include <Bnd_Box.hxx>
+#include <pybind11/detail/common.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h> // for py::self * py::self etc.
 
@@ -18,7 +17,9 @@
 #include <gp_Hypr.hxx>
 #include <gp_Parab.hxx>
 // #include <gp_Ax3.hxx>
-// #include <gp_Trsf.hxx>
+#include <gp_Quaternion.hxx>
+
+#include <gp_Trsf.hxx>
 
 namespace py = pybind11;
 
@@ -913,6 +914,224 @@ void bind_gp(py::module_ &m)
                    std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) +
                    "), major_radius=" + std::to_string(self.MajorRadius()) +
                    ", minor_radius=" + std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+
+    py::enum_<gp_TrsfForm>(m, "TrsfForm",
+        "Identifies the type of transformation")
+        .value("Identity", gp_Identity, "No transformation")
+        .value("Rotation", gp_Rotation, "Rotation transformation")
+        .value("Translation", gp_Translation, "Translation transformation")
+        .value("PntMirror", gp_PntMirror, "Symmetry with respect to a point")
+        .value("Ax1Mirror", gp_Ax1Mirror, "Symmetry with respect to an axis")
+        .value("Ax2Mirror", gp_Ax2Mirror, "Symmetry with respect to a plane")
+        .value("Scale", gp_Scale, "Scale transformation")
+        .value("CompoundTrsf", gp_CompoundTrsf, "Combination of transformations")
+        .value("Other", gp_Other, "Other transformation")
+        .export_values();
+
+    py::class_<gp_Trsf>(m, "Trsf",
+        "Defines a non-persistent transformation in 3D space.\n\n"
+        "Implements transformations:\n"
+        "- Translation, Rotation, Scale\n"
+        "- Symmetry with respect to a point, a line, a plane\n\n"
+        "Complex transformations can be obtained by combining elementary transformations.\n"
+        "The transformation is represented as a 4x4 matrix where the vectorial part {V1, V2, V3}\n"
+        "defines the rotation/scale and T defines the translation.")
+        
+        // Constructors
+        .def(py::init<>(),
+            "Creates an identity transformation")
+        
+        .def(py::init<const gp_Trsf2d&>(),
+            py::arg("t"),
+            "Creates a 3D transformation from a 2D transformation")
+        
+        // Mirror transformations
+        .def("set_mirror", py::overload_cast<const gp_Pnt&>(&gp_Trsf::SetMirror),
+            py::arg("p"),
+            "Makes the transformation into a symmetrical transformation with respect to point p")
+        
+        .def("set_mirror", py::overload_cast<const gp_Ax1&>(&gp_Trsf::SetMirror),
+            py::arg("a1"),
+            "Makes the transformation into an axial symmetry with axis a1")
+        
+        .def("set_mirror", py::overload_cast<const gp_Ax2&>(&gp_Trsf::SetMirror),
+            py::arg("a2"),
+            "Makes the transformation into a planar symmetry with plane defined by a2")
+        
+        // Rotation transformations
+        .def("set_rotation", py::overload_cast<const gp_Ax1&, const Standard_Real>(&gp_Trsf::SetRotation),
+            py::arg("a1"), py::arg("ang"),
+            "Changes the transformation into a rotation around axis a1 by angle ang (radians)")
+        
+        .def("set_rotation", py::overload_cast<const gp_Quaternion&>(&gp_Trsf::SetRotation),
+            py::arg("r"),
+            "Changes the transformation into a rotation defined by quaternion (around origin)")
+        
+        .def("set_rotation_part", &gp_Trsf::SetRotationPart,
+            py::arg("r"),
+            "Replaces the rotation part with specified quaternion")
+
+        // Scale transformation
+        .def("set_scale", &gp_Trsf::SetScale,
+            py::arg("p"), py::arg("s"),
+            "Changes the transformation into a scale with center p and scaling value s")
+        
+        // Coordinate system transformations
+        .def("set_displacement", &gp_Trsf::SetDisplacement,
+            py::arg("from_system"), py::arg("to_system"),
+            "Modifies to transform coordinate system from_system into to_system.\n"
+            "Use SetTransformation for point coordinate conversion")
+        
+        .def("set_transformation", py::overload_cast<const gp_Ax3&, const gp_Ax3&>(&gp_Trsf::SetTransformation),
+            py::arg("from_system"), py::arg("to_system"),
+            "Sets transformation to convert coordinates from from_system to to_system")
+        
+        .def("set_transformation", py::overload_cast<const gp_Ax3&>(&gp_Trsf::SetTransformation),
+            py::arg("to_system"),
+            "Sets transformation from absolute coordinate system to to_system")
+        
+        .def("set_transformation", py::overload_cast<const gp_Quaternion&, const gp_Vec&>(&gp_Trsf::SetTransformation),
+            py::arg("r"), py::arg("t"),
+            "Sets transformation by directly specified rotation and translation")
+        
+        // Translation
+        .def("set_translation", py::overload_cast<const gp_Vec&>(&gp_Trsf::SetTranslation),
+            py::arg("v"),
+            "Changes the transformation into a translation by vector v")
+        
+        .def("set_translation", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Trsf::SetTranslation),
+            py::arg("p1"), py::arg("p2"),
+            "Changes the transformation into a translation from point p1 to point p2")
+        
+        .def("set_translation_part", &gp_Trsf::SetTranslationPart,
+            py::arg("v"),
+            "Replaces the translation vector with vector v")
+        
+        // Direct matrix setting
+        .def("set_values", &gp_Trsf::SetValues,
+            py::arg("a11"), py::arg("a12"), py::arg("a13"), py::arg("a14"),
+            py::arg("a21"), py::arg("a22"), py::arg("a23"), py::arg("a24"),
+            py::arg("a31"), py::arg("a32"), py::arg("a33"), py::arg("a34"),
+            "Sets the transformation coefficients directly.\n"
+            "The matrix is orthogonalized before future use.\n"
+            "Raises ConstructionError if determinant is null")
+        
+        // Properties
+        .def_property("scale_factor",
+            &gp_Trsf::ScaleFactor,
+            &gp_Trsf::SetScaleFactor,
+            "Get or set the scale factor")
+        
+        .def_property("form",
+            &gp_Trsf::Form,
+            &gp_Trsf::SetForm,
+            "Get or set the nature of the transformation")
+        
+        .def_property_readonly("is_negative",
+            &gp_Trsf::IsNegative,
+            "True if the determinant of the vectorial part is negative")
+
+        .def_property_readonly("translation_part",
+            &gp_Trsf::TranslationPart,
+            "Returns the translation part of the transformation")
+
+        .def_property_readonly("vectorial_part",
+            &gp_Trsf::VectorialPart,
+            "Returns the vectorial part (3x3 matrix including scale factor)")
+        
+        .def_property_readonly("h_vectorial_part",
+            &gp_Trsf::HVectorialPart,
+            "Returns the homogeneous vectorial part (3x3 matrix without scale factor)")
+
+        // Query methods
+        .def("get_rotation", [](const gp_Trsf& self) {
+            gp_XYZ axis;
+            Standard_Real angle;
+            Standard_Boolean has_rotation = self.GetRotation(axis, angle);
+            if (has_rotation) {
+                return py::make_tuple(true, axis, angle);
+            }
+            return py::make_tuple(false, gp_XYZ(), 0.0);
+        }, "Returns (has_rotation, axis, angle) where angle is in range (0, PI]")
+
+     //    .def("get_rotation_quaternion", static_cast<gp_Quaternion (gp_Trsf::*)() const>(&gp_Trsf::GetRotation),
+     .def("get_rotation_quaternion", py::overload_cast<>(&gp_Trsf::GetRotation, py::const_),
+            "Returns quaternion representing the rotational part")
+
+        .def("get_rotation",  py::overload_cast<gp_XYZ&, Standard_Real&>(&gp_Trsf::GetRotation, py::const_),
+            py::arg("axis"), py::arg("angle"),
+            "Outputs the axis and angle (in range (0, PI]) of the rotational part.\n"
+            "Returns True if there is a rotational part, False otherwise")
+          
+        .def("value", &gp_Trsf::Value,
+            py::arg("row"), py::arg("col"),
+            "Returns coefficient at position (row, col) including scale factor.\n"
+            "row: 1-3, col: 1-4")
+        
+        // Operations
+        .def("invert", &gp_Trsf::Invert,
+            "Inverts the transformation in place")
+        
+        .def("inverted", &gp_Trsf::Inverted,
+            "Returns the inverse transformation")
+        
+        .def("multiply", &gp_Trsf::Multiply,
+            py::arg("t"),
+            "Composes this transformation with t: self = self * t")
+        
+        .def("multiplied", &gp_Trsf::Multiplied,
+            py::arg("t"),
+            "Returns the composition self * t")
+        
+        .def("pre_multiply", &gp_Trsf::PreMultiply,
+            py::arg("t"),
+            "Composes this transformation with t: self = t * self")
+        
+        .def("power", &gp_Trsf::Power,
+            py::arg("n"),
+            "Raises the transformation to power n: self = self^n")
+        
+        .def("powered", &gp_Trsf::Powered,
+            py::arg("n"),
+            "Returns the transformation raised to power n")
+        
+        // Transform application
+        .def("transforms", py::overload_cast<Standard_Real&, Standard_Real&, Standard_Real&>(&gp_Trsf::Transforms, py::const_),
+            py::arg("x"), py::arg("y"), py::arg("z"),
+            "Transforms coordinates (x, y, z) in place")
+        
+        .def("transforms", py::overload_cast<gp_XYZ&>(&gp_Trsf::Transforms, py::const_),
+            py::arg("coord"),
+            "Transforms XYZ coordinates in place")
+
+        // Operators
+        .def("__mul__", &gp_Trsf::Multiplied,
+            py::arg("t"),
+            "Returns the composition self * t")
+        
+        .def("__imul__", [](gp_Trsf& self, const gp_Trsf& t) -> gp_Trsf& {
+            self.Multiply(t);
+            return self;
+        }, py::arg("t"),
+            "Composes this transformation with t: self *= t")
+        
+        .def("__repr__", [](const gp_Trsf& self) {
+            std::string form_str;
+            switch(self.Form()) {
+                case gp_Identity: form_str = "Identity"; break;
+                case gp_Rotation: form_str = "Rotation"; break;
+                case gp_Translation: form_str = "Translation"; break;
+                case gp_PntMirror: form_str = "PntMirror"; break;
+                case gp_Ax1Mirror: form_str = "Ax1Mirror"; break;
+                case gp_Ax2Mirror: form_str = "Ax2Mirror"; break;
+                case gp_Scale: form_str = "Scale"; break;
+                case gp_CompoundTrsf: form_str = "CompoundTrsf"; break;
+                default: form_str = "Other";
+            }
+            return "gp_Trsf(form=" + form_str + 
+                   ", scale=" + std::to_string(self.ScaleFactor()) + ")";
         })
     ;
     

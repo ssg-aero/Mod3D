@@ -160,6 +160,15 @@ void 	Clear ()
         }, py::arg("theIsFree"))
         .def("move", &TopoDS_Shape::Move, py::arg("thePosition"), py::arg("theRaiseExc") = false)
         .def("moved", &TopoDS_Shape::Moved, py::arg("thePosition"), py::arg("theRaiseExc") = false)
+        .def("move", [](TopoDS_Shape &self, const gp_Trsf &theTrsf, Standard_Boolean theRaiseExc) {
+            self.Move(TopLoc_Location(theTrsf), theRaiseExc);
+        }, py::arg("theTrsf"), py::arg("theRaiseExc") = false)
+        .def("moved", &TopoDS_Shape::Moved, py::arg("thePosition"), py::arg("theRaiseExc") = false)
+        .def("moved", [](TopoDS_Shape &self, const gp_Trsf &theTrsf, Standard_Boolean theRaiseExc) {
+            TopoDS_Shape shape = self;
+            shape.Moved(TopLoc_Location(theTrsf), theRaiseExc);
+            return shape;
+        }, py::arg("theTrsf"), py::arg("theRaiseExc") = false)
         .def("reverse", &TopoDS_Shape::Reverse)
         .def("reversed", &TopoDS_Shape::Reversed)
         .def("complement", &TopoDS_Shape::Complement)
