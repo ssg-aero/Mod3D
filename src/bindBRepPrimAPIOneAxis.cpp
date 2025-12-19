@@ -27,20 +27,20 @@ void bind_brep_prim_api_one_axis(py::module_ &m)
 
     py::class_<BRepPrimAPI_MakeCone, BRepPrimAPI_MakeOneAxis>(m, "MakeCone")
         .def(py::init<const double, const double, const double>(),
-             py::arg("R1"), py::arg("R2"), py::arg("H"))
+             py::arg("r1"), py::arg("r2"), py::arg("h"))
         .def(py::init<const double, const double, const double, const double>(),
-             py::arg("R1"), py::arg("R2"), py::arg("H"), py::arg("angle"))
+             py::arg("r1"), py::arg("r2"), py::arg("h"), py::arg("angle"))
         .def(py::init<const gp_Ax2&, const double, const double, const double>(),
-             py::arg("Axes"), py::arg("R1"), py::arg("R2"), py::arg("H"))
+             py::arg("Axes"), py::arg("r1"), py::arg("r2"), py::arg("h"))
     ;
 
     py::class_<BRepPrimAPI_MakeCylinder, BRepPrimAPI_MakeOneAxis>(m, "MakeCylinder")
         .def(py::init<const double, const double>(),
-             py::arg("R"), py::arg("H"))
+             py::arg("r"), py::arg("h"))
         .def(py::init<const double, const double, const double>(),
-             py::arg("R"), py::arg("H"), py::arg("angle"))
+             py::arg("r"), py::arg("h"), py::arg("angle"))
         .def(py::init<const gp_Ax2&, const double, const double>(),
-             py::arg("Axes"), py::arg("R"), py::arg("H"))
+             py::arg("Axes"), py::arg("r"), py::arg("h"))
     ;
 
     py::class_<BRepPrimAPI_MakeRevolution, BRepPrimAPI_MakeOneAxis>(m, "MakeRevolution")
