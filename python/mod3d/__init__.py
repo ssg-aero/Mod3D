@@ -12,6 +12,8 @@ from .mod3d import TopoDS
 from .mod3d import BRepBuilderAPI
 from .mod3d import BRepPrim
 from .mod3d import BRepExtrema
+from .mod3d import StepControl
+from .mod3d import StepData
 
 __all__ = [
     "create_box_summary",
@@ -23,4 +25,6 @@ __all__ = [
     "BRepBuilderAPI",
     "BRepPrim",
     "BRepExtrema",
+    "StepControl",
+    "StepData",
 ]

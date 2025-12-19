@@ -10,6 +10,7 @@ find_package(opencascade REQUIRED COMPONENTS
     FoundationClasses
     ModelingData
     ModelingAlgorithms
+    OpenCASCADE_DataExchange_LIBRARIES
 )
 
 message("Found OpenCASCADE version: ${OpenCASCADE_MAJOR_VERSION}.${OpenCASCADE_MINOR_VERSION}.${OpenCASCADE_MAINTENANCE_VERSION}")
@@ -37,6 +38,8 @@ pybind11_add_module(mod3d
     src/bindBRepPrimAPISweep.cpp
     src/bindBRepBuilderAPI.cpp
     src/bindBRepExtrema.cpp
+    src/bindStepControl.cpp
+    src/bindStepData.cpp
 )
 target_compile_definitions(mod3d PRIVATE VERSION_INFO=\"${PROJECT_VERSION}\")
 target_link_libraries(mod3d PRIVATE
@@ -44,6 +47,7 @@ target_link_libraries(mod3d PRIVATE
     ${OpenCASCADE_FoundationClasses_LIBRARIES}
     ${OpenCASCADE_ModelingData_LIBRARIES}
     ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+    ${OpenCASCADE_DataExchange_LIBRARIES}
 )
 
 target_include_directories(mod3d PRIVATE 
