@@ -24,6 +24,7 @@
 #include <BRepBuilderAPI_MakeVertex.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepBuilderAPI_MakePolygon.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeSolid.hxx>
 #include <BRepBuilderAPI_MakeShell.hxx>
@@ -269,6 +270,118 @@ void bind_brepbuilder_api(py::module_ &m)
         .def("vertex", &BRepBuilderAPI_MakeWire::Vertex, py::return_value_policy::reference_internal)
     ;
 
+    py::class_<BRepBuilderAPI_MakePolygon, BRepBuilderAPI_MakeShape>(m, "MakePolygon",
+        "Constructs polygonal wires from points or vertices.\n\n"
+        "A polygonal wire consists of a sequence of connected rectilinear edges.\n"
+        "When a point or vertex is added, if it is identical to the previous point,\n"
+        "no edge is built. Use the added() method to test if the vertex was added.\n\n"
+        "Construction approaches:\n"
+        "1. Complete polygon by defining all points/vertices (up to 4)\n"
+        "2. Empty polygon and add points/vertices in sequence (unlimited)\n\n"
+        "Warning: If the sequence p1-p2-p1 appears among the points, you will\n"
+        "create a polygonal wire with two consecutive coincident edges")
+        
+        // Constructors - empty
+        .def(py::init<>(),
+            "Initializes an empty polygonal wire.\n\n"
+            "Points or vertices are added using the add() method.\n"
+            "As soon as the wire contains vertices, it can be consulted using wire()")
+        
+        // Constructors - from points
+        .def(py::init<const gp_Pnt&, const gp_Pnt&>(),
+            py::arg("P1"), py::arg("P2"),
+            "Constructs a polygonal wire from 2 points.\n"
+            "Vertices are automatically created on the given points")
+        
+        .def(py::init<const gp_Pnt&, const gp_Pnt&, const gp_Pnt&, const Standard_Boolean>(),
+            py::arg("P1"), py::arg("P2"), py::arg("P3"), py::arg("close") = false,
+            "Constructs a polygonal wire from 3 points.\n\n"
+            "Parameters:\n"
+            "  close: If True, creates a closed polygon")
+        
+        .def(py::init<const gp_Pnt&, const gp_Pnt&, const gp_Pnt&, const gp_Pnt&, const Standard_Boolean>(),
+            py::arg("P1"), py::arg("P2"), py::arg("P3"), py::arg("P4"), py::arg("close") = false,
+            "Constructs a polygonal wire from 4 points.\n\n"
+            "Parameters:\n"
+            "  close: If True, creates a closed polygon")
+        
+        // Constructors - from vertices
+        .def(py::init<const TopoDS_Vertex&, const TopoDS_Vertex&>(),
+            py::arg("V1"), py::arg("V2"),
+            "Constructs a polygonal wire from 2 vertices")
+        
+        .def(py::init<const TopoDS_Vertex&, const TopoDS_Vertex&, const TopoDS_Vertex&, const Standard_Boolean>(),
+            py::arg("V1"), py::arg("V2"), py::arg("V3"), py::arg("close") = false,
+            "Constructs a polygonal wire from 3 vertices.\n\n"
+            "Parameters:\n"
+            "  close: If True, creates a closed polygon")
+        
+        .def(py::init<const TopoDS_Vertex&, const TopoDS_Vertex&, const TopoDS_Vertex&, const TopoDS_Vertex&, const Standard_Boolean>(),
+            py::arg("V1"), py::arg("V2"), py::arg("V3"), py::arg("V4"), py::arg("close") = false,
+            "Constructs a polygonal wire from 4 vertices.\n\n"
+            "Parameters:\n"
+            "  close: If True, creates a closed polygon")
+        
+        // Add methods
+        .def("add",
+            py::overload_cast<const gp_Pnt&>(&BRepBuilderAPI_MakePolygon::Add),
+            py::arg("P"),
+            "Adds the point P at the end of the polygonal wire.\n\n"
+            "A vertex is automatically created on the point P.\n\n"
+            "Warning:\n"
+            "- When P is coincident to the previous vertex, no edge is built\n"
+            "- P is not checked against other vertices except the last one\n"
+            "- You can add vertices to a closed polygon\n"
+            "- This may create consecutive coincident edges or non-manifold wires")
+        
+        .def("add",
+            py::overload_cast<const TopoDS_Vertex&>(&BRepBuilderAPI_MakePolygon::Add),
+            py::arg("V"),
+            "Adds the vertex V at the end of the polygonal wire.\n\n"
+            "Warning:\n"
+            "- When V is coincident to the previous vertex, no edge is built\n"
+            "- V is not checked against other vertices except the last one\n"
+            "- You can add vertices to a closed polygon\n"
+            "- This may create consecutive coincident edges or non-manifold wires")
+        
+        // Status methods
+        .def("added", &BRepBuilderAPI_MakePolygon::Added,
+            "Returns True if the last vertex added was not coincident with the previous one.\n\n"
+            "Use this method after add() to check if an edge was actually created")
+        
+        .def("close", &BRepBuilderAPI_MakePolygon::Close,
+            "Closes the polygonal wire under construction.\n\n"
+            "This is equivalent to adding the first vertex to the polygon")
+        
+        .def("is_done", &BRepBuilderAPI_MakePolygon::IsDone,
+            "Returns True if this algorithm contains a valid polygonal wire.\n\n"
+            "A valid wire has at least one edge (i.e., at least two vertices)")
+        
+        // Result methods and properties
+        .def_property_readonly("first_vertex", &BRepBuilderAPI_MakePolygon::FirstVertex,
+            py::return_value_policy::reference_internal,
+            "Returns the first vertex of the polygonal wire.\n"
+            "If the polygon is closed, first and last vertices are identical")
+        
+        .def_property_readonly("last_vertex", &BRepBuilderAPI_MakePolygon::LastVertex,
+            py::return_value_policy::reference_internal,
+            "Returns the last vertex of the polygonal wire.\n"
+            "If the polygon is closed, first and last vertices are identical")
+        
+        .def_property_readonly("edge",
+            py::overload_cast<>(&BRepBuilderAPI_MakePolygon::Edge, py::const_),
+            py::return_value_policy::reference_internal,
+            "Returns the edge built between the last two points or vertices added.\n\n"
+            "Warning: If there is only one vertex in the polygon, the result is a null edge")
+        
+        .def("wire",
+            py::overload_cast<>(&BRepBuilderAPI_MakePolygon::Wire),
+            py::return_value_policy::reference_internal,
+            "Returns the constructed polygonal wire.\n\n"
+            "Or the already built part of the polygonal wire under construction.\n\n"
+            "Raises StdFail_NotDone if fewer than two vertices have been added")
+    ;
+
     py::enum_<BRepBuilderAPI_FaceError>(m, "FaceError")
         .value("FaceDone", BRepBuilderAPI_FaceDone)
         .value("NoFace", BRepBuilderAPI_NoFace)
@@ -395,4 +508,6 @@ void bind_brepbuilder_api(py::module_ &m)
     ;
 
      bind_brep_prim_api(m);
+
+     
 }

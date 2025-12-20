@@ -31,13 +31,20 @@ pybind11_add_module(mod3d
     src/bindGeomSurfaces.cpp
     src/bindGeom.cpp
     src/bindTopoDS.cpp
+    src/bindTopAbs.cpp
+    src/bindTopExp.cpp
     src/bindShapes.cpp
+    src/bindBRep.cpp
     src/bindBRepPrim.cpp
     src/bindBRepPrimAPI.cpp
     src/bindBRepPrimAPIOneAxis.cpp
     src/bindBRepPrimAPISweep.cpp
     src/bindBRepBuilderAPI.cpp
+    src/bindBRepOffsetAPI.cpp
     src/bindBRepExtrema.cpp
+    src/bindBRepFillet.cpp
+    # src/bindBRepFillet2d.cpp
+    src/bindShapeAnalysis.cpp
     src/bindStepControl.cpp
     src/bindStepData.cpp
 )

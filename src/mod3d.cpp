@@ -17,11 +17,19 @@ void bind_geom(py::module_ &m);
 void bind_geom_abs(py::module_ &m);
 void bind_geom_fill(py::module_ &m);
 void bind_topods(py::module_ &m);
+void bind_top_abs(py::module_ &m);
+void bind_top_exp(py::module_ &m);
+void bind_brep(py::module_ &m);
 void bind_brepbuilder_api(py::module_ &m);
+void bind_brep_offset_api(py::module_ &m);
 void bind_brepprim(py::module_ &m);
+void bind_brep_fillet(py::module_ &m);
+// void bind_brep_fillet2d(py::module_ &m);
 void bind_brep_extrema(py::module_ &m);
+void bind_shape_analysis(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
+
 
 static py::dict create_box_summary(double dx, double dy, double dz)
 {
@@ -61,10 +69,17 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ GeomAbs = m.def_submodule("GeomAbs", "GeomAbs module");
 
     py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
+    py::module_ TopAbs = m.def_submodule("TopAbs", "Topological shape types");
+    py::module_ TopExp = m.def_submodule("TopExp", "Topological exploration module");
+    py::module_ BRep = m.def_submodule("BRep", "Boundary representation module");
     py::module_ BRepBuilderAPI = m.def_submodule("BRepBuilderAPI", "BRep builder API");
     py::module_ BRepPrim = m.def_submodule("BRepPrim", "BRep primitive shapes");
-    // py::module_ BRepPrimAPI = m.def_submodule("BRepPrimAPI", "BRep primitive API");
+    py::module_ BRepOffsetAPI = m.def_submodule("BRepOffsetAPI", "BRep offset API");
     py::module_ BRepExtrema = m.def_submodule("BRepExtrema", "BRep extrema computations");
+    py::module_ BRepFillet = m.def_submodule("BRepFillet", "BRep fillet module");
+    // py::module_ BRepFillet2d = m.def_submodule("BRepFillet2d", "BRep 2D fillet module");
+
+    py::module_ ShapeAnalysis = m.def_submodule("ShapeAnalysis", "Shape analysis module");
 
     py::module_ StepControl = m.def_submodule("StepControl", "STEP control module");
     py::module_ StepData = m.def_submodule("StepData", "STEP data module");
@@ -101,9 +116,17 @@ PYBIND11_MODULE(mod3d, m)
     bind_geom_fill(GeomFill);
     bind_geom(Geom);
     bind_topods(TopoDS);
+    bind_top_abs(TopAbs);
+    bind_top_exp(TopExp);
+    bind_brep(BRep);
     bind_brepprim(BRepPrim);
     bind_brepbuilder_api(BRepBuilderAPI);
+    bind_brep_offset_api(BRepOffsetAPI);
     bind_brep_extrema(BRepExtrema);
+    bind_brep_fillet(BRepFillet);
+    // bind_brep_fillet2d(BRepFillet2d);
+
+    bind_shape_analysis(ShapeAnalysis);
 
     bind_step_control(StepControl);
     bind_step_data(StepData);
