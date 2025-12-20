@@ -25,6 +25,91 @@ namespace py = pybind11;
 
 void bind_gp(py::module_ &m)
 {
+    // gp utility class - provides resolution and standard geometric constants
+    py::class_<gp>(m, "gp",
+        "Geometric processor utility class.\n\n"
+        "Provides implementation of entities for algebraic calculations and\n"
+        "basis analytic geometry. This class offers static methods for:\n"
+        "- Tolerance criterion (Resolution)\n"
+        "- Standard 3D geometric constants (Origin, unit directions, axes)\n"
+        "- Standard 2D geometric constants")
+        
+        // Resolution
+        .def_static("resolution", &gp::Resolution,
+            "Returns the tolerance criterion for geometric computations.\n\n"
+            "This tolerance is used to determine when two numbers can be\n"
+            "considered equal. Many class functions use this tolerance,\n"
+            "for example, to avoid division by zero")
+        
+        // 3D Point and Direction constants
+        .def_property_readonly_static("origin", 
+            [](py::object /* self */) { return gp::Origin(); },
+            "Cartesian point with coordinates X = Y = Z = 0")
+        
+        .def_property_readonly_static("dx",
+            [](py::object /* self */) { return gp::DX(); },
+            "Unit vector with direction (1, 0, 0)")
+        
+        .def_property_readonly_static("dy",
+            [](py::object /* self */) { return gp::DY(); },
+            "Unit vector with direction (0, 1, 0)")
+        
+        .def_property_readonly_static("dz",
+            [](py::object /* self */) { return gp::DZ(); },
+            "Unit vector with direction (0, 0, 1)")
+        
+        // 3D Axis constants
+        .def_property_readonly_static("ox",
+            [](py::object /* self */) { return gp::OX(); },
+            "Axis with origin at Origin and direction (1, 0, 0)")
+        
+        .def_property_readonly_static("oy",
+            [](py::object /* self */) { return gp::OY(); },
+            "Axis with origin at Origin and direction (0, 1, 0)")
+        
+        .def_property_readonly_static("oz",
+            [](py::object /* self */) { return gp::OZ(); },
+            "Axis with origin at Origin and direction (0, 0, 1)")
+        
+        // 3D Coordinate system constants
+        .def_property_readonly_static("xoy",
+            [](py::object /* self */) { return gp::XOY(); },
+            "Coordinate system with origin at Origin,\n"
+            "main direction Z = (0, 0, 1) and X direction = (1, 0, 0)")
+        
+        .def_property_readonly_static("zox",
+            [](py::object /* self */) { return gp::ZOX(); },
+            "Coordinate system with origin at Origin,\n"
+            "main direction Y = (0, 1, 0) and X direction = (0, 0, 1)")
+        
+        .def_property_readonly_static("yoz",
+            [](py::object /* self */) { return gp::YOZ(); },
+            "Coordinate system with origin at Origin,\n"
+            "main direction X = (1, 0, 0) and X direction = (0, 1, 0)")
+        
+        // 2D Point and Direction constants
+        .def_property_readonly_static("origin2d",
+            [](py::object /* self */) { return gp::Origin2d(); },
+            "Cartesian point with coordinates X = Y = 0")
+        
+        .def_property_readonly_static("dx2d",
+            [](py::object /* self */) { return gp::DX2d(); },
+            "Unit vector with direction (1, 0)")
+        
+        .def_property_readonly_static("dy2d",
+            [](py::object /* self */) { return gp::DY2d(); },
+            "Unit vector with direction (0, 1)")
+        
+        // 2D Axis constants
+        .def_property_readonly_static("ox2d",
+            [](py::object /* self */) { return gp::OX2d(); },
+            "Axis with origin at Origin2d and direction (1, 0)")
+        
+        .def_property_readonly_static("oy2d",
+            [](py::object /* self */) { return gp::OY2d(); },
+            "Axis with origin at Origin2d and direction (0, 1)")
+    ;
+
     py::class_<gp_XYZ>(m, "XYZ")
         .def(py::init<>())
         .def(py::init<Standard_Real, Standard_Real, Standard_Real>(), py::arg("x"), py::arg("y"), py::arg("z"))
