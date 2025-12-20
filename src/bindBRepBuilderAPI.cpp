@@ -55,7 +55,7 @@ void bind_brepbuilder_api(py::module_ &m)
     ;
 
     py::class_<BRepBuilderAPI_MakeShape, BRepBuilderAPI_Command>(m, "MakeShape")
-        .def("build", &BRepBuilderAPI_MakeShape::Build) // TODO add progess indicator?
+        .def("build", [](BRepBuilderAPI_MakeShape& self) { self.Build(); }) // TODO add progess indicator?
         .def("shape", &BRepBuilderAPI_MakeShape::Shape)
         .def("generated", [](BRepBuilderAPI_MakeShape& self, const TopoDS_Shape &theOriginal) {
             return occt_container_to_py_list(self.Generated(theOriginal));
