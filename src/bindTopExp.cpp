@@ -4,6 +4,8 @@
 #include <TopAbs_ShapeEnum.hxx>
 #include <pybind11/pytypes.h>
 
+#include <explorer_utils.hpp>
+
 namespace py = pybind11;
 
 void bind_top_exp(py::module_ &m)
@@ -149,5 +151,44 @@ void bind_top_exp(py::module_ &m)
             "Returns:\n"
             "  A list of shapes found during exploration"
     )
-    ;        
+    ;
+
+    
+
+
+    m.def("get_faces",
+        [](const TopoDS_Shape& shape) {
+            return get_shapes_of_type<TopAbs_FACE>(shape);
+        },
+        py::arg("shape"),
+        "Returns a list of all faces in the given shape.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n\n"
+        "Returns:\n"
+        "  A list of TopoDS_Face objects contained in the shape"
+    );
+
+    m.def("get_edges",
+        [](const TopoDS_Shape& shape) {
+            return get_shapes_of_type<TopAbs_EDGE>(shape);
+        },
+        py::arg("shape"),
+        "Returns a list of all edges in the given shape.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n\n"
+        "Returns:\n"
+        "  A list of TopoDS_Edge objects contained in the shape"
+    );  
+
+    m.def("get_vertices",
+        [](const TopoDS_Shape& shape) {
+            return get_shapes_of_type<TopAbs_VERTEX>(shape);
+        },
+        py::arg("shape"),
+        "Returns a list of all vertices in the given shape.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n\n"
+        "Returns:\n"
+        "  A list of TopoDS_Vertex objects contained in the shape"
+    );
 }
