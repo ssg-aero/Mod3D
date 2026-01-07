@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.30)
 project(Mod3DPybind VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -47,6 +47,7 @@ pybind11_add_module(mod3d
     src/bindShapeAnalysis.cpp
     src/bindStepControl.cpp
     src/bindStepData.cpp
+    src/bindRender.cpp
 )
 target_compile_definitions(mod3d PRIVATE VERSION_INFO=\"${PROJECT_VERSION}\")
 target_link_libraries(mod3d PRIVATE

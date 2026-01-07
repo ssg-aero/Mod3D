@@ -29,6 +29,7 @@ void bind_brep_extrema(py::module_ &m);
 void bind_shape_analysis(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
+void bind_render(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -84,6 +85,8 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ StepControl = m.def_submodule("StepControl", "STEP control module");
     py::module_ StepData = m.def_submodule("StepData", "STEP data module");
 
+    py::module_ Render = m.def_submodule("Render", "Rendering and tessellation module");
+
 
     m.doc() = "Open Cascade helpers exposed via pybind11 as part of the mod3d package.";
 
@@ -130,4 +133,7 @@ PYBIND11_MODULE(mod3d, m)
 
     bind_step_control(StepControl);
     bind_step_data(StepData);
+    
+    // Bind rendering/tessellation functions to main module
+    bind_render(Render);
 }

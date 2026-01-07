@@ -21,6 +21,7 @@ from .mod3d import BRepFillet
 from .mod3d import ShapeAnalysis
 from .mod3d import StepControl
 from .mod3d import StepData
+from .mod3d import Render
 
 __all__ = [
     "create_box_summary",
@@ -41,4 +42,5 @@ __all__ = [
     "ShapeAnalysis",
     "StepControl",
     "StepData",
+    "Render",
 ]
