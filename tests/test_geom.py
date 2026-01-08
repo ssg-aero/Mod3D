@@ -837,9 +837,9 @@ def test_gbs_bspline_creation():
     multiplicities = [3, 1, 3]  # Clamped knot vector
     degree = 2
 
-    curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+    occt_curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
 
-    crv = gbs.BSCurve3d(
+    gbs_curve = gbs.BSCurve3d(
         poles=[
             [0.0, 0.0, 0.],
             [1.0, 1.0, 0.],
@@ -852,20 +852,20 @@ def test_gbs_bspline_creation():
     )
 
     # Convert gbs curve to BSplineCurve
-    crv_ = Geom.BSplineCurve(crv)
+    occt_curve_converted = Geom.BSplineCurve(gbs_curve)
 
     # Verify conversions work
-    assert curve.degree() == crv_.degree()
-    assert curve.nb_poles() == crv_.nb_poles()
-    assert curve.nb_knots() == crv_.nb_knots()
+    assert occt_curve.degree() == occt_curve_converted.degree()
+    assert occt_curve.nb_poles() == occt_curve_converted.nb_poles()
+    assert occt_curve.nb_knots() == occt_curve_converted.nb_knots()
 
     # Test that gbs curves work with builders (implicit conversion through Geom_Curve)
-    e1 = BRepBuilderAPI.MakeEdge(curve).edge()
-    e2 = BRepBuilderAPI.MakeEdge(crv).edge()
+    ed_occt = BRepBuilderAPI.MakeEdge(occt_curve).edge()
+    ed_gbs = BRepBuilderAPI.MakeEdge(gbs_curve).edge()
     
     # Both edges should be valid
-    assert e1 is not None
-    assert e2 is not None
+    assert ed_occt is not None
+    assert ed_gbs is not None
 
 
 # ==================== Elementary Surface Tests ====================
@@ -1188,3 +1188,64 @@ def test_surface_point_evaluation():
     )
     p = sphere(0, np.pi/2)
     assert abs(p.z - 3.0) < 1e-10
+
+
+def test_gbs_surface_conversion():
+    """Test converting gbs surface to OCCT BSplineSurface."""
+
+    # Create a simple 3x3 B-spline surface
+    poles = [
+        [0, 0, 0], [1, 0, 0], [2, 0, 0],
+        [0, 1, 0], [1, 1, 1], [2, 1, 0],
+        [0, 2, 0], [1, 2, 0], [2, 2, 0],
+    ]
+    
+    knots_u = [0, 1]
+    knots_v = [0, 1]
+    mults_u = [3, 3]
+    mults_v = [3, 3]
+    
+    # Create gbs surface
+    gbs_surf = gbs.BSSurface3d(poles, knots_u, knots_v, mults_u, mults_v, 2, 2)
+    
+    # Convert to OCCT by creating BSplineSurface from gbs surface
+    occt_surf = Geom.BSplineSurface(gbs_surf)
+    
+    # Verify it's a valid BSplineSurface
+    assert occt_surf is not None
+    assert occt_surf.u_degree == 2
+    assert occt_surf.v_degree == 2
+    assert occt_surf.nb_u_poles == 3
+    assert occt_surf.nb_v_poles == 3
+    
+    print("✓ gbs::BSSurface to Geom_BSplineSurface conversion works!")
+    
+    # Test evaluation
+    u, v = 0.5, 0.5
+    point = occt_surf.value(u, v)
+    print(f"✓ Surface evaluation at ({u}, {v}): {point}")
+
+
+def test_implicit_conversion():
+    """Test implicit conversion from gbs surface."""
+    
+    # Create a simple surface
+    poles = [
+        [0, 0, 0], [1, 0, 0],
+        [0, 1, 0], [1, 1, 1],
+    ]
+    
+    knots_u = [0, 1]
+    knots_v = [0, 1]
+    mults_u = [2, 2]
+    mults_v = [2, 2]
+    
+    gbs_surf = gbs.BSSurface3d(poles, knots_u, knots_v, mults_u, mults_v, 1, 1)
+    
+    # Test implicit conversion by passing to a function expecting BSplineSurface
+    # (just create it, which uses the conversion)
+    occt_surf = Geom.BSplineSurface(gbs_surf)
+    assert occt_surf.u_degree == 1
+    assert occt_surf.v_degree == 1
+    
+    BRepBuilderAPI.MakeFace(occt_surf, 1e-6)  # Should work without error
