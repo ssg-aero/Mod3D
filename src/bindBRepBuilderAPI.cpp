@@ -236,6 +236,13 @@ void bind_brepbuilder_api(py::module_ &m)
         }
         return edge_maker.Edge();
     }, py::arg("Pnt1"), py::arg("Pnt2"));
+    m.def("make_edge", [](const opencascade::handle<Geom_Curve>& C) {
+        BRepBuilderAPI_MakeEdge edge_maker(C);
+        if (!edge_maker.IsDone()) {
+            throw std::runtime_error("Failed to create edge from curve");
+        }
+        return edge_maker.Edge();
+    }, py::arg("C"));
 
     py::enum_<BRepBuilderAPI_WireError>(m, "WireError")
         .value("WireDone", BRepBuilderAPI_WireDone)
