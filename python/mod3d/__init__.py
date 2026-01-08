@@ -23,7 +23,7 @@ from .mod3d import ShapeAnalysis
 from .mod3d import StepControl
 from .mod3d import StepData
 from .mod3d import Render
-
+from .visualyse3js import ShapeRenderer
 __all__ = [
     "create_box_summary",
     "create_box",
@@ -45,4 +45,5 @@ __all__ = [
     "StepControl",
     "StepData",
     "Render",
+    "ShapeRenderer",
 ]

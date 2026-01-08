@@ -78,5 +78,8 @@ install(TARGETS mod3d
 )
 
 # Install the package shim so the namespace package can resolve from Python.
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/__init__.py
+install(
+    FILES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/__init__.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/visualyse3js.py
     DESTINATION ${Python3_SITEARCH}/mod3d)
