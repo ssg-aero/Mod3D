@@ -5,6 +5,14 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+include(GNUInstallDirs)
+
+message("-- CMake install prefix: " ${CMAKE_INSTALL_PREFIX})
+message("  -> binaries: " ${CMAKE_INSTALL_BINDIR})
+message("  -> libs: " ${CMAKE_INSTALL_LIBDIR})
+message("  -> includes: " ${CMAKE_INSTALL_INCLUDEDIR})
+
+
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 find_package(opencascade REQUIRED COMPONENTS
     FoundationClasses
@@ -18,6 +26,9 @@ message("OpenCASCADE :${OpenCASCADE_INCLUDE_DIR}")
 
 find_package(pybind11 REQUIRED)
 
+find_package(gbs REQUIRED)
+find_package (Eigen3 REQUIRED NO_MODULE) # ToDo prperly add dep to GBS
+
 
 # Build the Python extension module with OCCT linkage
 pybind11_add_module(mod3d 
@@ -29,6 +40,8 @@ pybind11_add_module(mod3d
     src/bindGeomCurvesConics.cpp
     src/bindGeomCurves.cpp
     src/bindGeomSurfaces.cpp
+    src/bindGeomSurfacesSplines.cpp
+    src/bindGeomSurfacesElementary.cpp
     src/bindGeom.cpp
     src/bindTopoDS.cpp
     src/bindTopAbs.cpp
@@ -50,7 +63,10 @@ pybind11_add_module(mod3d
     src/bindStepData.cpp
     src/bindRender.cpp
 )
-target_compile_definitions(mod3d PRIVATE VERSION_INFO=\"${PROJECT_VERSION}\")
+target_compile_definitions(mod3d PRIVATE 
+    VERSION_INFO=\"${PROJECT_VERSION}\" 
+    _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS # For Eigen
+)
 target_link_libraries(mod3d PRIVATE
     pybind11::module
     ${OpenCASCADE_FoundationClasses_LIBRARIES}
@@ -62,6 +78,8 @@ target_link_libraries(mod3d PRIVATE
 target_include_directories(mod3d PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/src 
     ${OpenCASCADE_INCLUDE_DIR}
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/gbs
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 option(MOD3D_BUILD_TESTING "Add convenience targets for development" ON)
