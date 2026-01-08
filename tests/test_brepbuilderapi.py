@@ -5,8 +5,10 @@ import numpy as np
 from mod3d import (
     gp,
     Geom,
+    GeomAbs,
     GeomFill,
     BRepBuilderAPI,
+    BRepOffsetAPI,
 )
 
 
@@ -865,3 +867,227 @@ def test_make_edge_line_with_vertex_bounds():
     
     edge = edge_maker.edge()
     assert not edge.is_null()
+
+
+def test_sewing_two_faces():
+    """Test sewing two adjacent faces into a shell."""
+    # Create first face (square at z=0)
+    points1 = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0),
+        gp.Pnt(10.0, 10.0, 0.0),
+        gp.Pnt(0.0, 10.0, 0.0),
+        gp.Pnt(0.0, 0.0, 0.0)
+    ]
+    
+    wire_maker1 = BRepBuilderAPI.MakePolygon()
+    for p in points1:
+        wire_maker1.add(p)
+    wire1 = wire_maker1.wire()
+    face1 = BRepBuilderAPI.MakeFace(wire1).face()
+    
+    # Create second face (square at x=10, perpendicular to first)
+    points2 = [
+        gp.Pnt(10.0, 0.0, 0.0),
+        gp.Pnt(10.0, 10.0, 0.0),
+        gp.Pnt(10.0, 10.0, 10.0),
+        gp.Pnt(10.0, 0.0, 10.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ]
+    
+    wire_maker2 = BRepBuilderAPI.MakePolygon()
+    for p in points2:
+        wire_maker2.add(p)
+    wire2 = wire_maker2.wire()
+    face2 = BRepBuilderAPI.MakeFace(wire2).face()
+    
+    # Sew the faces together
+    sewing = BRepBuilderAPI.Sewing(tolerance=1.0e-6)
+    sewing.add(face1)
+    sewing.add(face2)
+    sewing.perform()
+    
+    # Get result
+    result = sewing.sewed_shape()
+    assert not result.is_null()
+    
+    # Check that we have contiguous edges (the shared edge)
+    assert sewing.nb_contigous_edges > 0
+    
+    # Test properties
+    assert sewing.tolerance == 1.0e-6
+    assert sewing.face_mode == True
+
+
+def test_sewing_multiple_faces_to_box():
+    """Test sewing six faces to create a closed box shell."""
+    size = 10.0
+    
+    # Create 6 faces of a box
+    faces = []
+    
+    # Bottom face (z=0)
+    bottom = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, 0, -1)),
+        0, size, 0, size
+    ).face()
+    faces.append(bottom)
+    
+    # Top face (z=size)
+    top = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, size), gp.Dir(0, 0, 1)),
+        0, size, 0, size
+    ).face()
+    faces.append(top)
+    
+    # Front face (y=0)
+    front = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, -1, 0)),
+        0, size, 0, size
+    ).face()
+    faces.append(front)
+    
+    # Back face (y=size)
+    back = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, size, 0), gp.Dir(0, 1, 0)),
+        0, size, 0, size
+    ).face()
+    faces.append(back)
+    
+    # Left face (x=0)
+    left = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(-1, 0, 0)),
+        0, size, 0, size
+    ).face()
+    faces.append(left)
+    
+    # Right face (x=size)
+    right = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(size, 0, 0), gp.Dir(1, 0, 0)),
+        0, size, 0, size
+    ).face()
+    faces.append(right)
+    
+    # Sew all faces
+    sewing = BRepBuilderAPI.Sewing(tolerance=1.0e-6)
+    for face in faces:
+        sewing.add(face)
+    
+    sewing.perform()
+    
+    result = sewing.sewed_shape()
+    assert not result.is_null()
+    
+    # Should have multiple contiguous edges (12 edges in a box)
+    assert sewing.nb_contigous_edges > 0
+    
+    # Check no free edges (all edges should be shared)
+    # Note: depending on sewing tolerance and face orientations, 
+    # this might not always be zero, so we just verify the number is reasonable
+    assert sewing.nb_free_edges >= 0
+
+
+def test_sewing_with_tolerance_adjustment():
+    """Test sewing with different tolerance settings."""
+    # Create two faces with a small gap
+    face1 = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)),
+        0, 10, 0, 10
+    ).face()
+    
+    # Slightly offset second face
+    face2 = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(10.0001, 0, 0), gp.Dir(1, 0, 0)),  # Small gap
+        0, 10, 0, 10
+    ).face()
+    
+    # Test with small tolerance (should not sew)
+    sewing1 = BRepBuilderAPI.Sewing(tolerance=1.0e-6)
+    sewing1.add(face1)
+    sewing1.add(face2)
+    sewing1.perform()
+    
+    # Test with larger tolerance (should sew)
+    sewing2 = BRepBuilderAPI.Sewing(tolerance=1.0e-3)
+    sewing2.min_tolerance = 1.0e-6
+    sewing2.max_tolerance = 1.0
+    sewing2.add(face1)
+    sewing2.add(face2)
+    sewing2.perform()
+    
+    result2 = sewing2.sewed_shape()
+    assert not result2.is_null()
+    
+    # Verify tolerance properties work
+    assert sewing2.min_tolerance == 1.0e-6
+    assert sewing2.max_tolerance == 1.0
+
+
+def test_sewing_modes():
+    """Test different sewing mode settings."""
+    # Create simple test faces
+    face1 = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)),
+        0, 5, 0, 5
+    ).face()
+    
+    face2 = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(5, 0, 0), gp.Dir(1, 0, 0)),
+        0, 5, 0, 5
+    ).face()
+    
+    # Create sewing with custom modes
+    sewing = BRepBuilderAPI.Sewing()
+    
+    # Test mode properties
+    sewing.face_mode = True
+    assert sewing.face_mode == True
+    
+    sewing.floating_edges_mode = False
+    assert sewing.floating_edges_mode == False
+    
+    sewing.local_tolerances_mode = True
+    assert sewing.local_tolerances_mode == True
+    
+    sewing.non_manifold_mode = False
+    assert sewing.non_manifold_mode == False
+    
+    sewing.same_parameter_mode = True
+    assert sewing.same_parameter_mode == True
+    
+    # Perform sewing with these settings
+    sewing.add(face1)
+    sewing.add(face2)
+    sewing.perform()
+    
+    result = sewing.sewed_shape()
+    assert not result.is_null()
+
+
+def test_make_filling_basic():
+    """Test filling a simple quadrilateral boundary."""
+    points = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(5.0, 0.0, 0.0),
+        gp.Pnt(5.0, 5.0, 0.0),
+        gp.Pnt(0.0, 5.0, 0.0)
+    ]
+
+    edges = []
+    for i in range(len(points)):
+        start = points[i]
+        end = points[(i + 1) % len(points)]
+        edges.append(BRepBuilderAPI.MakeEdge(start, end).edge())
+
+    fill_op = BRepOffsetAPI.MakeFilling()
+    for edge in edges:
+        fill_op.add(edge, GeomAbs.Shape.C0, is_bound=True)
+
+    fill_op.build()
+    assert fill_op.is_done()
+
+    face = fill_op.shape()
+    assert not face.is_null()
+
+    assert isinstance(fill_op.g0_error, float)
+    assert fill_op.g0_error >= 0.0

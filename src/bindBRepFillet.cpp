@@ -50,17 +50,6 @@ void bind_brep_fillet(py::module_ &m)
             "Computation failed because of a twisted surface")
         .export_values();
 
-    // // GeomAbs_Shape enum (if not already bound)
-    // py::enum_<GeomAbs_Shape>(m, "GeomAbsShape")
-    //     .value("C0", GeomAbs_Shape::GeomAbs_C0, "C0 continuity")
-    //     .value("G1", GeomAbs_Shape::GeomAbs_G1, "G1 continuity")
-    //     .value("C1", GeomAbs_Shape::GeomAbs_C1, "C1 continuity")
-    //     .value("G2", GeomAbs_Shape::GeomAbs_G2, "G2 continuity")
-    //     .value("C2", GeomAbs_Shape::GeomAbs_C2, "C2 continuity")
-    //     .value("C3", GeomAbs_Shape::GeomAbs_C3, "C3 continuity")
-    //     .value("CN", GeomAbs_Shape::GeomAbs_CN, "CN continuity")
-    //     .export_values();
-
     // ChFi2d_ConstructionError enum
     py::enum_<ChFi2d_ConstructionError>(m, "ConstructionError")
         .value("IsDone", ChFi2d_ConstructionError::ChFi2d_IsDone, "Construction successful")

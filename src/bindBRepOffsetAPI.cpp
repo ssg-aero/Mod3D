@@ -13,6 +13,7 @@
 #include <BRepFill_TypeOfContact.hxx>
 #include <BRepBuilderAPI_PipeError.hxx>
 #include <BRepBuilderAPI_TransitionMode.hxx>
+#include <BRepOffsetAPI_MakeFilling.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Law_Function.hxx>
 #include <gp_Ax2.hxx>
@@ -91,6 +92,207 @@ void bind_brep_offset_api(py::module_ &m)
         
         .def_property_readonly("bottom", &BRepOffsetAPI_MakeEvolved::Bottom,
             "Returns the bottom face (only valid if is_solid=True in constructor)")
+    ;
+
+    py::class_<BRepOffsetAPI_MakeFilling, BRepBuilderAPI_MakeShape>(m, "MakeFilling",
+        "N-Side Filling surface construction.\n\n"
+        "This algorithm builds a face from:\n"
+        "- A set of edges defining the bounds of the face and some constraints\n"
+        "  the surface has to satisfy\n"
+        "- A set of edges and points defining constraints the support surface\n"
+        "  has to satisfy\n"
+        "- An optional initial surface to deform for satisfying the constraints\n"
+        "- A set of parameters to control the constraints\n\n"
+        "The support surface is computed by deformation of the initial surface\n"
+        "(or an automatically computed one) to satisfy the given constraints.\n\n"
+        "Constraint orders:\n"
+        "- GeomAbs_C0: Surface passes through the 3D representation\n"
+        "- GeomAbs_G1: Surface passes through and respects tangency\n"
+        "- GeomAbs_G2: Surface passes through and respects tangency and curvature\n\n"
+        "Typical usage:\n"
+        "  filling = BRepOffsetAPI.MakeFilling()\n"
+        "  filling.add(edge1, GeomAbs.C0)  # Boundary constraint\n"
+        "  filling.add(edge2, face, GeomAbs.G1)  # Tangent to face\n"
+        "  filling.add(point)  # Point constraint\n"
+        "  filling.build()\n"
+        "  result = filling.shape()")
+        
+        // Constructor
+        .def(py::init<const Standard_Integer, const Standard_Integer, const Standard_Integer,
+                      const Standard_Boolean, const Standard_Real, const Standard_Real,
+                      const Standard_Real, const Standard_Real, const Standard_Integer,
+                      const Standard_Integer>(),
+            py::arg("degree") = 3,
+            py::arg("nb_pts_on_cur") = 15,
+            py::arg("nb_iter") = 2,
+            py::arg("anisotropie") = false,
+            py::arg("tol_2d") = 0.00001,
+            py::arg("tol_3d") = 0.0001,
+            py::arg("tol_ang") = 0.01,
+            py::arg("tol_curv") = 0.1,
+            py::arg("max_deg") = 8,
+            py::arg("max_segments") = 9,
+            "Constructs a wire filling object.\n\n"
+            "Parameters:\n"
+            "  degree: Order of energy criterion to minimize (default: 3)\n"
+            "          Recommended: i+2 where i is max order of constraints\n"
+            "  nb_pts_on_cur: Average number of points for edge discretization (default: 15)\n"
+            "  nb_iter: Maximum iterations, discretization points increase each iteration (default: 2)\n"
+            "  anisotropie: Better performance when U/V length ratio is very different (default: False)\n"
+            "  tol_2d: 2D tolerance (default: 1e-5)\n"
+            "  tol_3d: Max distance between surface and constraints (default: 1e-4)\n"
+            "  tol_ang: Max angle between surface normal and constraints (default: 0.01)\n"
+            "  tol_curv: Max curvature difference between surface and constraints (default: 0.1)\n"
+            "  max_deg: Highest polynomial degree for filling surface (default: 8)\n"
+            "  max_segments: Greatest number of segments (default: 9)")
+        
+        // Parameter setting methods
+        .def("set_constr_param", &BRepOffsetAPI_MakeFilling::SetConstrParam,
+            py::arg("tol_2d") = 0.00001,
+            py::arg("tol_3d") = 0.0001,
+            py::arg("tol_ang") = 0.01,
+            py::arg("tol_curv") = 0.1,
+            "Sets tolerance values used to control constraints.\n\n"
+            "Parameters:\n"
+            "  tol_2d: 2D tolerance\n"
+            "  tol_3d: Max distance between surface and constraints\n"
+            "  tol_ang: Max angle between surface normal and constraints\n"
+            "  tol_curv: Max curvature difference between surface and constraints")
+        
+        .def("set_resol_param", &BRepOffsetAPI_MakeFilling::SetResolParam,
+            py::arg("degree") = 3,
+            py::arg("nb_pts_on_cur") = 15,
+            py::arg("nb_iter") = 2,
+            py::arg("anisotropie") = false,
+            "Sets parameters used for resolution.\n\n"
+            "Parameters:\n"
+            "  degree: Order of energy criterion to minimize\n"
+            "  nb_pts_on_cur: Average number of points for edge discretization\n"
+            "  nb_iter: Maximum number of iterations\n"
+            "  anisotropie: Better performance for surfaces with extreme U/V ratio")
+        
+        .def("set_approx_param", &BRepOffsetAPI_MakeFilling::SetApproxParam,
+            py::arg("max_deg") = 8,
+            py::arg("max_segments") = 9,
+            "Sets parameters used to approximate the filling surface.\n\n"
+            "Parameters:\n"
+            "  max_deg: Highest polynomial degree for the surface\n"
+            "  max_segments: Greatest number of segments")
+        
+        // Load initial surface
+        .def("load_init_surface", &BRepOffsetAPI_MakeFilling::LoadInitSurface,
+            py::arg("surf"),
+            "Loads an initial surface to begin construction.\n\n"
+            "This is useful if the resulting surface is likely to be complex.\n"
+            "The support surface is computed by deforming this surface to\n"
+            "satisfy the given constraints.\n\n"
+            "Important: The initial surface must have orthogonal local coordinates,\n"
+            "i.e., partial derivatives dS/du and dS/dv must be orthogonal at each point.\n"
+            "If this condition is not met, distortions may occur.\n\n"
+            "If no initial surface is given, the algorithm computes one automatically.")
+        
+        // Add constraints - edge only
+        .def("add",
+            py::overload_cast<const TopoDS_Edge&, const GeomAbs_Shape, const Standard_Boolean>(
+                &BRepOffsetAPI_MakeFilling::Add),
+            py::arg("edge"), py::arg("order"), py::arg("is_bound") = true,
+            "Adds an edge constraint which also defines a boundary edge.\n\n"
+            "Parameters:\n"
+            "  edge: The constraint edge\n"
+            "  order: Continuity order (C0, G1, or G2)\n"
+            "  is_bound: True if edge is a boundary of the face (default: True)\n\n"
+            "Returns the index of the constraint.\n\n"
+            "Raises ConstructionError if order is G1/G2 and edge has no face representation")
+        
+        // Add constraints - edge with support face
+        .def("add",
+            py::overload_cast<const TopoDS_Edge&, const TopoDS_Face&, const GeomAbs_Shape,
+                              const Standard_Boolean>(&BRepOffsetAPI_MakeFilling::Add),
+            py::arg("edge"), py::arg("support"), py::arg("order"), py::arg("is_bound") = true,
+            "Adds an edge constraint with a support face for tangency/curvature.\n\n"
+            "Parameters:\n"
+            "  edge: The constraint edge\n"
+            "  support: Face to respect tangency/curvature with\n"
+            "  order: Continuity order (C0, G1, or G2)\n"
+            "  is_bound: True if edge is a boundary of the face (default: True)\n\n"
+            "Returns the index of the constraint.\n\n"
+            "Raises ConstructionError if edge has no 2D representation on the support face")
+        
+        // Add constraints - free face constraint
+        .def("add",
+            py::overload_cast<const TopoDS_Face&, const GeomAbs_Shape>(
+                &BRepOffsetAPI_MakeFilling::Add),
+            py::arg("support"), py::arg("order"),
+            "Adds a free constraint on a face.\n\n"
+            "The corresponding edge is automatically computed. It is always a bound.\n\n"
+            "Parameters:\n"
+            "  support: The support face\n"
+            "  order: Continuity order\n\n"
+            "Returns the index of the constraint")
+        
+        // Add constraints - point
+        .def("add",
+            py::overload_cast<const gp_Pnt&>(&BRepOffsetAPI_MakeFilling::Add),
+            py::arg("point"),
+            "Adds a punctual constraint.\n\n"
+            "The surface will pass through this point.\n\n"
+            "Returns the index of the constraint")
+        
+        // Add constraints - point on face
+        .def("add",
+            py::overload_cast<const Standard_Real, const Standard_Real, const TopoDS_Face&,
+                              const GeomAbs_Shape>(&BRepOffsetAPI_MakeFilling::Add),
+            py::arg("u"), py::arg("v"), py::arg("support"), py::arg("order"),
+            "Adds a punctual constraint at parametric coordinates on a face.\n\n"
+            "Parameters:\n"
+            "  u, v: Parametric coordinates on the support face\n"
+            "  support: The support face\n"
+            "  order: Continuity order at this point\n\n"
+            "Returns the index of the constraint")
+        
+        // Build
+        .def("build",
+            [](BRepOffsetAPI_MakeFilling& self) {
+                self.Build();
+            },
+            "Builds the resulting filling face.\n\n"
+            "Computes the surface that satisfies all constraints and builds the face.\n"
+            "Use is_done() to check success and shape() to retrieve the result")
+        
+        // Generated shapes
+        .def("generated", &BRepOffsetAPI_MakeFilling::Generated,
+            py::arg("shape"),
+            py::return_value_policy::reference_internal,
+            "Returns the list of shapes generated from the given shape")
+        
+        // Error properties (global)
+        .def_property_readonly("g0_error",
+            py::overload_cast<>(&BRepOffsetAPI_MakeFilling::G0Error, py::const_),
+            "Maximum distance between the result and the constraints")
+        
+        .def_property_readonly("g1_error",
+            py::overload_cast<>(&BRepOffsetAPI_MakeFilling::G1Error, py::const_),
+            "Maximum angle (radians) between result normal and constraints")
+        
+        .def_property_readonly("g2_error",
+            py::overload_cast<>(&BRepOffsetAPI_MakeFilling::G2Error, py::const_),
+            "Maximum curvature difference between result and constraints")
+        
+        // Error methods (per constraint index)
+        .def("g0_error_at", 
+            py::overload_cast<const Standard_Integer>(&BRepOffsetAPI_MakeFilling::G0Error),
+            py::arg("index"),
+            "Returns maximum distance for constraint at given index")
+        
+        .def("g1_error_at",
+            py::overload_cast<const Standard_Integer>(&BRepOffsetAPI_MakeFilling::G1Error),
+            py::arg("index"),
+            "Returns maximum angle for constraint at given index")
+        
+        .def("g2_error_at",
+            py::overload_cast<const Standard_Integer>(&BRepOffsetAPI_MakeFilling::G2Error),
+            py::arg("index"),
+            "Returns maximum curvature difference for constraint at given index")
     ;
 
 }

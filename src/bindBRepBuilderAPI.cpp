@@ -28,6 +28,8 @@
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakeSolid.hxx>
 #include <BRepBuilderAPI_MakeShell.hxx>
+#include <BRepTools_ReShape.hxx>
+#include <BRepBuilderAPI_Sewing.hxx>
 
 #include <TopoDS_CompSolid.hxx>
 #include <TopoDS_Solid.hxx>
@@ -505,6 +507,318 @@ void bind_brepbuilder_api(py::module_ &m)
         
         // Result
         .def("shell", &BRepBuilderAPI_MakeShell::Shell, py::return_value_policy::reference_internal)
+    ;
+
+    py::class_<BRepTools_ReShape, opencascade::handle<BRepTools_ReShape>>(m, "ReShape",
+        "Rebuilds a shape by making pre-defined substitutions on some of its components.\n\n"
+        "In a first phase, it records requests to replace or remove some individual shapes.\n"
+        "For each shape, the last given request is recorded.\n\n"
+        "Then, these requests may be applied to any shape which may contain one or more\n"
+        "of these individual shapes.\n\n"
+        "Typical usage:\n"
+        "  reshape = BRepTools.ReShape()\n"
+        "  reshape.replace(old_edge, new_edge)\n"
+        "  reshape.remove(face_to_remove)\n"
+        "  result = reshape.apply(original_shape)")
+        
+        // Constructor
+        .def(py::init<>(),
+            "Creates an empty ReShape object")
+        
+        // Clear
+        .def("clear", &BRepTools_ReShape::Clear,
+            "Clears all substitution requests")
+        
+        // Replace and Remove
+        .def("replace", &BRepTools_ReShape::Replace,
+            py::arg("shape"), py::arg("new_shape"),
+            "Sets a request to replace a shape by a new one.\n\n"
+            "The orientation of the replacing shape respects that of the original one")
+        
+        .def("remove", &BRepTools_ReShape::Remove,
+            py::arg("shape"),
+            "Sets a request to remove a shape whatever the orientation")
+        
+        // Query
+        .def("is_recorded", &BRepTools_ReShape::IsRecorded,
+            py::arg("shape"),
+            "Tells if a shape is recorded for Replace/Remove")
+        
+        .def("value", &BRepTools_ReShape::Value,
+            py::arg("shape"),
+            "Returns the new value for an individual shape.\n\n"
+            "If not recorded, returns the original shape itself.\n"
+            "If to be removed, returns a null shape.\n"
+            "Else, returns the replacing item")
+        
+        .def("status", 
+            [](BRepTools_ReShape& self, const TopoDS_Shape& shape, const Standard_Boolean last) {
+                TopoDS_Shape newsh;
+                Standard_Integer status = self.Status(shape, newsh, last);
+                return py::make_tuple(status, newsh);
+            },
+            py::arg("shape"), py::arg("last") = false,
+            "Returns a complete substitution status for a shape.\n\n"
+            "Returns: (status, new_shape) where:\n"
+            "  status = 0:  not recorded, new_shape = original shape\n"
+            "  status < 0:  to be removed, new_shape is null\n"
+            "  status > 0:  to be replaced, new_shape is the replacement\n\n"
+            "Parameters:\n"
+            "  last: If False, returns status recorded directly for the shape.\n"
+            "        If True and status > 0, recursively searches for last status")
+        
+        // Apply
+        .def("apply", &BRepTools_ReShape::Apply,
+            py::arg("shape"), py::arg("until") = TopAbs_SHAPE,
+            "Applies the substitution requests to a shape.\n\n"
+            "The 'until' parameter gives the level of type until which requests\n"
+            "are taken into account. For subshapes of the type 'until', no rebuild\n"
+            "and further exploring are done.\n\n"
+            "Note: Each subshape can be replaced by a shape of the same type or by\n"
+            "a shape containing only shapes of that type. If incompatible shape type\n"
+            "is encountered, it is ignored and flag FAIL1 is set in status")
+        
+        // Properties
+        .def_property("mode_consider_location",
+            [](const BRepTools_ReShape& self) -> Standard_Boolean {
+                return const_cast<BRepTools_ReShape&>(self).ModeConsiderLocation();
+            },
+            [](BRepTools_ReShape& self, Standard_Boolean value) {
+                self.ModeConsiderLocation() = value;
+            },
+            "Gets/sets whether location of shape is taken into account during replacing shapes")
+        
+        // Vertex operations
+        .def("copy_vertex",
+            py::overload_cast<const TopoDS_Vertex&, const Standard_Real>(
+                &BRepTools_ReShape::CopyVertex),
+            py::arg("vertex"), py::arg("tolerance") = -1.0,
+            "Returns modified copy of vertex if original one is not recorded,\n"
+            "or returns modified original vertex otherwise.\n\n"
+            "Parameters:\n"
+            "  tolerance: New tolerance of vertex (optional, -1.0 keeps original)")
+        
+        .def("copy_vertex",
+            py::overload_cast<const TopoDS_Vertex&, const gp_Pnt&, const Standard_Real>(
+                &BRepTools_ReShape::CopyVertex),
+            py::arg("vertex"), py::arg("new_position"), py::arg("tolerance"),
+            "Returns modified copy of vertex if original one is not recorded,\n"
+            "or returns modified original vertex otherwise.\n\n"
+            "Parameters:\n"
+            "  new_position: New position for vertex copy\n"
+            "  tolerance: New tolerance of vertex")
+        
+        // Shape status
+        .def("is_new_shape", &BRepTools_ReShape::IsNewShape,
+            py::arg("shape"),
+            "Checks if shape has been recorded by reshaper as a value")
+        
+        // History
+        .def("history", &BRepTools_ReShape::History,
+            "Returns the history of the substituted shapes")
+    ;
+
+    py::class_<BRepBuilderAPI_Sewing, opencascade::handle<BRepBuilderAPI_Sewing>>(m, "Sewing",
+        "Provides methods to identify possible contiguous boundaries and\n"
+        "assemble contiguous shapes into one shape.\n\n"
+        "Only manifold shapes will be found. Sewing will not be done in case\n"
+        "of multiple edges.\n\n"
+        "Typical usage:\n"
+        "  sewing = BRepBuilderAPI.Sewing(tolerance=1e-6)\n"
+        "  sewing.add(shape1)\n"
+        "  sewing.add(shape2)\n"
+        "  sewing.perform()\n"
+        "  result = sewing.sewed_shape()")
+        
+        // Constructors
+        .def(py::init<const Standard_Real, const Standard_Boolean, const Standard_Boolean, const Standard_Boolean, const Standard_Boolean>(),
+            py::arg("tolerance") = 1.0e-06,
+            py::arg("option1") = true,
+            py::arg("option2") = true,
+            py::arg("option3") = true,
+            py::arg("option4") = false,
+            "Creates a sewing object.\n\n"
+            "Parameters:\n"
+            "  tolerance: Tolerance of connexity\n"
+            "  option1: Option for sewing (if False only control)\n"
+            "  option2: Option for analysis of degenerated shapes\n"
+            "  option3: Option for cutting of free edges\n"
+            "  option4: Option for non manifold processing")
+        
+        // Initialization
+        .def("init", &BRepBuilderAPI_Sewing::Init,
+            py::arg("tolerance") = 1.0e-06,
+            py::arg("option1") = true,
+            py::arg("option2") = true,
+            py::arg("option3") = true,
+            py::arg("option4") = false,
+            "Initialize the parameters if necessary")
+        
+        .def("load", &BRepBuilderAPI_Sewing::Load,
+            py::arg("shape"),
+            "Loads the context shape")
+        
+        // Add shapes
+        .def("add", &BRepBuilderAPI_Sewing::Add,
+            py::arg("shape"),
+            "Defines the shapes to be sewed or controlled")
+        
+        // Perform sewing
+        .def("perform", 
+            [](BRepBuilderAPI_Sewing& self) {
+                self.Perform();
+            },
+            "Computing - performs the sewing operation")
+        
+        // Results
+        .def("sewed_shape", &BRepBuilderAPI_Sewing::SewedShape,
+            py::return_value_policy::reference_internal,
+            "Gives the sewed shape.\n\n"
+            "Returns a null shape if nothing constructed.\n"
+            "May be a face, a shell, a solid or a compound")
+        
+        // Context property
+        .def_property("context",
+            &BRepBuilderAPI_Sewing::GetContext,
+            &BRepBuilderAPI_Sewing::SetContext,
+            "Gets/sets the context")
+        
+        // Free edges
+        .def_property_readonly("nb_free_edges", &BRepBuilderAPI_Sewing::NbFreeEdges,
+            "Gives the number of free edges (edge shared by one face)")
+        
+        .def("free_edge", &BRepBuilderAPI_Sewing::FreeEdge,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives each free edge")
+        
+        // Multiple edges
+        .def_property_readonly("nb_multiple_edges", &BRepBuilderAPI_Sewing::NbMultipleEdges,
+            "Gives the number of multiple edges (edge shared by more than two faces)")
+        
+        .def("multiple_edge", &BRepBuilderAPI_Sewing::MultipleEdge,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives each multiple edge")
+        
+        // Contiguous edges
+        .def_property_readonly("nb_contigous_edges", &BRepBuilderAPI_Sewing::NbContigousEdges,
+            "Gives the number of contiguous edges (edge shared by two faces)")
+        
+        .def("contigous_edge", &BRepBuilderAPI_Sewing::ContigousEdge,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives each contiguous edge")
+        
+        .def("contigous_edge_couple", &BRepBuilderAPI_Sewing::ContigousEdgeCouple,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives the sections (edge) belonging to a contiguous edge")
+        
+        // Section queries
+        .def("is_section_bound", &BRepBuilderAPI_Sewing::IsSectionBound,
+            py::arg("section"),
+            "Indicates if a section is bound (before use section_to_boundary)")
+        
+        .def("section_to_boundary", &BRepBuilderAPI_Sewing::SectionToBoundary,
+            py::arg("section"),
+            py::return_value_policy::reference_internal,
+            "Gives the original edge (free boundary) which becomes the section.\n\n"
+            "Remember that sections constitute common edges.\n"
+            "This information is important for control because with\n"
+            "original edge we can find the surface to which the section is attached")
+        
+        // Degenerated shapes
+        .def_property_readonly("nb_degenerated_shapes", &BRepBuilderAPI_Sewing::NbDegeneratedShapes,
+            "Gives the number of degenerated shapes")
+        
+        .def("degenerated_shape", &BRepBuilderAPI_Sewing::DegeneratedShape,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives each degenerated shape")
+        
+        .def("is_degenerated", &BRepBuilderAPI_Sewing::IsDegenerated,
+            py::arg("shape"),
+            "Indicates if an input shape is degenerated")
+        
+        // Modified shapes
+        .def("is_modified", &BRepBuilderAPI_Sewing::IsModified,
+            py::arg("shape"),
+            "Indicates if an input shape has been modified")
+        
+        .def("modified", &BRepBuilderAPI_Sewing::Modified,
+            py::arg("shape"),
+            py::return_value_policy::reference_internal,
+            "Gives a modified shape")
+        
+        .def("is_modified_subshape", &BRepBuilderAPI_Sewing::IsModifiedSubShape,
+            py::arg("shape"),
+            "Indicates if an input subshape has been modified")
+        
+        .def("modified_subshape", &BRepBuilderAPI_Sewing::ModifiedSubShape,
+            py::arg("shape"),
+            "Gives a modified subshape")
+        
+        // Deleted faces
+        .def_property_readonly("nb_deleted_faces", &BRepBuilderAPI_Sewing::NbDeletedFaces,
+            "Gives the number of deleted faces (faces smaller than tolerance)")
+        
+        .def("deleted_face", &BRepBuilderAPI_Sewing::DeletedFace,
+            py::arg("index"),
+            py::return_value_policy::reference_internal,
+            "Gives each deleted face")
+        
+        .def("which_face", &BRepBuilderAPI_Sewing::WhichFace,
+            py::arg("edge"), py::arg("index") = 1,
+            "Gives a modified shape")
+        
+        // Properties - same parameter mode
+        .def_property("same_parameter_mode",
+            &BRepBuilderAPI_Sewing::SameParameterMode,
+            &BRepBuilderAPI_Sewing::SetSameParameterMode,
+            "Gets/sets same parameter mode")
+        
+        // Properties - tolerances
+        .def_property("tolerance",
+            &BRepBuilderAPI_Sewing::Tolerance,
+            &BRepBuilderAPI_Sewing::SetTolerance,
+            "Gets/sets tolerance")
+        
+        .def_property("min_tolerance",
+            &BRepBuilderAPI_Sewing::MinTolerance,
+            &BRepBuilderAPI_Sewing::SetMinTolerance,
+            "Gets/sets min tolerance")
+        
+        .def_property("max_tolerance",
+            &BRepBuilderAPI_Sewing::MaxTolerance,
+            &BRepBuilderAPI_Sewing::SetMaxTolerance,
+            "Gets/sets max tolerance")
+        
+        // Properties - modes
+        .def_property("face_mode",
+            &BRepBuilderAPI_Sewing::FaceMode,
+            &BRepBuilderAPI_Sewing::SetFaceMode,
+            "Gets/sets mode for sewing faces (default: True)")
+        
+        .def_property("floating_edges_mode",
+            &BRepBuilderAPI_Sewing::FloatingEdgesMode,
+            &BRepBuilderAPI_Sewing::SetFloatingEdgesMode,
+            "Gets/sets mode for sewing floating edges (default: False)")
+        
+        .def_property("local_tolerances_mode",
+            &BRepBuilderAPI_Sewing::LocalTolerancesMode,
+            &BRepBuilderAPI_Sewing::SetLocalTolerancesMode,
+            "Gets/sets mode for accounting of local tolerances.\n\n"
+            "During merging: WorkTolerance = tolerance + tolEdge1 + tolEdge2")
+        
+        .def_property("non_manifold_mode",
+            &BRepBuilderAPI_Sewing::NonManifoldMode,
+            &BRepBuilderAPI_Sewing::SetNonManifoldMode,
+            "Gets/sets mode for non-manifold sewing")
+        
+        // Debug
+        .def("dump", &BRepBuilderAPI_Sewing::Dump,
+            "Print the information")
     ;
 
      bind_brep_prim_api(m);
