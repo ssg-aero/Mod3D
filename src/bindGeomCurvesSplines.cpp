@@ -1,3 +1,4 @@
+#include <TColgp_Array1OfPnt.hxx>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
@@ -14,9 +15,15 @@
 
 #include "array_utils.hpp"
 
+#include <gbs/bscurve.h>
+
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
+
+// Forward declarations of helper functions from bindGeomCurves.cpp
+extern opencascade::handle<Geom_BSplineCurve> gbs_bscurve_to_occt(const gbs::BSCurve<double,3>& crv);
+extern opencascade::handle<Geom_BSplineCurve> gbs_bscurve_rational_to_occt(const gbs::BSCurveRational<double,3>& crv);
 
 void bind_geom_curves_splines(py::module_ &m)
 {
@@ -60,7 +67,17 @@ void bind_geom_curves_splines(py::module_ &m)
         }), py::arg("poles"), py::arg("weights"), py::arg("knots"), py::arg("multiplicities"), 
             py::arg("degree"), py::arg("periodic") = false, py::arg("check_rational") = true,
             "Create a rational B-spline curve. All arrays can be lists or numpy arrays.")
-        
+        .def(py::init([](const gbs::BSCurve<double,3>& crv) {
+            return gbs_bscurve_to_occt(crv);
+        }), py::arg("bscurve"),
+            "Create a B-spline curve from a gbs::BSCurve object.")
+
+        .def(py::init([](const gbs::BSCurveRational<double,3>& crv) {
+            return gbs_bscurve_rational_to_occt(crv);
+        }), py::arg("bscurve_rational"),
+            "Create a rational B-spline curve from a gbs::BSCurveRational object.")
+
+
         // Modification methods
         .def("increase_degree", &Geom_BSplineCurve::IncreaseDegree, py::arg("degree"),
              "Increases the degree of this BSpline curve to Degree")
@@ -210,6 +227,10 @@ void bind_geom_curves_splines(py::module_ &m)
         // Comparison
         .def("is_equal", &Geom_BSplineCurve::IsEqual, py::arg("other"), py::arg("precision"))
     ;
+
+    py::implicitly_convertible<gbs::BSCurve<double, 3>, Geom_BSplineCurve>();
+    py::implicitly_convertible<gbs::BSCurveRational<double, 3>, Geom_BSplineCurve>();
+
 
     py::class_<Geom_BezierCurve, opencascade::handle<Geom_BezierCurve>, Geom_BoundedCurve>(m, "BezierCurve")
         // Constructors
