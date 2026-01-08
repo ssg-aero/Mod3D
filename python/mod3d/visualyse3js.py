@@ -1,5 +1,5 @@
 import numpy as np
-from mod3d import Render
+from mod3d import Render, TopoDS, Geom
 from pythreejs import (
     BufferGeometry, BufferAttribute, Mesh, Scene, 
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
@@ -8,7 +8,7 @@ from pythreejs import (
 )
 from ipywidgets import Box, Layout
 
-def faces_mesh(faces_data):
+def faces_mesh(faces_data, color='#2194ce', material = None):
     """
     Convert OCCT face tessellation data to a pythreejs mesh.
     
@@ -16,6 +16,10 @@ def faces_mesh(faces_data):
     -----------
     faces_data : list
         List of tuples (triangles, vertices, normals, uvs) for each face
+    color : str
+        Color for the mesh material
+    material : pythreejs.Material or None
+        If provided, use this material instead of creating a new one.
         
     Returns:
     --------
@@ -60,42 +64,45 @@ def faces_mesh(faces_data):
     
     # Create material with polygon offset to prevent z-fighting with edges
     # polygonOffset pushes the faces back slightly in depth buffer
-    material = MeshPhongMaterial(
-        color='#2194ce',
-        shininess=100,
-        side='DoubleSide',
-        polygonOffset=True,        # Enable polygon offset
-        polygonOffsetFactor=1,     # Offset factor
-        polygonOffsetUnits=1       # Offset units
-    )
+    # material = MeshPhongMaterial(
+    #     color=color,
+    #     shininess=100,
+    #     side='DoubleSide',
+    #     polygonOffset=True,        # Enable polygon offset
+    #     polygonOffsetFactor=1,     # Offset factor
+    #     polygonOffsetUnits=1       # Offset units
+    # )
 
-    material = MeshBasicMaterial(
-        color='#2194ce',
-        side='DoubleSide',
-        polygonOffset=True,        # Enable polygon offset
-        polygonOffsetFactor=1,     # Offset factor
-        polygonOffsetUnits=1       # Offset units
-    )
+    # material = MeshBasicMaterial(
+    #     color=color,
+    #     side='DoubleSide',
+    #     polygonOffset=True,        # Enable polygon offset
+    #     polygonOffsetFactor=1,     # Offset factor
+    #     polygonOffsetUnits=1       # Offset units
+    # )
 
-    material = MeshPhysicalMaterial(
-        color='#049ef4',              # Bright blue color
-        metalness=0.1,                # Low metalness for non-metallic appearance (0-1)
-        roughness=1.0,                # Some roughness for realistic surface (0=mirror, 1=diffuse)
-        clearcoat=0.5,                # Clear coating layer on top (0-1)
-        clearcoatRoughness=0.1,       # Smooth clear coat
-        reflectivity=0.5,             # How reflective the surface is (0-1)
-        ior=1.5,                      # Index of refraction (glass=1.5, diamond=2.4)
-        side='DoubleSide',            # Render both sides of faces
-        polygonOffset=True,           # Enable polygon offset to prevent z-fighting with edges
-        polygonOffsetFactor=1,        # Offset factor
-        polygonOffsetUnits=1          # Offset units
-    )
+    if material is None:
+
+        material = MeshPhysicalMaterial(
+            color=color,
+            metalness=0.1,                # Low metalness for non-metallic appearance (0-1)
+            roughness=1.0,                # Some roughness for realistic surface (0=mirror, 1=diffuse)
+            clearcoat=0.5,                # Clear coating layer on top (0-1)
+            clearcoatRoughness=0.1,       # Smooth clear coat
+            reflectivity=0.5,             # How reflective the surface is (0-1)
+            ior=1.5,                      # Index of refraction (glass=1.5, diamond=2.4)
+            side='DoubleSide',            # Render both sides of faces
+            polygonOffset=True,           # Enable polygon offset to prevent z-fighting with edges
+            polygonOffsetFactor=1,        # Offset factor
+            polygonOffsetUnits=1          # Offset units
+        )
+
     
     mesh = Mesh(geometry=geometry, material=material)
     mesh.renderOrder = 0  # Render faces first
     return mesh
 
-def edges_mesh(edges_data):
+def edges_mesh(edges_data, color='#000000', linewidth=2):
     """
     Convert OCCT edge tessellation data to pythreejs lines.
     
@@ -103,7 +110,7 @@ def edges_mesh(edges_data):
     -----------
     edges_data : list
         List of tuples (indices, vertices) for each edge
-        
+    color : str
     Returns:
     --------
     edge_lines : list or None
@@ -114,7 +121,7 @@ def edges_mesh(edges_data):
     
     # Create separate Line object for each edge
     edge_lines = []
-    material = LineBasicMaterial(linewidth=5, color='#000000')
+    material = LineBasicMaterial(linewidth=linewidth, color=color)
     
     for _, vertices in edges_data:
         # The vertices are already in the correct order for the polyline
@@ -162,12 +169,34 @@ def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
     - RenderOrder ensures edges appear on top of faces
     """
     # Extract tessellation data
-    faces_data, edges_data = Render.extract_tessellation(shape, linear_deflection, **kwargs)
-    
-    mesh_face = faces_mesh(faces_data)
-    mesh_edges = edges_mesh(edges_data)
+    if(isinstance(shape, TopoDS.Shape)):
+        faces_data, edges_data = Render.extract_tessellation(shape, linear_deflection, **kwargs)
+        
+        mesh_face = faces_mesh(faces_data)
+        mesh_edges = edges_mesh(edges_data)
 
-    return mesh_face, mesh_edges
+        return mesh_face, mesh_edges
+    
+    elif(isinstance(shape, Geom.Curve)):
+        edges_data = Render.extract_curve_tessellation(shape, linear_deflection, **kwargs)
+
+        mesh_edges = edges_mesh([edges_data], color='blue')
+
+        return None, mesh_edges
+    elif(isinstance(shape, list)):
+        mesh_face = []
+        mesh_edges = []
+        for subshape in shape:
+            mf, me = occt_to_threejs(subshape, linear_deflection)
+            if mf is not None:
+                mesh_face.append(mf)
+            if me is not None:
+                mesh_edges.extend(me)
+
+        return mesh_face, mesh_edges
+
+    else:
+        raise TypeError("Unsupported shape type for rendering")
 
 class ShapeRenderer:
     """Simple renderer that can accumulate OCCT shapes and display them in one scene."""
@@ -179,9 +208,9 @@ class ShapeRenderer:
         self.height = height
         self._models = []
 
-    def add_shape(self, shape):
+    def add_shape(self, shape, color=None):
         """Queue an OCCT shape for rendering."""
-        self._models.append(shape)
+        self._models.append((shape, color))
         return shape
 
     def clear(self):
@@ -190,12 +219,20 @@ class ShapeRenderer:
 
     def _prepare_meshes(self):
         meshes = []
-        for shape in self._models:
-            mesh_face, mesh_edges = occt_to_threejs(
-                shape,
-                linear_deflection=self.linear_deflection,
-                angle_deflection=self.angle_deflection,
-            )
+        for shape, color in self._models:
+            if color is not None:
+                mesh_face, mesh_edges = occt_to_threejs(
+                    shape,
+                    linear_deflection=self.linear_deflection,
+                    angle_deflection=self.angle_deflection,
+                    color=color
+                )
+            else:
+                mesh_face, mesh_edges = occt_to_threejs(
+                    shape,
+                    linear_deflection=self.linear_deflection,
+                    angle_deflection=self.angle_deflection,
+                )
             meshes.append((mesh_face, mesh_edges))
         return meshes
 

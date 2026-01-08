@@ -1,3 +1,8 @@
+#include <Adaptor2d_Curve2d.hxx>
+#include <Adaptor3d_Curve.hxx>
+#include <Geom_Curve.hxx>
+#include <Standard_Handle.hxx>
+#include <numeric>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -23,6 +28,20 @@ namespace py = pybind11;
 #include <gp_Trsf.hxx>
 #include <vector>
 #include <numbers>
+#include <GCPnts_UniformDeflection.hxx>
+#include <GeomAdaptor_Curve.hxx>
+
+using edge_tess_info = std::tuple<
+    py::array_t<int>, 
+    py::array_t<double>
+>;
+
+using face_tess_info = std::tuple<
+    py::array_t<int>, 
+    py::array_t<double>, 
+    std::optional<py::array_t<double>>, 
+    std::optional<py::array_t<double>>
+>;
 
 auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
                            bool is_relative = false,
@@ -41,12 +60,6 @@ auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
         faces.push_back(TopoDS::Face(exp.Current()));
     }
 
-    using face_tess_info = std::tuple<
-        py::array_t<int>, 
-        py::array_t<double>, 
-        std::optional<py::array_t<double>>, 
-        std::optional<py::array_t<double>>
-    >;
     std::vector<face_tess_info> result_faces(faces.size());
     std::transform(faces.begin(), faces.end(), std::begin(result_faces),
         [compute_normals](const TopoDS_Face& face)
@@ -134,10 +147,7 @@ auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
         return face_tess_info{ tri_array, vert_array, norm_array, uv_array };
     });
 
-    using edge_tess_info = std::tuple<
-        py::array_t<int>, 
-        py::array_t<double>
-    >;
+
     
     // Get unique edges only
     std::vector<TopoDS_Edge> edges;
@@ -243,7 +253,40 @@ auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
     return std::make_pair(result_faces, result_edges);
 }
 
+auto extract_curve_tessellation( const opencascade::handle<Geom_Curve>& curve, double linear_deflection)
+{
+    
+    GCPnts_UniformDeflection discretization(
+        GeomAdaptor_Curve(curve), linear_deflection,
+    );
+
+    edge_tess_info edge_info;
+    std::get<0>(edge_info) = py::array_t<int>(static_cast<int>(discretization.NbPoints()));
+    std::get<1>(edge_info) = py::array_t<double>({static_cast<int>(discretization.NbPoints()), 3});
+    
+    auto& indices = std::get<0>(edge_info);
+    auto& vertices = std::get<1>(edge_info);
+    auto index_ptr = indices.mutable_data();
+    auto vert_ptr = vertices.mutable_data();
+
+    const auto point_count = static_cast<int>(discretization.NbPoints());
+    std::iota(index_ptr, index_ptr + point_count, 0);
+
+    for (int i = 1; i <= point_count; ++i) {
+        gp_Pnt p = discretization.Value(i);
+        const auto idx = (i - 1) * 3;
+        vert_ptr[idx]     = p.X();
+        vert_ptr[idx + 1] = p.Y();
+        vert_ptr[idx + 2] = p.Z();
+    }
+
+    return edge_info;
+
+}
+
 namespace py = pybind11;
+
+PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 void bind_render(py::module_ &m)
 {
@@ -269,5 +312,18 @@ void bind_render(py::module_ &m)
         "    - vertex positions (numpy array of float, shape (n_vertices, 3))\n"
         "    - vertex normals (numpy array of float, shape (n_vertices, 3))\n"
         "    - vertex UV coordinates (numpy array of float, shape (n_vertices, 2))"
+    );
+
+    m.def("extract_curve_tessellation", &extract_curve_tessellation,
+        py::arg("curve"),
+        py::arg("linear_deflection"),
+        "Extracts tessellation data from the given curve.\n\n"
+        "Parameters:\n"
+        "  curve: The Geom_Curve to tessellate\n"
+        "  linear_deflection: The linear deflection value for meshing\n\n"
+        "Returns:\n"
+        "  A tuple containing:\n"
+        "    - vertex indices (numpy array of int, shape (n_points,))\n"
+        "    - vertex positions (numpy array of float, shape (n_points, 3))"
     );
 }
