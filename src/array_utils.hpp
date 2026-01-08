@@ -3,9 +3,12 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
-
 #include <TColStd_Array1OfReal.hxx>
+#include <TColStd_Array1OfInteger.hxx>
+#include <TColStd_Array2OfReal.hxx>
 #include <TColgp_Array1OfPnt.hxx>
+#include <TColgp_Array2OfPnt.hxx>
+#include <gp_Pnt.hxx>
 
 namespace {
     namespace py = pybind11;
@@ -94,6 +97,76 @@ namespace {
         ptr[i * 3 + 2] = pnt.Z();
     }
     return result;
+    }
+
+    // ========== 2D Array utilities for surfaces ==========
+
+    // Convert numpy array to 2D OCCT point array
+    inline TColgp_Array2OfPnt py_array_to_pnt_array2(const py::array_t<double>& arr) {
+        auto buf = arr.request();
+        if (buf.ndim != 3 || buf.shape[2] != 3) {
+            throw py::value_error("Expected numpy array of shape (nu, nv, 3)");
+        }
+        int nu = static_cast<int>(buf.shape[0]);
+        int nv = static_cast<int>(buf.shape[1]);
+        TColgp_Array2OfPnt result(1, nu, 1, nv);
+        double* ptr = static_cast<double*>(buf.ptr);
+        for (int i = 0; i < nu; ++i) {
+            for (int j = 0; j < nv; ++j) {
+                int idx = (i * nv + j) * 3;
+                result.SetValue(i + 1, j + 1, gp_Pnt(ptr[idx], ptr[idx + 1], ptr[idx + 2]));
+            }
+        }
+        return result;
+    }
+
+    // Convert 2D OCCT point array to numpy
+    inline py::array_t<double> pnt_array2_to_numpy(const TColgp_Array2OfPnt& array) {
+        int nu = array.ColLength();
+        int nv = array.RowLength();
+        py::array_t<double> result({nu, nv, 3});
+        auto buf = result.mutable_unchecked<3>();
+        for (int i = 1; i <= nu; ++i) {
+            for (int j = 1; j <= nv; ++j) {
+                const gp_Pnt& p = array(i, j);
+                buf(i - 1, j - 1, 0) = p.X();
+                buf(i - 1, j - 1, 1) = p.Y();
+                buf(i - 1, j - 1, 2) = p.Z();
+            }
+        }
+        return result;
+    }
+
+    // Convert numpy array to 2D OCCT real array
+    inline TColStd_Array2OfReal py_array_to_real_array2(const py::array_t<double>& arr) {
+        auto buf = arr.request();
+        if (buf.ndim != 2) {
+            throw py::value_error("Expected 2D numpy array");
+        }
+        int nu = static_cast<int>(buf.shape[0]);
+        int nv = static_cast<int>(buf.shape[1]);
+        TColStd_Array2OfReal result(1, nu, 1, nv);
+        double* ptr = static_cast<double*>(buf.ptr);
+        for (int i = 0; i < nu; ++i) {
+            for (int j = 0; j < nv; ++j) {
+                result.SetValue(i + 1, j + 1, ptr[i * nv + j]);
+            }
+        }
+        return result;
+    }
+
+    // Convert 2D OCCT real array to numpy
+    inline py::array_t<double> real_array2_to_numpy(const TColStd_Array2OfReal& array) {
+        int nu = array.ColLength();
+        int nv = array.RowLength();
+        py::array_t<double> result({nu, nv});
+        auto buf = result.mutable_unchecked<2>();
+        for (int i = 1; i <= nu; ++i) {
+            for (int j = 1; j <= nv; ++j) {
+                buf(i - 1, j - 1) = array(i, j);
+            }
+        }
+        return result;
     }
 
     template <typename ArrayType>

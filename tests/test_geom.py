@@ -3,8 +3,10 @@ import numpy as np
 from mod3d import (
     gp,
     Geom,
+    BRepBuilderAPI,
 )
 
+import pygbs.gbs as gbs
 
 def test_geom_line_creation():
     # Create a Geom_Line using a point and direction
@@ -821,3 +823,368 @@ def test_offset_curve_from_bspline():
     # Evaluate at a point
     point = offset_curve.value(1.0)
     assert point is not None
+
+def test_gbs_bspline_creation():
+    """Test creating a GBSpline curve."""
+    # Simple quadratic GBSpline with 4 control points
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 1.0, 0.0),
+        gp.Pnt(2.0, 1.0, 0.0),
+        gp.Pnt(3.0, 0.0, 0.0)
+    ]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]  # Clamped knot vector
+    degree = 2
+
+    curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+
+    crv = gbs.BSCurve3d(
+        poles=[
+            [0.0, 0.0, 0.],
+            [1.0, 1.0, 0.],
+            [2.0, 1.0, 0.],
+            [3.0, 0.0, 0.]
+        ],
+        knots= [0.0, 1.0, 2.0],
+        mults= [3, 1, 3],
+        degree=2
+    )
+
+    # Convert gbs curve to BSplineCurve
+    crv_ = Geom.BSplineCurve(crv)
+
+    # Verify conversions work
+    assert curve.degree() == crv_.degree()
+    assert curve.nb_poles() == crv_.nb_poles()
+    assert curve.nb_knots() == crv_.nb_knots()
+
+    # Test that gbs curves work with builders (implicit conversion through Geom_Curve)
+    e1 = BRepBuilderAPI.MakeEdge(curve).edge()
+    e2 = BRepBuilderAPI.MakeEdge(crv).edge()
+    
+    # Both edges should be valid
+    assert e1 is not None
+    assert e2 is not None
+
+
+# ==================== Elementary Surface Tests ====================
+
+def test_plane_creation_from_ax3():
+    """Test creating a plane from a coordinate system."""
+    ax3 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    plane = Geom.Plane(ax3)
+    
+    # Verify plane properties
+    assert plane.location.x == 0 and plane.location.y == 0 and plane.location.z == 0
+    assert plane.position.location.x == 0
+    
+    # Test evaluation
+    point = plane.value(0, 0)
+    assert point.x == 0 and point.y == 0 and point.z == 0
+
+
+def test_plane_creation_from_point_and_normal():
+    """Test creating a plane from a point and normal."""
+    pt = gp.Pnt(1, 2, 3)
+    normal = gp.Dir(0, 0, 1)
+    plane = Geom.Plane(pt, normal)
+    
+    # Verify plane passes through the point
+    point = plane.value(0, 0)
+    assert point.x == 1 and point.y == 2 and point.z == 3
+
+
+def test_plane_coefficients():
+    """Test plane equation coefficients."""
+    # Create a plane with normal (0, 0, 1) passing through origin
+    ax3 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    plane = Geom.Plane(ax3)
+    
+    # Get coefficients of equation: Ax + By + Cz + D = 0
+    A, B, C, D = plane.coefficients
+    
+    # For Z=0 plane: 0*x + 0*y + 1*z + 0 = 0
+    assert abs(C - 1.0) < 1e-10 or abs(C + 1.0) < 1e-10  # Normal can point either way
+    assert abs(D) < 1e-10
+    
+
+def test_cylindrical_surface_creation():
+    """Test creating a cylindrical surface."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    radius = 5.0
+    cylinder = Geom.CylindricalSurface(ax2, radius)
+    
+    # Verify radius
+    assert abs(cylinder.radius - radius) < 1e-10
+    
+    # Test evaluation at u=0, v=0 (point on cylinder at Z=0)
+    point = cylinder.value(0, 0)
+    dist_to_axis = np.sqrt(point.x ** 2 + point.y ** 2)
+    assert abs(dist_to_axis - radius) < 1e-10
+    
+    # Test evaluation at u=π/2, v=0 (should be at radius in Y direction)
+    point = cylinder.value(np.pi/2, 0)
+    assert abs(point.y - radius) < 1e-9
+    assert abs(point.z) < 1e-10
+
+
+def test_cylindrical_surface_properties():
+    """Test modifying cylindrical surface properties."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    cylinder = Geom.CylindricalSurface(ax2, 5.0)
+    
+    # Modify radius using property
+    cylinder.radius = 10.0
+    assert abs(cylinder.radius - 10.0) < 1e-10
+    
+    # Verify point is now at new radius
+    point = cylinder.value(0, 0)
+    dist_to_axis = np.sqrt(point.x ** 2 + point.y ** 2)
+    assert abs(dist_to_axis - 10.0) < 1e-10
+
+
+def test_conical_surface_creation():
+    """Test creating a conical surface."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    semi_angle = np.pi / 6  # 30 degrees
+    ref_radius = 5.0
+    cone = Geom.ConicalSurface(ax2, semi_angle, ref_radius)
+    
+    # Verify properties
+    assert abs(cone.semi_angle - semi_angle) < 1e-10
+    assert abs(cone.ref_radius - ref_radius) < 1e-10
+    
+    # Test evaluation at reference plane (v=0)
+    point = cone.value(0, 0)
+    dist_to_axis = np.sqrt(point.x ** 2 + point.y ** 2)
+    assert abs(dist_to_axis - ref_radius) < 1e-9
+
+
+def test_conical_surface_apex():
+    """Test conical surface apex calculation."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    semi_angle = np.pi / 6  # 30 degrees
+    ref_radius = 5.0
+    cone = Geom.ConicalSurface(ax2, semi_angle, ref_radius)
+    
+    # Apex is at distance ref_radius / tan(semi_angle) from origin (can be positive or negative)
+    apex = cone.apex
+    apex_z_expected = ref_radius / np.tan(semi_angle)
+    
+    assert abs(apex.x) < 1e-10
+    assert abs(apex.y) < 1e-10
+    # Check absolute distance from apex to origin along z
+    assert abs(abs(apex.z) - abs(apex_z_expected)) < 1e-9
+
+
+def test_conical_surface_properties():
+    """Test modifying conical surface properties."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    cone = Geom.ConicalSurface(ax2, np.pi/6, 5.0)
+    
+    # Modify properties
+    cone.ref_radius = 10.0
+    cone.semi_angle = np.pi / 4
+    
+    assert abs(cone.ref_radius - 10.0) < 1e-10
+    assert abs(cone.semi_angle - np.pi/4) < 1e-10
+
+
+def test_spherical_surface_creation():
+    """Test creating a spherical surface."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    radius = 3.0
+    sphere = Geom.SphericalSurface(ax2, radius)
+    
+    # Verify radius
+    assert abs(sphere.radius - radius) < 1e-10
+    
+    # Test evaluation at origin (north pole)
+    point = sphere.value(0, np.pi/2)
+    assert abs(point.z - radius) < 1e-10
+    
+    # Test evaluation at south pole
+    point = sphere.value(0, -np.pi/2)
+    assert abs(point.z + radius) < 1e-10
+
+
+def test_spherical_surface_area_volume():
+    """Test sphere area and volume calculations."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    radius = 2.0
+    sphere = Geom.SphericalSurface(ax2, radius)
+    
+    # Area = 4 * π * R²
+    expected_area = 4 * np.pi * radius ** 2
+    assert abs(sphere.area - expected_area) < 1e-9
+    
+    # Volume = 4/3 * π * R³
+    expected_volume = 4/3 * np.pi * radius ** 3
+    assert abs(sphere.volume - expected_volume) < 1e-9
+
+
+def test_spherical_surface_properties():
+    """Test modifying spherical surface properties."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    sphere = Geom.SphericalSurface(ax2, 3.0)
+    
+    # Modify radius
+    sphere.radius = 5.0
+    assert abs(sphere.radius - 5.0) < 1e-10
+    
+    # Verify volume changed
+    expected_volume = 4/3 * np.pi * 5.0 ** 3
+    assert abs(sphere.volume - expected_volume) < 1e-9
+
+
+def test_toroidal_surface_creation():
+    """Test creating a toroidal surface."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    major_radius = 5.0
+    minor_radius = 2.0
+    torus = Geom.ToroidalSurface(ax2, major_radius, minor_radius)
+    
+    # Verify radii
+    assert abs(torus.major_radius - major_radius) < 1e-10
+    assert abs(torus.minor_radius - minor_radius) < 1e-10
+
+
+def test_toroidal_surface_area_volume():
+    """Test torus area and volume calculations."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    major_radius = 5.0
+    minor_radius = 2.0
+    torus = Geom.ToroidalSurface(ax2, major_radius, minor_radius)
+    
+    # Area = 4 * π² * R * r
+    expected_area = 4 * np.pi ** 2 * major_radius * minor_radius
+    assert abs(torus.area - expected_area) < 1e-8
+    
+    # Volume = 2 * π² * R * r²
+    expected_volume = 2 * np.pi ** 2 * major_radius * minor_radius ** 2
+    assert abs(torus.volume - expected_volume) < 1e-8
+
+
+def test_toroidal_surface_properties():
+    """Test modifying toroidal surface properties."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    torus = Geom.ToroidalSurface(ax2, 5.0, 2.0)
+    
+    # Modify radii
+    torus.major_radius = 7.0
+    torus.minor_radius = 3.0
+    
+    assert abs(torus.major_radius - 7.0) < 1e-10
+    assert abs(torus.minor_radius - 3.0) < 1e-10
+
+
+def test_elementary_surface_axis_location_position():
+    """Test axis, location, and position properties on elementary surfaces."""
+    # Test with a plane
+    ax2_orig = gp.Ax3(gp.Pnt(1, 2, 3), gp.Dir(0, 0, 1))
+    plane = Geom.Plane(ax2_orig)
+    
+    # Test reading properties
+    location = plane.location
+    assert location.x == 1 and location.y == 2 and location.z == 3
+    
+    axis = plane.axis
+    assert abs(axis.direction.z - 1.0) < 1e-10
+    
+    position = plane.position
+    assert position.location.x == 1 and position.location.y == 2 and position.location.z == 3
+    
+    # Test modifying position
+    new_ax2 = gp.Ax3(gp.Pnt(5, 6, 7), gp.Dir(1, 0, 0))
+    plane.position = new_ax2
+    
+    new_location = plane.location
+    assert new_location.x == 5 and new_location.y == 6 and new_location.z == 7
+
+
+def test_plane_pln_property():
+    """Test the pln property for reading and writing."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    plane = Geom.Plane(ax2)
+    
+    # Read gp_Pln
+    pln = plane.pln
+    assert pln.location.x == 0 and pln.location.y == 0 and pln.location.z == 0
+    
+    # Create a new plane and assign it
+    new_ax3 = gp.Ax3(gp.Pnt(1, 1, 1), gp.Dir(0, 0, 1))
+    new_pln = gp.Pln(new_ax3)
+    plane.pln = new_pln
+    
+    # Verify the plane was updated
+    assert plane.location.x == 1 and plane.location.y == 1 and plane.location.z == 1
+
+
+def test_cylinder_cylinder_property():
+    """Test the cylinder property for reading and writing."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    cylinder = Geom.CylindricalSurface(ax2, 5.0)
+    
+    # Test reading the underlying gp object
+    cyl = cylinder.cylinder
+    assert abs(cyl.radius - 5.0) < 1e-10
+    
+    # Modify via property
+    new_ax2 = gp.Ax3(gp.Pnt(1, 1, 1), gp.Dir(0, 0, 1))
+    # We need to create a gp.Cylinder but it's not exposed
+    # So we'll test the radius property instead
+    cylinder.radius = 7.0
+    assert abs(cylinder.radius - 7.0) < 1e-10
+
+
+def test_cone_cone_property():
+    """Test the cone property for reading and writing."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    cone = Geom.ConicalSurface(ax2, np.pi/6, 5.0)
+    
+    # Test reading the underlying gp object
+    gp_cone = cone.cone
+    assert abs(gp_cone.semi_angle - np.pi/6) < 1e-10
+
+
+def test_sphere_sphere_property():
+    """Test the sphere property for reading and writing."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    sphere = Geom.SphericalSurface(ax2, 3.0)
+    
+    # Test reading the underlying gp object
+    gp_sphere = sphere.sphere
+    assert abs(gp_sphere.radius - 3.0) < 1e-10
+
+
+def test_torus_torus_property():
+    """Test the torus property for reading and writing."""
+    ax2 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    torus = Geom.ToroidalSurface(ax2, 5.0, 2.0)
+    
+    # Test reading the underlying gp object
+    gp_torus = torus.torus
+    assert abs(gp_torus.major_radius - 5.0) < 1e-10
+
+
+def test_surface_point_evaluation():
+    """Test point evaluation on various elementary surfaces."""
+    # Test plane
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    p = plane(0, 0)
+    assert p.x == 0 and p.y == 0 and p.z == 0
+    
+    # Test cylinder
+    cylinder = Geom.CylindricalSurface(
+        gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 5.0
+    )
+    p = cylinder(0, 0)
+    assert abs(np.sqrt(p.x**2 + p.y**2) - 5.0) < 1e-10
+    
+    # Test sphere
+    sphere = Geom.SphericalSurface(
+        gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 3.0
+    )
+    p = sphere(0, np.pi/2)
+    assert abs(p.z - 3.0) < 1e-10

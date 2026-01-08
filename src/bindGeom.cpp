@@ -17,8 +17,9 @@ namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
-// Forward declaration
+// Forward declarations
 void bind_geom_curves(py::module_ &m);
+void bind_geom_surfaces(py::module_ &m);
 
 void bind_geom(py::module_ &m)
 {
@@ -54,5 +55,6 @@ void bind_geom(py::module_ &m)
     ;
 
     bind_geom_curves(m);
+    bind_geom_surfaces(m);
 
 }
