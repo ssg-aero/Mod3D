@@ -18,6 +18,7 @@ from .mod3d import BRepOffsetAPI
 from .mod3d import BRepPrim
 from .mod3d import BRepExtrema
 from .mod3d import BRepFillet
+from .mod3d import BooleanOp
 from .mod3d import ShapeAnalysis
 from .mod3d import StepControl
 from .mod3d import StepData
@@ -39,6 +40,7 @@ __all__ = [
     "BRepPrim",
     "BRepExtrema",
     "BRepFillet",
+    "BooleanOp",
     "ShapeAnalysis",
     "StepControl",
     "StepData",

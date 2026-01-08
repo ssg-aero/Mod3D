@@ -26,6 +26,7 @@ void bind_brepprim(py::module_ &m);
 void bind_brep_fillet(py::module_ &m);
 // void bind_brep_fillet2d(py::module_ &m);
 void bind_brep_extrema(py::module_ &m);
+void bind_brep_boolean_op(py::module_ &m);
 void bind_shape_analysis(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
@@ -78,6 +79,7 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ BRepOffsetAPI = m.def_submodule("BRepOffsetAPI", "BRep offset API");
     py::module_ BRepExtrema = m.def_submodule("BRepExtrema", "BRep extrema computations");
     py::module_ BRepFillet = m.def_submodule("BRepFillet", "BRep fillet module");
+    py::module_ BooleanOp = m.def_submodule("BooleanOp", "BRep boolean operations module");
     // py::module_ BRepFillet2d = m.def_submodule("BRepFillet2d", "BRep 2D fillet module");
 
     py::module_ ShapeAnalysis = m.def_submodule("ShapeAnalysis", "Shape analysis module");
@@ -127,6 +129,7 @@ PYBIND11_MODULE(mod3d, m)
     bind_brep_offset_api(BRepOffsetAPI);
     bind_brep_extrema(BRepExtrema);
     bind_brep_fillet(BRepFillet);
+    bind_brep_boolean_op(BooleanOp);
     // bind_brep_fillet2d(BRepFillet2d);
 
     bind_shape_analysis(ShapeAnalysis);
