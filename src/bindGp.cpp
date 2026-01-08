@@ -16,8 +16,11 @@
 #include <gp_Elips.hxx>
 #include <gp_Hypr.hxx>
 #include <gp_Parab.hxx>
-// #include <gp_Ax3.hxx>
 #include <gp_Quaternion.hxx>
+#include <gp_Cylinder.hxx>
+#include <gp_Cone.hxx>
+#include <gp_Sphere.hxx>
+#include <gp_Torus.hxx>
 
 #include <gp_Trsf.hxx>
 
@@ -526,6 +529,66 @@ void bind_gp(py::module_ &m)
         })
     ;
 
+    py::class_<gp_Ax3>(m, "Ax3")
+        .def(py::init<>())
+        .def(py::init<const gp_Pnt&, const gp_Dir&>(), py::arg("p"), py::arg("v"))
+        .def(py::init<const gp_Pnt&, const gp_Dir&, const gp_Dir&>(), 
+             py::arg("p"), py::arg("n"), py::arg("vx"))
+        .def(py::init<const gp_Ax2&>(), py::arg("a2"))
+        
+        // Getters
+        .def("angle", &gp_Ax3::Angle, py::arg("other"))
+        .def_property("axis", &gp_Ax3::Axis, &gp_Ax3::SetAxis)
+        .def_property("direction", &gp_Ax3::Direction, &gp_Ax3::SetDirection)
+        .def_property("location", &gp_Ax3::Location, &gp_Ax3::SetLocation)
+        .def_property("x_direction", &gp_Ax3::XDirection, &gp_Ax3::SetXDirection)
+        .def_property("y_direction", &gp_Ax3::YDirection, &gp_Ax3::SetYDirection)
+        .def_property("z_direction", &gp_Ax3::Direction, &gp_Ax3::SetDirection)
+        
+        // Get as Ax2
+        .def("as_ax2", &gp_Ax3::Ax2)
+        
+        // Comparison
+        .def("is_coplanar", py::overload_cast<const gp_Ax3&, const Standard_Real, const Standard_Real>(&gp_Ax3::IsCoplanar, py::const_),
+             py::arg("other"), py::arg("linear_tolerance"), py::arg("angular_tolerance"))
+        .def("is_coplanar", py::overload_cast<const gp_Ax1&, const Standard_Real, const Standard_Real>(&gp_Ax3::IsCoplanar, py::const_),
+             py::arg("a1"), py::arg("linear_tolerance"), py::arg("angular_tolerance"))
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Ax3::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Ax3::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Ax3::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Ax3::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Ax3::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Ax3::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Ax3::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Ax3::Translate), 
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Ax3::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Ax3::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Ax3::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Ax3::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Ax3::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Ax3::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Ax3::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Ax3::Translated, py::const_), 
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Ax3& self) {
+            const gp_Pnt& loc = self.Location();
+            const gp_Dir& dir = self.Direction();
+            const gp_Dir& xdir = self.XDirection();
+            return "gp_Ax3(loc=(" + std::to_string(loc.X()) + ", " + 
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) + "), dir=(" +
+                   std::to_string(dir.X()) + ", " + std::to_string(dir.Y()) + ", " + 
+                   std::to_string(dir.Z()) + "), xdir=(" +
+                   std::to_string(xdir.X()) + ", " + std::to_string(xdir.Y()) + ", " + 
+                   std::to_string(xdir.Z()) + "))";
+        })
+    ;
+
     py::class_<gp_Pln>(m, "Pln")
         .def(py::init<>())
         .def(py::init<const gp_Ax3&>(), py::arg("a3"))
@@ -594,7 +657,170 @@ void bind_gp(py::module_ &m)
         })
     ;
 
-    py::class_<gp_Lin>(m, "Lin")
+    py::class_<gp_Cylinder>(m, "Cylinder")
+        .def(py::init<>())
+        .def(py::init<const gp_Ax2&, Standard_Real>(), 
+             py::arg("a2"), py::arg("radius"))
+        
+        // Properties
+        .def_property("axis", &gp_Cylinder::Axis, &gp_Cylinder::SetAxis)
+        .def_property("location", &gp_Cylinder::Location, &gp_Cylinder::SetLocation)
+        .def_property("position", &gp_Cylinder::Position, &gp_Cylinder::SetPosition)
+        .def_property("radius", &gp_Cylinder::Radius, &gp_Cylinder::SetRadius)
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Cylinder::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Cylinder::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Cylinder::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Cylinder::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Cylinder::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Cylinder::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Cylinder::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Cylinder::Translate), 
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Cylinder::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Cylinder::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Cylinder::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Cylinder::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Cylinder::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Cylinder::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Cylinder::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Cylinder::Translated, py::const_), 
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Cylinder& self) {
+            const gp_Pnt& loc = self.Location();
+            const gp_Dir& dir = self.Axis().Direction();
+            return "gp_Cylinder(loc=(" + std::to_string(loc.X()) + ", " + 
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) + "), radius=" +
+                   std::to_string(self.Radius()) + ")";
+        })
+    ;
+
+    py::class_<gp_Cone>(m, "Cone")
+        .def(py::init<>())
+        .def(py::init<const gp_Ax2&, Standard_Real, Standard_Real>(), 
+             py::arg("a2"), py::arg("semi_angle"), py::arg("radius"))
+        
+        // Properties
+        .def_property("axis", &gp_Cone::Axis, &gp_Cone::SetAxis)
+        .def_property("location", &gp_Cone::Location, &gp_Cone::SetLocation)
+        .def_property("position", &gp_Cone::Position, &gp_Cone::SetPosition)
+        .def_property("semi_angle", &gp_Cone::SemiAngle, &gp_Cone::SetSemiAngle)
+        .def_property("radius", &gp_Cone::RefRadius, &gp_Cone::SetRadius)
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Cone::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Cone::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Cone::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Cone::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Cone::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Cone::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Cone::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Cone::Translate), 
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Cone::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Cone::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Cone::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Cone::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Cone::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Cone::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Cone::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Cone::Translated, py::const_), 
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Cone& self) {
+            return "gp_Cone(semi_angle=" + std::to_string(self.SemiAngle()) + 
+                   ", radius=" + std::to_string(self.RefRadius()) + ")";
+        })
+    ;
+    ;
+
+    py::class_<gp_Sphere>(m, "Sphere")
+        .def(py::init<>())
+        .def(py::init<const gp_Ax2&, Standard_Real>(), 
+             py::arg("a2"), py::arg("radius"))
+        
+        // Properties
+        .def_property("location", &gp_Sphere::Location, &gp_Sphere::SetLocation)
+        .def_property("position", &gp_Sphere::Position, &gp_Sphere::SetPosition)
+        .def_property("radius", &gp_Sphere::Radius, &gp_Sphere::SetRadius)
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Sphere::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Sphere::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Sphere::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Sphere::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Sphere::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Sphere::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Sphere::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Sphere::Translate), 
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Sphere::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Sphere::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Sphere::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Sphere::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Sphere::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Sphere::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Sphere::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Sphere::Translated, py::const_), 
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Sphere& self) {
+            return "gp_Sphere(radius=" + std::to_string(self.Radius()) + ")";
+        })
+    ;
+
+    py::class_<gp_Torus>(m, "Torus")
+        .def(py::init<>())
+        .def(py::init<const gp_Ax2&, Standard_Real, Standard_Real>(), 
+             py::arg("a2"), py::arg("major_radius"), py::arg("minor_radius"))
+        
+        // Properties
+        .def_property("axis", &gp_Torus::Axis, &gp_Torus::SetAxis)
+        .def_property("location", &gp_Torus::Location, &gp_Torus::SetLocation)
+        .def_property("position", &gp_Torus::Position, &gp_Torus::SetPosition)
+        .def_property("major_radius", &gp_Torus::MajorRadius, &gp_Torus::SetMajorRadius)
+        .def_property("minor_radius", &gp_Torus::MinorRadius, &gp_Torus::SetMinorRadius)
+        
+        // Transformations (in-place)
+        .def("mirror", py::overload_cast<const gp_Pnt&>(&gp_Torus::Mirror), py::arg("p"))
+        .def("mirror", py::overload_cast<const gp_Ax1&>(&gp_Torus::Mirror), py::arg("a1"))
+        .def("mirror", py::overload_cast<const gp_Ax2&>(&gp_Torus::Mirror), py::arg("a2"))
+        .def("rotate", &gp_Torus::Rotate, py::arg("a1"), py::arg("ang"))
+        .def("scale", &gp_Torus::Scale, py::arg("p"), py::arg("s"))
+        .def("transform", &gp_Torus::Transform, py::arg("t"))
+        .def("translate", py::overload_cast<const gp_Vec&>(&gp_Torus::Translate), py::arg("v"))
+        .def("translate", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Torus::Translate), 
+             py::arg("p1"), py::arg("p2"))
+        
+        // Transformations (returns new)
+        .def("mirrored", py::overload_cast<const gp_Pnt&>(&gp_Torus::Mirrored, py::const_), py::arg("p"))
+        .def("mirrored", py::overload_cast<const gp_Ax1&>(&gp_Torus::Mirrored, py::const_), py::arg("a1"))
+        .def("mirrored", py::overload_cast<const gp_Ax2&>(&gp_Torus::Mirrored, py::const_), py::arg("a2"))
+        .def("rotated", &gp_Torus::Rotated, py::arg("a1"), py::arg("ang"))
+        .def("scaled", &gp_Torus::Scaled, py::arg("p"), py::arg("s"))
+        .def("transformed", &gp_Torus::Transformed, py::arg("t"))
+        .def("translated", py::overload_cast<const gp_Vec&>(&gp_Torus::Translated, py::const_), py::arg("v"))
+        .def("translated", py::overload_cast<const gp_Pnt&, const gp_Pnt&>(&gp_Torus::Translated, py::const_), 
+             py::arg("p1"), py::arg("p2"))
+        
+        .def("__repr__", [](const gp_Torus& self) {
+            const gp_Pnt& loc = self.Location();
+            return "gp_Torus(loc=(" + std::to_string(loc.X()) + ", " + 
+                   std::to_string(loc.Y()) + ", " + std::to_string(loc.Z()) + "), major_radius=" +
+                   std::to_string(self.MajorRadius()) + ", minor_radius=" + std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+
+    py::class_<gp_Lin>(m, "Lin", 
+        "Representation of an infinite line defined by a point and a direction.")
         // Constructors
         .def(py::init<>())
         .def(py::init<const gp_Ax1&>(), py::arg("a1"))
