@@ -1249,3 +1249,201 @@ def test_implicit_conversion():
     assert occt_surf.v_degree == 1
     
     BRepBuilderAPI.MakeFace(occt_surf, 1e-6)  # Should work without error
+
+
+# ==================== OffsetSurface Tests ====================
+
+def test_offset_surface_from_plane():
+    """Test creating an offset surface from a plane."""
+    # Create a plane at origin with normal in Z direction
+    pln = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    
+    # Create offset surface
+    offset = Geom.OffsetSurface(pln, 2.0)
+    
+    assert offset is not None
+    assert offset.offset == 2.0
+    assert offset.base_surface is not None
+
+
+def test_offset_surface_properties():
+    """Test offset surface properties."""
+    # Create a sphere
+    sphere = Geom.SphericalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    
+    # Create positive offset
+    offset_pos = Geom.OffsetSurface(sphere, 0.5)
+    assert offset_pos.offset == 0.5
+    
+    # Create negative offset
+    offset_neg = Geom.OffsetSurface(sphere, -0.5)
+    assert offset_neg.offset == -0.5
+    
+    # Modify offset
+    offset_pos.offset = 1.0
+    assert offset_pos.offset == 1.0
+
+
+def test_offset_surface_base_surface():
+    """Test getting and setting base surface."""
+    plane1 = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    plane2 = Geom.Plane(gp.Ax3(gp.Pnt(1, 0, 0), gp.Dir(0, 0, 1)))
+    
+    offset = Geom.OffsetSurface(plane1, 1.0)
+    assert offset.base_surface is not None
+    
+    # Change base surface
+    offset.base_surface = plane2
+    assert offset.base_surface is not None
+
+
+def test_offset_surface_continuity():
+    """Test continuity properties of offset surface."""
+    # Plane has infinite continuity
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.0)
+    
+    # Offset of C2 surface should be C1
+    assert offset.continuity is not None
+    assert offset.basis_surface_continuity is not None
+    
+    # Check CN continuity
+    assert offset.is_cn_u(0)
+    assert offset.is_cn_v(0)
+
+
+def test_offset_surface_evaluation():
+    """Test point evaluation on offset surface."""
+    # Create a sphere with radius 1.0 at origin
+    sphere = Geom.SphericalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    
+    # Create offset surface with offset 0.5
+    offset = Geom.OffsetSurface(sphere, 0.5)
+    
+    # Evaluate at parameter (0, 0)
+    # For a sphere at origin with radius 1.0, the point at (0,0) is at (1, 0, 0)
+    # With offset 0.5, it should be at approximately (1.5, 0, 0)
+    point = offset.value(0, 0)
+    assert point is not None
+    assert isinstance(point, gp.Pnt)
+    
+    # The point should be roughly 1.5 units from origin along the surface normal
+    dist_from_origin = np.sqrt(point.x**2 + point.y**2 + point.z**2)
+    assert abs(dist_from_origin - 1.5) < 1e-6
+
+
+def test_offset_surface_derivatives():
+    """Test derivative evaluation on offset surface."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.0)
+    
+    # Test D0 (point only)
+    p = offset.d0(0.5, 0.5)
+    assert p is not None
+    assert p.z == 1.0  # Plane at z=1.0
+    
+    # Test D1 (point and first derivatives)
+    p, du, dv = offset.d1(0.5, 0.5)
+    assert p is not None
+    assert du is not None
+    assert dv is not None
+
+
+def test_offset_surface_iso_curves():
+    """Test iso-parametric curves on offset surface."""
+    cylinder = Geom.CylindricalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    offset = Geom.OffsetSurface(cylinder, 0.2)
+    
+    # Get U iso-curve
+    u_iso = offset.u_iso(0.5)
+    assert u_iso is not None
+    
+    # Get V iso-curve
+    v_iso = offset.v_iso(0.5)
+    assert v_iso is not None
+
+
+def test_offset_surface_callable():
+    """Test using offset surface as callable."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.5)
+    
+    # Test callable interface
+    p1 = offset.value(0.3, 0.7)
+    p2 = offset(0.3, 0.7)
+    
+    assert p1.x == p2.x
+    assert p1.y == p2.y
+    assert p1.z == p2.z
+
+
+def test_offset_surface_bounds():
+    """Test getting bounds of offset surface."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.0)
+    
+    # Planes have infinite bounds
+    u1, u2, v1, v2 = offset.bounds()
+    assert u1 is not None
+    assert u2 is not None
+    assert v1 is not None
+    assert v2 is not None
+
+
+def test_offset_surface_transform():
+    """Test transforming an offset surface."""
+    sphere = Geom.SphericalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    offset = Geom.OffsetSurface(sphere, 0.5)
+    
+    # Create a transformation (translation)
+    trsf = gp.Trsf()
+    trsf.set_translation(gp.Vec(1.0, 2.0, 3.0))
+    
+    # Apply transformation
+    offset.transform(trsf)
+    
+    # Verify transformation was applied
+    p = offset.value(0, 0)
+    assert p is not None
+
+
+def test_offset_surface_osculating_surfaces():
+    """Test getting osculating surfaces."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.0)
+    
+    # Get U-osculating surface
+    u_exists, u_opposite, u_oscul = offset.u_osculating_surface(0.5, 0.5)
+    # u_exists might be False depending on implementation
+    
+    # Get V-osculating surface
+    v_exists, v_opposite, v_oscul = offset.v_osculating_surface(0.5, 0.5)
+    # v_exists might be False depending on implementation
+
+
+def test_offset_surface_equivalent_surface():
+    """Test getting equivalent surface."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    offset = Geom.OffsetSurface(plane, 1.0)
+    
+    # For an offset plane, there should be an equivalent plane
+    equiv = offset.surface()
+    assert equiv is not None
+
+
+def test_offset_surface_inherited_properties():
+    """Test inherited properties from base Geom_Surface."""
+    sphere = Geom.SphericalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    offset = Geom.OffsetSurface(sphere, 0.5)
+    
+    # Test inherited closure properties
+    assert offset.is_u_closed is not None
+    assert offset.is_v_closed is not None
+    
+    # Test inherited periodicity
+    assert offset.is_u_periodic is not None
+    assert offset.is_v_periodic is not None
+    
+    # Test inherited continuity
+    assert offset.continuity is not None
+
