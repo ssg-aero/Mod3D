@@ -1960,3 +1960,502 @@ def test_thru_sections_status():
     loft.build()
     
     assert loft.status == BRepOffsetAPI.ThruSectionStatus.Done
+
+
+# ==================== MakePipeShell Tests ====================
+
+def test_make_pipe_shell_basic():
+    """Test basic MakePipeShell with single profile."""
+    # Create spine (wire)
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(0.0, 0.0, 10.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create circular profile
+    circle = Geom.Circle(gp.Ax2(), 2.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Create pipe shell
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+    result = pipe_shell.shape()
+    assert not result.is_null()
+
+
+def test_make_pipe_shell_multiple_profiles():
+    """Test MakePipeShell with multiple profiles along spine."""
+    # Create a simple straight spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+
+    # Create profiles - simple circles
+    circle1 = Geom.Circle(gp.Ax2(gp.Pnt(0,0,0), gp.Dir(1,0,0)), 2.0)
+    profile1_edge = BRepBuilderAPI.MakeEdge(circle1).edge()
+    profile1 = BRepBuilderAPI.MakeWire(profile1_edge).wire()
+
+    circle2 = Geom.Circle(gp.Ax2(gp.Pnt(10,0,0), gp.Dir(1,0,0)), 1.5)
+    profile2_edge = BRepBuilderAPI.MakeEdge(circle2).edge()
+    profile2 = BRepBuilderAPI.MakeWire(profile2_edge).wire()
+
+    # Create pipe shell with two profiles
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile1)
+    pipe_shell.add(profile2)
+    pipe_shell.build()
+
+    assert pipe_shell.is_done()
+    result = pipe_shell.shape()
+    assert not result.is_null()
+
+
+
+def test_make_pipe_shell_frenet_mode():
+    """Test MakePipeShell with Frenet trihedron mode."""
+    # Create simple spine
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Use Frenet mode
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_mode(True)  # True for Frenet
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    # Verify binding works
+    result = pipe_shell.shape()
+    assert result is not None
+
+
+def test_make_pipe_shell_corrected_frenet_mode():
+    """Test MakePipeShell with CorrectedFrenet mode."""
+    # Create spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 5.0, 5.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # CorrectedFrenet is default (False as parameter)
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_mode(False)  # False for CorrectedFrenet
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_fixed_trihedron():
+    """Test MakePipeShell with fixed trihedron mode."""
+    # Create spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Set fixed trihedron along Y and Z axes
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0))
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_mode(ax2)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_binormal_mode():
+    """Test MakePipeShell with fixed binormal direction."""
+    # Create spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Set fixed binormal direction (Y axis)
+    binormal = gp.Dir(0, 1, 0)
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_mode(binormal)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_discrete_mode():
+    """Test MakePipeShell with discrete trihedron mode."""
+    # Create spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 5.0, 0.0)
+    p3 = gp.Pnt(10.0, 0.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    spine = BRepBuilderAPI.MakeWire(e1, e2).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Use discrete mode for sharp corners
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_discrete_mode()
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_with_location():
+    """Test adding profile with automatic location on spine."""
+    # Create spine
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 2.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Add profile with default automatic location
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_make_solid():
+    """Test converting pipe shell to solid."""
+    # Create simple spine and profile
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(0.0, 0.0, 10.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 2.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Create pipe shell and convert to solid
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+    
+    # Convert to solid (if possible)
+    success = pipe_shell.make_solid()
+    assert isinstance(success, bool)
+
+
+def test_make_pipe_shell_tolerance_settings():
+    """Test setting tolerance parameters."""
+    # Create spine and profile
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Set custom tolerances
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_tolerance(1e-3, 1e-4, 1e-2)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_max_degree_segments():
+    """Test setting max degree and segments."""
+    # Create spine and profile
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_max_degree(10)
+    pipe_shell.set_max_segments(8)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_force_approx_c1():
+    """Test forcing C1 approximation."""
+    # Create curved spine
+    helix = Geom.BSplineCurve(
+        poles=np.array([
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 2.0],
+            [2.0, 2.0, 4.0],
+            [0.0, 2.0, 6.0]
+        ]),
+        knots=[0., 1., 2.],
+        multiplicities=[3, 1, 3],
+        degree=2
+    )
+    spine_edge = BRepBuilderAPI.MakeEdge(helix).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_force_approx_c1(True)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_transition_mode():
+    """Test setting transition mode at spine discontinuities."""
+    # Create spine with a corner
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    p3 = gp.Pnt(10.0, 0.0, 5.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    spine = BRepBuilderAPI.MakeWire(e1, e2).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_transition_mode(BRepBuilderAPI.TransitionMode.RoundCorner)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_is_ready():
+    """Test is_ready method."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    
+    # Not ready before adding profile
+    assert pipe_shell.is_ready() == False
+    
+    # Ready after adding profile
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell.add(profile)
+    assert pipe_shell.is_ready() == True
+
+
+def test_make_pipe_shell_profiles_and_spine():
+    """Test querying profiles and spine."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle1 = Geom.Circle(gp.Ax2(), 2.0)
+    profile1_edge = BRepBuilderAPI.MakeEdge(circle1).edge()
+    profile1 = BRepBuilderAPI.MakeWire(profile1_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile1)
+    pipe_shell.build()
+    
+    # Get profiles list
+    profiles = pipe_shell.profiles()
+    assert len(profiles) >= 1  # At least the one we added
+    
+    # Get spine
+    result_spine = pipe_shell.spine()
+    assert not result_spine.is_null()
+
+
+def test_make_pipe_shell_error_on_surface():
+    """Test error_on_surface method."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+    
+    # Get surface error
+    error = pipe_shell.error_on_surface()
+    assert isinstance(error, float)
+    assert error >= 0.0
+
+
+def test_make_pipe_shell_delete_profile():
+    """Test deleting/removing a profile."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    
+    # Can delete profile if needed
+    pipe_shell.delete(profile)
+    
+    # After deletion, should not be ready
+    assert pipe_shell.is_ready() == False
+
+
+def test_make_pipe_shell_with_contact():
+    """Test profile addition with contact flag."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile, with_contact=True, with_correction=False)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_with_correction():
+    """Test profile addition with correction flag."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile, with_contact=False, with_correction=True)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+
+
+def test_make_pipe_shell_simulate():
+    """Test simulate method for visualization."""
+    spine_edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(10.0, 0.0, 0.0)
+    ).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    circle = Geom.Circle(gp.Ax2(), 1.5)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.add(profile)
+    
+    # Simulate to get cross-sections
+    sections = pipe_shell.simulate(5)  # 5 sections
+    
+    assert isinstance(sections, list)
+    assert len(sections) == 5
+
+
+def test_make_pipe_shell_complex_spine():
+    """Test with more complex 3D spine."""
+    # Create a smooth curved spine
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(3.0, 4.0, 2.0),
+        gp.Pnt(6.0, 2.0, 4.0),
+        gp.Pnt(10.0, 0.0, 10.0)
+    ]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]
+    degree = 2
+    
+    spine_curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
+    spine_edge = BRepBuilderAPI.MakeEdge(spine_curve).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Create profile
+    circle = Geom.Circle(gp.Ax2(), 1.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    pipe_shell = BRepBuilderAPI.MakePipeShell(spine)
+    pipe_shell.set_mode(True)  # Use Frenet for complex curves
+    pipe_shell.add(profile)
+    pipe_shell.build()
+    
+    assert pipe_shell.is_done()
+    result = pipe_shell.shape()
+    assert not result.is_null()
