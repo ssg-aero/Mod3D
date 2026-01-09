@@ -42,6 +42,7 @@ pybind11_add_module(mod3d
     src/bindGeomSurfaces.cpp
     src/bindGeomSurfacesSplines.cpp
     src/bindGeomSurfacesElementary.cpp
+    src/bindGeomSweptSurfaces.cpp
     src/bindGeom.cpp
     src/bindTopoDS.cpp
     src/bindTopAbs.cpp

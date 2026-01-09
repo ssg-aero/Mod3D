@@ -1447,3 +1447,292 @@ def test_offset_surface_inherited_properties():
     # Test inherited continuity
     assert offset.continuity is not None
 
+
+# ==================== SurfaceOfRevolution Tests ====================
+
+def test_surface_of_revolution_creation():
+    """Test creating a surface of revolution from a circle."""
+    # Create a circle at distance 5 from the Z axis
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(5, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    
+    # Create axis of revolution
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    # Create surface of revolution
+    surf = Geom.SurfaceOfRevolution(circle, axis)
+    
+    assert surf is not None
+    assert surf.basis_curve is not None
+    assert surf.direction is not None
+
+
+def test_surface_of_revolution_axis():
+    """Test axis property of revolution surface."""
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(5, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    axis = gp.Ax1(gp.Pnt(1, 2, 3), gp.Dir(1, 0, 0))
+    
+    surf = Geom.SurfaceOfRevolution(circle, axis)
+    
+    # Check axis location and direction
+    rev_axis = surf.axis
+    assert rev_axis is not None
+    assert abs(rev_axis.location.x - 1.0) < 1e-10
+    assert abs(rev_axis.location.y - 2.0) < 1e-10
+    assert abs(rev_axis.location.z - 3.0) < 1e-10
+
+
+def test_surface_of_revolution_evaluation():
+    """Test point evaluation on revolution surface."""
+    # Create a simple line parallel to Z axis at distance 2 from origin
+    line = Geom.Line(gp.Ax1(gp.Pnt(2, 0, 0), gp.Dir(0, 0, 1)))
+    
+    # Revolution axis
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    # Create surface
+    surf = Geom.SurfaceOfRevolution(line, axis)
+    
+    # Evaluate at a point (should create a circle)
+    # U is the parameter along the profile curve
+    # V is the rotation angle
+    p = surf.value(0, 0)
+    assert p is not None
+    
+    # Distance from Z axis should be 2.0
+    dist = np.sqrt(p.x**2 + p.y**2)
+    assert abs(dist - 2.0) < 1e-6
+
+
+def test_surface_of_revolution_periodicity():
+    """Test that revolution surface is periodic in V (rotation parameter)."""
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(3, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    surf = Geom.SurfaceOfRevolution(circle, axis)
+    
+    # Check periodicity
+    assert surf.is_v_periodic
+
+
+def test_surface_of_revolution_continuity():
+    """Test continuity of revolution surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(1, 0, 0), gp.Dir(0, 0, 1)))
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    surf = Geom.SurfaceOfRevolution(line, axis)
+    
+    # Check CN continuity queries
+    assert surf.is_cn_u(0)
+    assert surf.is_cn_v(0)
+
+
+def test_surface_of_revolution_derivatives():
+    """Test derivative evaluation on revolution surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(2, 0, 0), gp.Dir(0, 0, 1)))
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    surf = Geom.SurfaceOfRevolution(line, axis)
+    
+    # Test D1
+    p, du, dv = surf.d1(0, 0)
+    assert p is not None
+    assert du is not None
+    assert dv is not None
+
+
+def test_surface_of_revolution_transform():
+    """Test transforming a revolution surface."""
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(3, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    surf = Geom.SurfaceOfRevolution(circle, axis)
+    
+    # Create translation
+    trsf = gp.Trsf()
+    trsf.set_translation(gp.Vec(1, 2, 3))
+    
+    # Apply transformation
+    surf.transform(trsf)
+    
+    # Check that axis was transformed
+    new_axis = surf.axis
+    assert new_axis is not None
+
+
+# ==================== SurfaceOfLinearExtrusion Tests ====================
+
+def test_surface_of_linear_extrusion_creation():
+    """Test creating a surface of linear extrusion."""
+    # Create a parabola-like curve
+    parabola = Geom.BSplineCurve(
+        poles=[gp.Pnt(-2, 4, 0), gp.Pnt(0, 0, 0), gp.Pnt(2, 4, 0)],
+        degree=2,
+        knots=[0, 1],
+        multiplicities=[3, 3]
+    )
+    
+    # Extrusion direction
+    direction = gp.Dir(0, 0, 1)
+    
+    # Create extrusion surface
+    surf = Geom.SurfaceOfLinearExtrusion(parabola, direction)
+    
+    assert surf is not None
+    assert surf.basis_curve is not None
+    assert surf.direction is not None
+
+
+def test_surface_of_linear_extrusion_direction():
+    """Test direction property of extrusion surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    direction = gp.Dir(1, 1, 1)  # Normalized automatically by gp_Dir
+    
+    surf = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    # Check direction
+    extr_dir = surf.direction
+    assert extr_dir is not None
+
+
+def test_surface_of_linear_extrusion_evaluation():
+    """Test point evaluation on extrusion surface."""
+    # Simple line from origin in X direction
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    direction = gp.Dir(0, 0, 1)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    # Evaluate at parameters
+    p = surf.value(1, 1)
+    assert p is not None
+    
+    # Point should be at approximately (1, 0, 1) for unit parameters
+    # U parameter is along the curve, V parameter is along the extrusion
+    assert p.x > 0
+    assert p.z > 0
+
+
+def test_surface_of_linear_extrusion_periodicity():
+    """Test periodicity of extrusion surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    direction = gp.Dir(0, 0, 1)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    assert surf.value(0, 0).x == surf.value(0, 1).x
+    assert surf.value(0, 0).y == surf.value(0, 1).y
+    assert surf.value(0, 0).z == surf.value(0, 1).z - 1.0  # V parameter shifts along extrusion
+
+
+def test_surface_of_linear_extrusion_continuity():
+    """Test continuity of extrusion surface."""
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    direction = gp.Dir(0, 1, 0)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(circle, direction)
+    
+    # Check CN continuity
+    assert surf.is_cn_u(0)
+    assert surf.is_cn_v(0)
+
+
+def test_surface_of_linear_extrusion_derivatives():
+    """Test derivative evaluation on extrusion surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(1, 0, 0), gp.Dir(0, 1, 0)))
+    direction = gp.Dir(0, 0, 1)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    # Test D0
+    p = surf.d0(0.5, 0.5)
+    assert p is not None
+    
+    # Test D1
+    p, du, dv = surf.d1(0.5, 0.5)
+    assert p is not None
+    assert du is not None
+    assert dv is not None
+    
+    # Test D2
+    p, du, dv, d2u, d2v, duv = surf.d2(0.5, 0.5)
+    assert p is not None
+    assert du is not None
+    assert dv is not None
+
+
+def test_surface_of_linear_extrusion_transform():
+    """Test transforming an extrusion surface."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(1, 0, 0), gp.Dir(0, 0, 1)))
+    direction = gp.Dir(0, 1, 0)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    # Create rotation
+    trsf = gp.Trsf()
+    trsf.set_rotation(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), np.pi / 4)
+    
+    # Apply transformation
+    surf.transform(trsf)
+    
+    # Verify direction was transformed
+    new_dir = surf.direction
+    assert new_dir is not None
+
+
+def test_surface_of_linear_extrusion_iso_curves():
+    """Test iso-parametric curves on extrusion surface."""
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 2.0)
+    direction = gp.Dir(0, 0, 1)
+    
+    surf = Geom.SurfaceOfLinearExtrusion(circle, direction)
+    
+    # U iso-curve should be a line parallel to extrusion direction
+    u_iso = surf.u_iso(0.5)
+    assert u_iso is not None
+    
+    # V iso-curve should be the base curve
+    v_iso = surf.v_iso(0)
+    assert v_iso is not None
+
+
+def test_swept_surface_basis_curve():
+    """Test basis_curve property of swept surfaces."""
+    # Test with revolution
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(3, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    surf_rev = Geom.SurfaceOfRevolution(circle, axis)
+    
+    # Get basis curve
+    basis = surf_rev.basis_curve
+    assert basis is not None
+    
+    # Test with extrusion
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    direction = gp.Dir(0, 0, 1)
+    surf_extr = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    basis2 = surf_extr.basis_curve
+    assert basis2 is not None
+
+
+def test_swept_surface_bounds():
+    """Test bounds computation for swept surfaces."""
+    # Revolution surface
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(2, 0, 0), gp.Dir(0, 0, 1)), 1.0)
+    axis = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    surf_rev = Geom.SurfaceOfRevolution(circle, axis)
+    
+    u1, u2, v1, v2 = surf_rev.bounds()
+    assert u1 is not None
+    assert u2 is not None
+    assert v1 is not None
+    assert v2 is not None
+    
+    # Extrusion surface (infinite in V direction)
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    direction = gp.Dir(0, 0, 1)
+    surf_extr = Geom.SurfaceOfLinearExtrusion(line, direction)
+    
+    u1, u2, v1, v2 = surf_extr.bounds()
+    assert u1 is not None
+    assert u2 is not None

@@ -15,6 +15,8 @@
 #include <BRepBuilderAPI_TransitionMode.hxx>
 #include <BRepOffsetAPI_MakeFilling.hxx>
 #include <BRepOffsetAPI_MakeOffset.hxx>
+#include <BRepOffsetAPI_MakeOffsetShape.hxx>
+#include <BRepOffset_Mode.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Law_Function.hxx>
 #include <gp_Ax2.hxx>
@@ -24,6 +26,23 @@ namespace py = pybind11;
 
 void bind_brep_offset_api(py::module_ &m)
 {
+    // ==================== BRepOffset_Mode Enum ====================
+    py::enum_<BRepOffset_Mode>(m, "OffsetMode",
+        R"doc(
+        Offset construction modes.
+
+        Defines how the offset algorithm handles the shape:
+        - Skin: Offset along the surface of a solid (default)
+        - Pipe: Offset of a curve to obtain a pre-surface
+        - RectoVerso: Offset along both sides of a surface shell
+        )doc")
+        .value("Skin", BRepOffset_Skin,
+            "Offset along the surface of a solid to obtain a manifold space")
+        .value("Pipe", BRepOffset_Pipe,
+            "Offset of a curve to obtain a pre-surface")
+        .value("RectoVerso", BRepOffset_RectoVerso,
+            "Offset along both sides of a surface shell")
+        .export_values();
 
     py::class_<BRepOffsetAPI_MakeEvolved, BRepBuilderAPI_MakeShape>(m, "MakeEvolved",
         "Builds evolved shapes by sweeping a profile along a spine.\n\n"
@@ -499,4 +518,121 @@ void bind_brep_offset_api(py::module_ &m)
             Returns:
               A new face with simplified wire geometry
             )doc");
+    
+    // ==================== MakeOffsetShape ====================
+    py::class_<BRepOffsetAPI_MakeOffsetShape, BRepBuilderAPI_MakeShape>(m, "MakeOffsetShape",
+        R"doc(
+        Creates 3D offset shapes (shells/solids) from a shape.
+
+        This algorithm builds a shell or solid parallel to the source shape
+        at a specified offset distance. It handles faces, shells, solids, and
+        compounds of these shapes.
+
+        The offset shape is constructed:
+        - Outside the shape if offset is positive
+        - Inside the shape if offset is negative
+
+        Two algorithms are available:
+        - PerformByJoin: Full algorithm with intersection computation (default)
+        - PerformBySimple: Simple algorithm without intersection computation
+
+        Join types at edges:
+        - GeomAbs_Arc: Pipes between edges, spheres at vertices (default)
+        - GeomAbs_Intersection: Adjacent faces enlarged and intersected
+
+        Requirements:
+        - All faces must have C1 continuous underlying surfaces
+        - Offset value should be small enough to avoid self-intersections
+        - Vertices with more than 3 converging edges may cause failures
+        - BSpline surfaces must have continuity > C0
+
+        Typical usage:
+          # Simple offset
+          offset = BRepOffsetAPI.MakeOffsetShape()
+          offset.perform_by_join(solid, 2.0, 1e-3)
+          result = offset.shape()
+
+          # With options
+          offset = BRepOffsetAPI.MakeOffsetShape()
+          offset.perform_by_join(solid, -1.0, 1e-3,
+                                 mode=BRepOffsetAPI.OffsetMode.Skin,
+                                 join=GeomAbs.JoinType.Arc)
+          result = offset.shape()
+        )doc")
+        
+        // Default constructor
+        .def(py::init<>(),
+            "Creates an empty offset shape algorithm.\n\n"
+            "Use perform_by_join() or perform_by_simple() to compute the offset.")
+        
+        // PerformBySimple
+        .def("perform_by_simple", &BRepOffsetAPI_MakeOffsetShape::PerformBySimple,
+            py::arg("shape"),
+            py::arg("offset_value"),
+            R"doc(
+            Computes offset using a simple algorithm without intersection computation.
+
+            This is faster but may produce self-intersecting results for complex
+            shapes or large offset values.
+
+            Parameters:
+              shape: The shape to offset (face, shell, solid, or compound)
+              offset_value: Offset distance (positive=outward, negative=inward)
+            )doc")
+        
+        // PerformByJoin - main algorithm
+        .def("perform_by_join",
+            [](BRepOffsetAPI_MakeOffsetShape& self,
+               const TopoDS_Shape& shape,
+               Standard_Real offset,
+               Standard_Real tol,
+               BRepOffset_Mode mode,
+               Standard_Boolean intersection,
+               Standard_Boolean selfInter,
+               GeomAbs_JoinType join,
+               Standard_Boolean removeIntEdges) {
+                self.PerformByJoin(shape, offset, tol, mode, intersection,
+                                   selfInter, join, removeIntEdges);
+            },
+            py::arg("shape"),
+            py::arg("offset"),
+            py::arg("tol"),
+            py::arg("mode") = BRepOffset_Skin,
+            py::arg("intersection") = false,
+            py::arg("self_inter") = false,
+            py::arg("join") = GeomAbs_Arc,
+            py::arg("remove_internal_edges") = false,
+            R"doc(
+            Computes offset using the full algorithm with intersection computation.
+
+            This is the recommended method for most use cases. It handles
+            self-intersections and produces clean results.
+
+            Parameters:
+              shape: The shape to offset (face, shell, solid, or compound)
+              offset: Offset distance (positive=outward, negative=inward)
+              tol: Coincidence tolerance for generated shapes
+              mode: Construction mode (default: Skin)
+                - Skin: Offset along solid surface
+                - Pipe: Offset of a curve
+                - RectoVerso: Offset on both sides
+              intersection: If True, compute intersections with all parallels
+                            (more general but not fully implemented, default: False)
+              self_inter: If True, eliminate self-intersections
+                          (not yet implemented, use False)
+              join: How to fill holes between adjacent faces (default: Arc)
+                - Arc: Pipes between edges, spheres at vertices
+                - Intersection: Enlarge and intersect adjacent faces
+              remove_internal_edges: If True, remove internal edges from result
+                                     (default: False)
+
+            Warnings:
+              - Faces must have C1 continuous underlying surfaces
+              - Offset should be small enough to avoid self-intersections
+              - Vertices with >3 converging edges may cause failures
+            )doc")
+        
+        // GetJoinType - property
+        .def_property_readonly("join_type", &BRepOffsetAPI_MakeOffsetShape::GetJoinType,
+            "Returns the join type used for the offset computation.");
 }

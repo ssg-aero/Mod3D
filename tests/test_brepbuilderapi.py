@@ -1374,3 +1374,157 @@ def test_make_offset_convert_face():
     # Convert face to arcs and segments
     converted = BRepOffsetAPI.MakeOffset.convert_face(face, 0.01)
     assert not converted.is_null()
+
+
+# ==================== MakeOffsetShape Tests ====================
+
+def test_make_offset_shape_box_positive():
+    """Test positive offset of a solid box."""
+    # Create a box
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    # Create offset shape (enlarging the box)
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(box, 1.0, 1e-3)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_box_negative():
+    """Test negative offset of a solid box (shrinking)."""
+    # Create a larger box
+    box = BRepBuilderAPI.MakeBox(20.0, 20.0, 20.0).solid()
+    
+    # Create offset shape (shrinking the box)
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(box, -2.0, 1e-3)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_cylinder():
+    """Test offset of a cylindrical shell."""
+    # Create a cylinder axis
+    axis = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    
+    # Create cylindrical surface
+    cylinder = Geom.CylindricalSurface(axis, 5.0)
+    
+    # Create a face on the cylinder (partial)
+    face = BRepBuilderAPI.MakeFace(cylinder, 0, math.pi, 0, 10.0, 1e-3).face()
+    
+    # Create offset
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(face, 0.5, 1e-3)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_simple_algorithm():
+    """Test offset using the simple algorithm without intersections."""
+    # Create a simple box
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    # Use simple algorithm
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_simple(box, 0.5)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_with_arc_join():
+    """Test offset with Arc join type (default)."""
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(
+        box, 1.0, 1e-3,
+        join=GeomAbs.JoinType.Arc
+    )
+    
+    assert offset_maker.is_done()
+    assert offset_maker.join_type == GeomAbs.JoinType.Arc
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_with_intersection_join():
+    """Test offset with Intersection join type."""
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(
+        box, 1.0, 1e-3,
+        join=GeomAbs.JoinType.Intersection
+    )
+    
+    assert offset_maker.is_done()
+    assert offset_maker.join_type == GeomAbs.JoinType.Intersection
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_skin_mode():
+    """Test offset with Skin mode (default)."""
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(
+        box, 1.0, 1e-3,
+        mode=BRepOffsetAPI.OffsetMode.Skin
+    )
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_remove_internal_edges():
+    """Test offset with internal edge removal enabled."""
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).solid()
+    
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(
+        box, 1.0, 1e-3,
+        remove_internal_edges=True
+    )
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_from_shell():
+    """Test offset of a shell (not solid)."""
+    # Create box and get a face (shell with single face)
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shell()
+    
+    # Offset the shell
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(box, 0.5, 1e-3)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_shape_sphere():
+    """Test offset of a sphere."""
+    # Create a sphere
+    sphere = BRepBuilderAPI.MakeSphere(5.0).solid()
+    
+    # Offset outward
+    offset_maker = BRepOffsetAPI.MakeOffsetShape()
+    offset_maker.perform_by_join(sphere, 1.0, 1e-3)
+    
+    assert offset_maker.is_done()
+    result = offset_maker.shape()
+    assert not result.is_null()
