@@ -279,8 +279,8 @@ void bind_gp(py::module_ &m)
         .def_property("xyz", &gp_Vec::XYZ, &gp_Vec::SetXYZ)
         
         // Magnitude
-        .def("magnitude", &gp_Vec::Magnitude)
-        .def("square_magnitude", &gp_Vec::SquareMagnitude)
+        .def_property_readonly("magnitude", &gp_Vec::Magnitude)
+        .def_property_readonly("square_magnitude", &gp_Vec::SquareMagnitude)
         
         // Comparison
         .def("is_equal", &gp_Vec::IsEqual, py::arg("other"), py::arg("linear_tolerance"), py::arg("angular_tolerance"))
