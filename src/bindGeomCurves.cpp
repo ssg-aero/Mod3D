@@ -96,7 +96,9 @@ void bind_geom_curves(py::module_ &m)
         // Parameter bounds
         .def("first_parameter", &Geom_Curve::FirstParameter)
         .def("last_parameter", &Geom_Curve::LastParameter)
-        
+        .def("bounds", [](const Geom_Curve& self) {
+            return py::make_tuple(self.FirstParameter(), self.LastParameter());
+        })
         // Properties
         .def("is_closed", &Geom_Curve::IsClosed)
         .def("is_periodic", &Geom_Curve::IsPeriodic)
