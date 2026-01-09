@@ -257,7 +257,7 @@ auto extract_curve_tessellation( const opencascade::handle<Geom_Curve>& curve, d
 {
     
     GCPnts_UniformDeflection discretization(
-        GeomAdaptor_Curve(curve), linear_deflection,
+        GeomAdaptor_Curve(curve), linear_deflection
     );
 
     edge_tess_info edge_info;

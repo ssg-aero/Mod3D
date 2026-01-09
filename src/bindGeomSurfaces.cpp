@@ -114,6 +114,7 @@ inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(c
 // Forward declaration
 extern void bind_geom_surfaces_splines(py::module_ &m);
 extern void bind_geom_surfaces_elementary(py::module_ &m);
+extern void bind_geom_swept_surfaces(py::module_ &m);
 
 void bind_geom_surfaces(py::module_ &m)
 {
@@ -748,4 +749,7 @@ void bind_geom_surfaces(py::module_ &m)
                 transform (gp.Trsf): The transformation to apply.
             )doc")
         ;
+
+    // Bind swept surfaces from dedicated file
+    bind_geom_swept_surfaces(m);
 }
