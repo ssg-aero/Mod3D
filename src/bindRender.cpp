@@ -3,6 +3,7 @@
 #include <Geom_Curve.hxx>
 #include <Standard_Handle.hxx>
 #include <numeric>
+#include <pybind11/detail/common.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -30,6 +31,8 @@ namespace py = pybind11;
 #include <numbers>
 #include <GCPnts_UniformDeflection.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_CompCurve.hxx>
 
 using edge_tess_info = std::tuple<
     py::array_t<int>, 
@@ -253,11 +256,11 @@ auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
     return std::make_pair(result_faces, result_edges);
 }
 
-auto extract_curve_tessellation( const opencascade::handle<Geom_Curve>& curve, double linear_deflection)
+auto extract_curve_tessellation( const Adaptor3d_Curve& curve, double linear_deflection)
 {
     
     GCPnts_UniformDeflection discretization(
-        GeomAdaptor_Curve(curve), linear_deflection
+        curve, linear_deflection
     );
 
     edge_tess_info edge_info;
@@ -282,6 +285,25 @@ auto extract_curve_tessellation( const opencascade::handle<Geom_Curve>& curve, d
 
     return edge_info;
 
+}
+
+auto extract_curve_tessellation( const opencascade::handle<Geom_Curve>& curve, double linear_deflection)
+{
+    GeomAdaptor_Curve adaptor_curve(curve);
+    return extract_curve_tessellation(adaptor_curve, linear_deflection);
+}
+
+auto extract_curve_tessellation( const TopoDS_Edge& edge, double linear_deflection)
+{
+
+    BRepAdaptor_Curve adaptor_curve(edge);
+    return extract_curve_tessellation(adaptor_curve, linear_deflection);
+}
+
+auto extract_curve_tessellation( const TopoDS_Wire& wire, double linear_deflection)
+{
+    BRepAdaptor_CompCurve adaptor_curve(wire);
+    return extract_curve_tessellation(adaptor_curve, linear_deflection);
 }
 
 namespace py = pybind11;
@@ -314,12 +336,38 @@ void bind_render(py::module_ &m)
         "    - vertex UV coordinates (numpy array of float, shape (n_vertices, 2))"
     );
 
-    m.def("extract_curve_tessellation", &extract_curve_tessellation,
+    m.def("extract_curve_tessellation", py::overload_cast<const opencascade::handle<Geom_Curve>&, double>(&extract_curve_tessellation),
         py::arg("curve"),
         py::arg("linear_deflection"),
         "Extracts tessellation data from the given curve.\n\n"
         "Parameters:\n"
         "  curve: The Geom_Curve to tessellate\n"
+        "  linear_deflection: The linear deflection value for meshing\n\n"
+        "Returns:\n"
+        "  A tuple containing:\n"
+        "    - vertex indices (numpy array of int, shape (n_points,))\n"
+        "    - vertex positions (numpy array of float, shape (n_points, 3))"
+    );
+
+    m.def("extract_curve_tessellation", py::overload_cast<const TopoDS_Edge&, double>(&extract_curve_tessellation),
+        py::arg("edge"),
+        py::arg("linear_deflection"),
+        "Extracts tessellation data from the given edge.\n\n"
+        "Parameters:\n"
+        "  edge: The TopoDS_Edge to tessellate\n"
+        "  linear_deflection: The linear deflection value for meshing\n\n"
+        "Returns:\n"
+        "  A tuple containing:\n"
+        "    - vertex indices (numpy array of int, shape (n_points,))\n"
+        "    - vertex positions (numpy array of float, shape (n_points, 3))"
+    );
+
+    m.def("extract_curve_tessellation", py::overload_cast<const TopoDS_Wire&, double>(&extract_curve_tessellation),
+        py::arg("wire"),
+        py::arg("linear_deflection"),
+        "Extracts tessellation data from the given wire.\n\n"
+        "Parameters:\n"
+        "  wire: The TopoDS_Wire to tessellate\n"
         "  linear_deflection: The linear deflection value for meshing\n\n"
         "Returns:\n"
         "  A tuple containing:\n"
