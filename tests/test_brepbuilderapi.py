@@ -832,8 +832,8 @@ def test_make_edge_complex_bspline():
         gp.Pnt(3.0, 1.0, 1.0),
         gp.Pnt(4.0, 0.0, 0.0)
     ]
-    knots = [0.0, 0.25, 0.5, 0.75, 1.0]
-    multiplicities = [4, 1, 1, 1, 4]
+    knots = [0.0, 0.5, 1.0]
+    multiplicities = [4, 1, 4]
     degree = 3
     
     bspline = Geom.BSplineCurve(poles, knots, multiplicities, degree)
