@@ -169,7 +169,13 @@ def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
     - RenderOrder ensures edges appear on top of faces
     """
     # Extract tessellation data
-    if(isinstance(shape, TopoDS.Shape)):
+    if(isinstance(shape, Geom.Curve) or isinstance(shape, TopoDS.Edge) or isinstance(shape, TopoDS.Wire)):
+        edges_data = Render.extract_curve_tessellation(shape, linear_deflection)
+
+        mesh_edges = edges_mesh([edges_data], color='blue')
+
+        return None, mesh_edges
+    elif(isinstance(shape, TopoDS.Shape)):
         faces_data, edges_data = Render.extract_tessellation(shape, linear_deflection, **kwargs)
         
         mesh_face = faces_mesh(faces_data)
@@ -177,12 +183,6 @@ def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
 
         return mesh_face, mesh_edges
     
-    elif(isinstance(shape, Geom.Curve)):
-        edges_data = Render.extract_curve_tessellation(shape, linear_deflection, **kwargs)
-
-        mesh_edges = edges_mesh([edges_data], color='blue')
-
-        return None, mesh_edges
     elif(isinstance(shape, list)):
         mesh_face = []
         mesh_edges = []
