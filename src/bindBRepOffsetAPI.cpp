@@ -14,6 +14,7 @@
 #include <BRepBuilderAPI_PipeError.hxx>
 #include <BRepBuilderAPI_TransitionMode.hxx>
 #include <BRepOffsetAPI_MakeFilling.hxx>
+#include <BRepOffsetAPI_MakeOffset.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Law_Function.hxx>
 #include <gp_Ax2.hxx>
@@ -295,4 +296,207 @@ void bind_brep_offset_api(py::module_ &m)
             "Returns maximum curvature difference for constraint at given index")
     ;
 
+
+    py::class_<BRepOffsetAPI_MakeOffset, BRepBuilderAPI_MakeShape>(m, "MakeOffset",
+        R"doc(
+        Creates 2D offset curves from wires on a planar face.
+
+        This algorithm offsets wires contained in a planar face by a specified
+        distance, creating parallel curves. It handles corners using different
+        join types and can produce open or closed results.
+
+        The algorithm works with wires lying on a plane. For 3D solid offsets,
+        use BRepOffsetAPI_MakeOffsetShape instead.
+
+        Join types at salient vertices:
+        - GeomAbs_Arc: Corners are filleted with circular arcs (default)
+        - GeomAbs_Tangent: Corners are extended tangentially
+        - GeomAbs_Intersection: Edges are extended until they intersect
+
+        Typical usage:
+          # From a planar face containing wires
+          offset = BRepOffsetAPI.MakeOffset(face, GeomAbs.JoinType.Arc)
+          offset.perform(5.0)  # Offset by 5 units
+          result = offset.shape()
+
+          # From a single wire
+          offset = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc)
+          offset.perform(-2.0)  # Negative offset (inward)
+          result = offset.shape()
+
+          # Multiple wires
+          offset = BRepOffsetAPI.MakeOffset()
+          offset.init(GeomAbs.JoinType.Arc)
+          offset.add_wire(wire1)
+          offset.add_wire(wire2)
+          offset.perform(3.0)
+          result = offset.shape()
+        )doc")
+        
+        // Default constructor
+        .def(py::init<>(),
+            "Creates an empty offset algorithm.\n\n"
+            "Use init() to initialize and add_wire() to add wires before calling perform().")
+        
+        // Constructor from face
+        .def(py::init<const TopoDS_Face&, const GeomAbs_JoinType, const Standard_Boolean>(),
+            py::arg("spine"),
+            py::arg("join") = GeomAbs_Arc,
+            py::arg("is_open_result") = false,
+            R"doc(
+            Creates an offset algorithm from a planar face.
+
+            All wires contained in the face will be offset.
+
+            Parameters:
+              spine: Planar face containing the wires to offset
+              join: Corner treatment type (default: Arc)
+                - Arc: Filleted corners with circular arcs
+                - Tangent: Extended tangentially
+                - Intersection: Extended until intersection
+              is_open_result: If True, allows open wire results (default: False)
+            )doc")
+        
+        // Constructor from wire
+        .def(py::init<const TopoDS_Wire&, const GeomAbs_JoinType, const Standard_Boolean>(),
+            py::arg("spine"),
+            py::arg("join") = GeomAbs_Arc,
+            py::arg("is_open_result") = false,
+            R"doc(
+            Creates an offset algorithm from a single wire.
+
+            The wire should be planar.
+
+            Parameters:
+              spine: Wire to offset (should be planar)
+              join: Corner treatment type (default: Arc)
+              is_open_result: If True, allows open wire results (default: False)
+            )doc")
+        
+        // Init from face
+        .def("init",
+            py::overload_cast<const TopoDS_Face&, const GeomAbs_JoinType, const Standard_Boolean>(
+                &BRepOffsetAPI_MakeOffset::Init),
+            py::arg("spine"),
+            py::arg("join") = GeomAbs_Arc,
+            py::arg("is_open_result") = false,
+            R"doc(
+            Initializes the algorithm with a planar face.
+
+            Parameters:
+              spine: Planar face containing the wires to offset
+              join: Corner treatment type (default: Arc)
+              is_open_result: If True, allows open wire results (default: False)
+            )doc")
+        
+        // Init without face (for adding wires manually)
+        .def("init",
+            py::overload_cast<const GeomAbs_JoinType, const Standard_Boolean>(
+                &BRepOffsetAPI_MakeOffset::Init),
+            py::arg("join") = GeomAbs_Arc,
+            py::arg("is_open_result") = false,
+            R"doc(
+            Initializes the algorithm for manual wire addition.
+
+            Use add_wire() to add wires after calling this method.
+
+            Parameters:
+              join: Corner treatment type (default: Arc)
+              is_open_result: If True, allows open wire results (default: False)
+            )doc")
+        
+        // Set approximation
+        .def("set_approx", &BRepOffsetAPI_MakeOffset::SetApprox,
+            py::arg("to_approx"),
+            R"doc(
+            Sets the approximation flag.
+
+            When enabled, input contours are converted to curves consisting
+            only of 2D circular arcs and 2D linear segments. This can improve
+            performance and stability for complex input curves.
+
+            Parameters:
+              to_approx: True to enable approximation of input contours
+            )doc")
+        
+        // Add wire
+        .def("add_wire", &BRepOffsetAPI_MakeOffset::AddWire,
+            py::arg("spine"),
+            R"doc(
+            Adds a wire to be offset.
+
+            Multiple wires can be added. All wires should lie in the same plane.
+            Call init() before adding wires if not using the face constructor.
+
+            Parameters:
+              spine: Wire to add for offsetting
+            )doc")
+        
+        // Perform offset
+        .def("perform", &BRepOffsetAPI_MakeOffset::Perform,
+            py::arg("offset"),
+            py::arg("alt") = 0.0,
+            R"doc(
+            Computes the offset at the specified distance.
+
+            Positive offset values expand outward, negative values contract inward.
+            The alt parameter allows creating the offset at a different altitude
+            from the original plane.
+
+            Parameters:
+              offset: Distance to offset (positive=outward, negative=inward)
+              alt: Altitude from the plane of the spine (default: 0.0)
+
+            Raises:
+              StdFail_NotDone: If the offset cannot be computed
+            )doc")
+        
+        // Build
+        .def("build",
+            [](BRepOffsetAPI_MakeOffset& self) {
+                self.Build();
+            },
+            "Builds the resulting offset shape.\n\n"
+            "This is called automatically by perform(), but can be called\n"
+            "explicitly if needed. Use is_done() to check success.")
+        
+        // Generated shapes
+        .def("generated", [](BRepOffsetAPI_MakeOffset& self, const TopoDS_Shape& shape) {
+                TopTools_ListOfShape result = self.Generated(shape);
+                py::list py_result;
+                for (TopTools_ListIteratorOfListOfShape it(result); it.More(); it.Next()) {
+                    py_result.append(it.Value());
+                }
+                return py_result;
+            },
+            py::arg("shape"),
+            R"doc(
+            Returns shapes generated from an input shape.
+
+            Parameters:
+              shape: A subshape of the original wire/face
+
+            Returns:
+              List of shapes created from the input shape
+            )doc")
+        
+        // Static method to convert face
+        .def_static("convert_face", &BRepOffsetAPI_MakeOffset::ConvertFace,
+            py::arg("face"),
+            py::arg("angle_tolerance"),
+            R"doc(
+            Converts a face's wires to arcs and segments only.
+
+            This utility method converts each wire of the face into contours
+            consisting only of circular arcs and linear segments. New 3D curves
+            are built as well. This can be useful for preprocessing complex
+            faces before offsetting.
+
+            Parameters:
+              face: The face to convert
+              angle_tolerance: Angular tolerance for the conversion
+
+            Returns:
+              A new face with simplified wire geometry
+            )doc");
 }

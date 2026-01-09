@@ -1091,3 +1091,286 @@ def test_make_filling_basic():
 
     assert isinstance(fill_op.g0_error, float)
     assert fill_op.g0_error >= 0.0
+
+
+# ==================== MakeOffset Tests ====================
+
+def test_make_offset_from_face():
+    """Test creating an offset from a planar face."""
+    # Create a simple rectangular face in the XY plane
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    p3 = gp.Pnt(10.0, 5.0, 0.0)
+    p4 = gp.Pnt(0.0, 5.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    face = BRepBuilderAPI.MakeFace(wire, False).face()
+    
+    # Create offset
+    offset = BRepOffsetAPI.MakeOffset(face, GeomAbs.JoinType.Arc)
+    offset.perform(1.0)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_from_wire():
+    """Test creating an offset from a single wire."""
+    # Create a square wire
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    p3 = gp.Pnt(5.0, 5.0, 0.0)
+    p4 = gp.Pnt(0.0, 5.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Create offset from wire
+    offset = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc)
+    offset.perform(0.5)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_default_constructor():
+    """Test offset with default constructor and manual initialization."""
+    # Create a square wire
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(4.0, 0.0, 0.0)
+    p3 = gp.Pnt(4.0, 4.0, 0.0)
+    p4 = gp.Pnt(0.0, 4.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Use default constructor with init
+    offset = BRepOffsetAPI.MakeOffset()
+    offset.init(GeomAbs.JoinType.Arc, False)
+    offset.add_wire(wire)
+    offset.perform(0.3)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_multiple_wires():
+    """Test offset with multiple wires added manually."""
+    # Create two square wires
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(2.0, 0.0, 0.0)
+    p3 = gp.Pnt(2.0, 2.0, 0.0)
+    p4 = gp.Pnt(0.0, 2.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire1 = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Create second wire offset from first
+    p5 = gp.Pnt(5.0, 0.0, 0.0)
+    p6 = gp.Pnt(7.0, 0.0, 0.0)
+    p7 = gp.Pnt(7.0, 2.0, 0.0)
+    p8 = gp.Pnt(5.0, 2.0, 0.0)
+    
+    e5 = BRepBuilderAPI.MakeEdge(p5, p6).edge()
+    e6 = BRepBuilderAPI.MakeEdge(p6, p7).edge()
+    e7 = BRepBuilderAPI.MakeEdge(p7, p8).edge()
+    e8 = BRepBuilderAPI.MakeEdge(p8, p5).edge()
+    
+    wire2 = BRepBuilderAPI.MakeWire(e5, e6, e7, e8).wire()
+    
+    # Create offset with multiple wires
+    offset = BRepOffsetAPI.MakeOffset()
+    offset.init(GeomAbs.JoinType.Arc)
+    offset.add_wire(wire1)
+    offset.add_wire(wire2)
+    offset.perform(0.2)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_negative_distance():
+    """Test offset with negative distance (inward offset)."""
+    # Create a larger rectangular wire
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    p3 = gp.Pnt(10.0, 8.0, 0.0)
+    p4 = gp.Pnt(0.0, 8.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Create inward offset (negative distance)
+    offset = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc)
+    offset.perform(-1.0)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_with_join_types():
+    """Test offset with different join types."""
+    # Create a wire with right angle corners
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(3.0, 0.0, 0.0)
+    p3 = gp.Pnt(3.0, 3.0, 0.0)
+    p4 = gp.Pnt(0.0, 3.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Test Arc join
+    offset_arc = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc)
+    offset_arc.perform(0.5)
+    assert offset_arc.is_done()
+    
+    # Test Tangent join
+    offset_tangent = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Tangent)
+    offset_tangent.perform(0.5)
+    assert offset_tangent.is_done()
+    
+    # Test Intersection join
+    offset_inter = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Intersection)
+    offset_inter.perform(0.5)
+    assert offset_inter.is_done()
+
+
+def test_make_offset_set_approx():
+    """Test setting approximation flag."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(6.0, 0.0, 0.0)
+    p3 = gp.Pnt(6.0, 6.0, 0.0)
+    p4 = gp.Pnt(0.0, 6.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    offset = BRepOffsetAPI.MakeOffset(wire)
+    offset.set_approx(True)  # Enable approximation
+    offset.perform(0.5)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_open_result():
+    """Test offset with open result option."""
+    # Create an open wire (not closed)
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    p3 = gp.Pnt(5.0, 3.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2).wire()
+    
+    offset = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc, True)
+    offset.perform(0.5)
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_altitude():
+    """Test offset with altitude parameter."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(4.0, 0.0, 0.0)
+    p3 = gp.Pnt(4.0, 4.0, 0.0)
+    p4 = gp.Pnt(0.0, 4.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    
+    # Create offset with altitude (offset in Z direction as well)
+    offset = BRepOffsetAPI.MakeOffset(wire, GeomAbs.JoinType.Arc)
+    offset.perform(0.5, 1.0)  # Offset 0.5 in XY plane, 1.0 in Z
+    
+    assert offset.is_done()
+    result = offset.shape()
+    assert not result.is_null()
+
+
+def test_make_offset_generated_shapes():
+    """Test getting generated shapes from offset."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(5.0, 0.0, 0.0)
+    p3 = gp.Pnt(5.0, 5.0, 0.0)
+    p4 = gp.Pnt(0.0, 5.0, 0.0)
+    
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(e1, e2, e3, e4).wire()
+    face = BRepBuilderAPI.MakeFace(wire, False).face()
+    
+    offset = BRepOffsetAPI.MakeOffset(face, GeomAbs.JoinType.Arc)
+    offset.perform(0.5)
+    
+    assert offset.is_done()
+    
+    generated = offset.generated(wire)
+    assert generated is not None
+
+
+def test_make_offset_convert_face():
+    """Test the static convert_face method."""
+    # Create a face with curved edges
+    circle = Geom.Circle(gp.Ax2(), 3.0)
+    circle_edge = BRepBuilderAPI.MakeEdge(circle, 0, math.pi).edge()
+    
+    # Add straight edges to complete the wire
+    p1 = circle.value(0)
+    p2 = circle.value(math.pi)
+    
+    edge1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    edge2 = BRepBuilderAPI.MakeEdge(p2, p1).edge()
+    
+    wire = BRepBuilderAPI.MakeWire(circle_edge, edge1, edge2).wire()
+    face = BRepBuilderAPI.MakeFace(wire, False).face()
+    
+    # Convert face to arcs and segments
+    converted = BRepOffsetAPI.MakeOffset.convert_face(face, 0.01)
+    assert not converted.is_null()
