@@ -48,6 +48,7 @@ pybind11_add_module(mod3d
     src/bindTopAbs.cpp
     src/bindTopExp.cpp
     src/bindShapes.cpp
+    src/bindAdaptor.cpp
     src/bindBRep.cpp
     src/bindBRepPrim.cpp
     src/bindBRepPrimAPI.cpp

@@ -18,6 +18,7 @@ void bind_geom_abs(py::module_ &m);
 void bind_geom_fill(py::module_ &m);
 void bind_topods(py::module_ &m);
 void bind_top_abs(py::module_ &m);
+void bind_adaptor(py::module_ &m);
 void bind_top_exp(py::module_ &m);
 void bind_brep(py::module_ &m);
 void bind_brepbuilder_api(py::module_ &m);
@@ -71,6 +72,7 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ GeomAbs = m.def_submodule("GeomAbs", "GeomAbs module");
 
     py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
+    py::module_ Adaptor = m.def_submodule("Adaptor", "Adaptor module");
     py::module_ TopAbs = m.def_submodule("TopAbs", "Topological shape types");
     py::module_ TopExp = m.def_submodule("TopExp", "Topological exploration module");
     py::module_ BRep = m.def_submodule("BRep", "Boundary representation module");
@@ -121,6 +123,7 @@ PYBIND11_MODULE(mod3d, m)
     bind_geom_fill(GeomFill);
     bind_geom(Geom);
     bind_topods(TopoDS);
+    bind_adaptor(Adaptor);
     bind_top_abs(TopAbs);
     bind_top_exp(TopExp);
     bind_brep(BRep);

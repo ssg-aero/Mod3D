@@ -10,6 +10,7 @@ from .mod3d import Geom
 from .mod3d import GeomFill
 from .mod3d import GeomAbs
 from .mod3d import TopoDS
+from .mod3d import Adaptor
 from .mod3d import TopAbs
 from .mod3d import TopExp
 from .mod3d import BRep
@@ -32,6 +33,7 @@ __all__ = [
     "GeomFill",
     "GeomAbs",
     "TopoDS",
+    "Adaptor",
     "TopAbs",
     "TopExp",
     "BRep",
