@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <BRepOffsetAPI_MakeEvolved.hxx>
 #include <BRepBuilderAPI_MakeShape.hxx>
@@ -16,6 +17,11 @@
 #include <BRepOffsetAPI_MakeFilling.hxx>
 #include <BRepOffsetAPI_MakeOffset.hxx>
 #include <BRepOffsetAPI_MakeOffsetShape.hxx>
+#include <BRepOffsetAPI_MiddlePath.hxx>
+#include <BRepOffsetAPI_NormalProjection.hxx>
+#include <BRepOffsetAPI_ThruSections.hxx>
+#include <BRepFill_ThruSectionErrorStatus.hxx>
+#include <Approx_ParametrizationType.hxx>
 #include <BRepOffset_Mode.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Law_Function.hxx>
@@ -635,4 +641,476 @@ void bind_brep_offset_api(py::module_ &m)
         // GetJoinType - property
         .def_property_readonly("join_type", &BRepOffsetAPI_MakeOffsetShape::GetJoinType,
             "Returns the join type used for the offset computation.");
+    
+    // ==================== MiddlePath ====================
+    py::class_<BRepOffsetAPI_MiddlePath, BRepBuilderAPI_MakeShape>(m, "MiddlePath",
+        R"doc(
+        Computes the middle path of a pipe-like shape.
+
+        This algorithm extracts a wire representing the middle path (spine)
+        of a pipe-shaped solid or shell. The pipe must have identifiable
+        start and end sections.
+
+        The algorithm works by:
+        1. Identifying edges on the start and end sections
+        2. Finding corresponding paths through the pipe
+        3. Computing the middle of those paths
+
+        Requirements:
+        - The shape must be pipe-like (constant section along a path)
+        - Start and end shapes must be faces or wires on the pipe boundaries
+
+        Typical usage:
+          # Extract middle path from a pipe
+          pipe = make_pipe(...)  # A pipe-shaped solid
+          start_face = ...  # Face at one end
+          end_face = ...    # Face at the other end
+          
+          middle = BRepOffsetAPI.MiddlePath(pipe, start_face, end_face)
+          middle.build()
+          path_wire = middle.shape()
+        )doc")
+        
+        .def(py::init<const TopoDS_Shape&, const TopoDS_Shape&, const TopoDS_Shape&>(),
+            py::arg("shape"),
+            py::arg("start_shape"),
+            py::arg("end_shape"),
+            R"doc(
+            Constructs a middle path algorithm.
+
+            Parameters:
+              shape: The pipe-like shape to analyze
+              start_shape: A wire or face at one end of the pipe
+              end_shape: A wire or face at the other end of the pipe
+            )doc")
+        
+        .def("build", [](BRepOffsetAPI_MiddlePath& self) {
+                self.Build();
+            },
+            "Computes the middle path. Check is_done() for success.");
+    
+    // ==================== NormalProjection ====================
+    py::class_<BRepOffsetAPI_NormalProjection, BRepBuilderAPI_MakeShape>(m, "NormalProjection",
+        R"doc(
+        Projects edges/wires onto a shape along the normal direction.
+
+        This algorithm projects edges or wires onto a target shape (typically
+        a face or shell) by projecting each point along the normal to the
+        target surface at that point.
+
+        The projection produces new edges that lie on the target surface,
+        with associated 2D curves (pcurves) on the surface.
+
+        Features:
+        - Can project multiple edges/wires in one operation
+        - Results are built as oriented wires when possible
+        - Optional 3D curve computation (vs. keeping original curves)
+        - Configurable approximation parameters
+
+        Typical usage:
+          # Project a wire onto a surface
+          proj = BRepOffsetAPI.NormalProjection(target_face)
+          proj.add(wire_to_project)
+          proj.build()
+          projected = proj.shape()
+        )doc")
+        
+        // Default constructor
+        .def(py::init<>(),
+            "Creates an empty normal projection algorithm.\n\n"
+            "Use init() to set the target shape and add() to add shapes to project.")
+        
+        // Constructor with target shape
+        .def(py::init<const TopoDS_Shape&>(),
+            py::arg("target"),
+            R"doc(
+            Creates a normal projection algorithm with a target shape.
+
+            Parameters:
+              target: The shape to project onto (typically a face or shell)
+
+            Default parameters:
+              Tol3D = 1e-4, Tol2D = sqrt(Tol3D)
+              InternalContinuity = C2
+              MaxDegree = 14, MaxSeg = 16
+            )doc")
+        
+        // Init
+        .def("init", &BRepOffsetAPI_NormalProjection::Init,
+            py::arg("target"),
+            "Initializes with a target shape to project onto.")
+        
+        // Add
+        .def("add", &BRepOffsetAPI_NormalProjection::Add,
+            py::arg("to_project"),
+            R"doc(
+            Adds a shape to be projected onto the target.
+
+            Parameters:
+              to_project: An edge or wire to project
+
+            Raises:
+              Standard_ConstructionError: If the shape cannot be added
+            )doc")
+        
+        // SetParams
+        .def("set_params", &BRepOffsetAPI_NormalProjection::SetParams,
+            py::arg("tol_3d"),
+            py::arg("tol_2d"),
+            py::arg("continuity"),
+            py::arg("max_degree"),
+            py::arg("max_seg"),
+            R"doc(
+            Sets approximation parameters.
+
+            Parameters:
+              tol_3d: Required tolerance between 3D curve and 2D representation
+              tol_2d: 2D tolerance
+              continuity: Order of continuity for approximation (C0, C1, C2, etc.)
+              max_degree: Maximum degree for BSpline approximation
+              max_seg: Maximum number of segments for BSpline approximation
+            )doc")
+        
+        // SetMaxDistance
+        .def("set_max_distance", &BRepOffsetAPI_NormalProjection::SetMaxDistance,
+            py::arg("max_dist"),
+            R"doc(
+            Sets maximum distance between target and source shape.
+
+            If the distance exceeds this value, that part of the projection
+            is discarded. Use negative value to disable this check.
+
+            Parameters:
+              max_dist: Maximum allowed distance (< 0 to disable)
+            )doc")
+        
+        // SetLimit
+        .def("set_limit", &BRepOffsetAPI_NormalProjection::SetLimit,
+            py::arg("face_boundaries") = true,
+            R"doc(
+            Controls limitation of projected edges to face boundaries.
+
+            Parameters:
+              face_boundaries: If True, limit projection to face boundaries
+            )doc")
+        
+        // Compute3d
+        .def("compute_3d", &BRepOffsetAPI_NormalProjection::Compute3d,
+            py::arg("with_3d") = true,
+            R"doc(
+            Sets whether to compute new 3D curves.
+
+            Parameters:
+              with_3d: If True, compute new 3D curves;
+                       If False, keep original curves for result edges
+            )doc")
+        
+        // Build
+        .def("build", [](BRepOffsetAPI_NormalProjection& self) {
+                self.Build();
+            },
+            "Builds the projection result as a compound of wires.")
+        
+        // Projection
+        .def("projection", &BRepOffsetAPI_NormalProjection::Projection,
+            py::return_value_policy::reference,
+            "Returns the projection result (same as shape()).")
+        
+        // Couple
+        .def("couple", &BRepOffsetAPI_NormalProjection::Couple,
+            py::arg("edge"),
+            py::return_value_policy::reference,
+            R"doc(
+            Returns the target face corresponding to a projected edge.
+
+            Parameters:
+              edge: A projected edge from the result
+
+            Returns:
+              The face on which the edge was projected
+            )doc")
+        
+        // Ancestor
+        .def("ancestor", &BRepOffsetAPI_NormalProjection::Ancestor,
+            py::arg("edge"),
+            py::return_value_policy::reference,
+            R"doc(
+            Returns the original edge corresponding to a projected edge.
+
+            Parameters:
+              edge: A projected edge from the result
+
+            Returns:
+              The original edge that was projected
+            )doc")
+        
+        // BuildWire
+        .def("build_wire", [](BRepOffsetAPI_NormalProjection& self) {
+                TopTools_ListOfShape liste;
+                Standard_Boolean result = self.BuildWire(liste);
+                py::list py_result;
+                for (TopTools_ListIteratorOfListOfShape it(liste); it.More(); it.Next()) {
+                    py_result.append(it.Value());
+                }
+                return py::make_tuple(result, py_result);
+            },
+            R"doc(
+            Builds the result as a list of wires if possible.
+
+            Returns:
+              Tuple of (success, list_of_wires)
+              success is True only if there is exactly one wire
+            )doc");
+    
+    // ==================== ThruSections Error Status ====================
+    py::enum_<BRepFill_ThruSectionErrorStatus>(m, "ThruSectionStatus",
+        "Status codes for ThruSections algorithm.")
+        .value("Done", BRepFill_ThruSectionErrorStatus_Done,
+            "Operation completed successfully")
+        .value("NotDone", BRepFill_ThruSectionErrorStatus_NotDone,
+            "Operation not completed")
+        .value("NotSameTopology", BRepFill_ThruSectionErrorStatus_NotSameTopology,
+            "Profiles have different topology (all must be closed or all open)")
+        .value("ProfilesInconsistent", BRepFill_ThruSectionErrorStatus_ProfilesInconsistent,
+            "Profiles are inconsistent")
+        .value("WrongUsage", BRepFill_ThruSectionErrorStatus_WrongUsage,
+            "Wrong usage of punctual sections")
+        .value("Null3DCurve", BRepFill_ThruSectionErrorStatus_Null3DCurve,
+            "Null 3D curve in edge")
+        .value("Failed", BRepFill_ThruSectionErrorStatus_Failed,
+            "Algorithm has failed")
+        .export_values();
+    
+    // ==================== Approx_ParametrizationType ====================
+    py::enum_<Approx_ParametrizationType>(m, "ParametrizationType",
+        "Parametrization types for curve/surface approximation.")
+        .value("ChordLength", Approx_ChordLength, "Parametrization by chord length")
+        .value("Centripetal", Approx_Centripetal, "Centripetal parametrization")
+        .value("IsoParametric", Approx_IsoParametric, "Iso-parametric (uniform) parametrization")
+        .export_values();
+    
+    // ==================== ThruSections ====================
+    py::class_<BRepOffsetAPI_ThruSections, BRepBuilderAPI_MakeShape>(m, "ThruSections",
+        R"doc(
+        Creates a shell or solid by lofting through a set of wire sections.
+
+        This algorithm builds a shape by connecting a sequence of wire profiles.
+        The wires are connected either by ruled surfaces (straight lines between
+        corresponding points) or by smooth approximated surfaces.
+
+        Features:
+        - Can create shells (open) or solids (closed with end caps)
+        - First and last sections can be vertices (points)
+        - Optional smoothing with configurable continuity
+        - Automatic wire compatibility checking and adjustment
+
+        Requirements:
+        - At least one wire section must be provided
+        - Wires should have compatible orientations
+        - Vertices can only be first or last sections
+
+        Typical usage:
+          # Create a lofted solid through three circles
+          loft = BRepOffsetAPI.ThruSections(is_solid=True)
+          loft.add_wire(circle1)
+          loft.add_wire(circle2)
+          loft.add_wire(circle3)
+          loft.build()
+          result = loft.shape()
+
+          # Loft from point to circle
+          loft = BRepOffsetAPI.ThruSections(is_solid=True)
+          loft.add_vertex(apex_vertex)
+          loft.add_wire(base_circle)
+          loft.build()
+          cone = loft.shape()
+        )doc")
+        
+        // Constructor
+        .def(py::init<Standard_Boolean, Standard_Boolean, Standard_Real>(),
+            py::arg("is_solid") = false,
+            py::arg("ruled") = false,
+            py::arg("pres3d") = 1.0e-6,
+            R"doc(
+            Creates a ThruSections algorithm.
+
+            Parameters:
+              is_solid: If True, create a solid with end caps;
+                        If False, create an open shell (default)
+              ruled: If True, create ruled surfaces between sections;
+                     If False, create smooth approximated surfaces (default)
+              pres3d: Precision for 3D approximation (default: 1e-6)
+            )doc")
+        
+        // Init
+        .def("init", &BRepOffsetAPI_ThruSections::Init,
+            py::arg("is_solid") = false,
+            py::arg("ruled") = false,
+            py::arg("pres3d") = 1.0e-6,
+            "Reinitializes the algorithm with new parameters.")
+        
+        // AddWire
+        .def("add_wire", &BRepOffsetAPI_ThruSections::AddWire,
+            py::arg("wire"),
+            R"doc(
+            Adds a wire section to the loft.
+
+            Wires are processed in the order they are added.
+            Use build() after adding all sections.
+
+            Parameters:
+              wire: A wire representing a cross-section
+            )doc")
+        
+        // AddVertex
+        .def("add_vertex", &BRepOffsetAPI_ThruSections::AddVertex,
+            py::arg("vertex"),
+            R"doc(
+            Adds a vertex (point) section to the loft.
+
+            A vertex can only be added as the first or last section.
+            This creates a pointed end (like a cone apex).
+
+            Parameters:
+              vertex: A vertex representing a point section
+            )doc")
+        
+        // CheckCompatibility
+        .def("check_compatibility", &BRepOffsetAPI_ThruSections::CheckCompatibility,
+            py::arg("check") = true,
+            R"doc(
+            Enables/disables wire compatibility checking.
+
+            When enabled, the algorithm adjusts wires to have the same
+            number of edges and consistent orientations to avoid twisted results.
+
+            Parameters:
+              check: If True, enable compatibility checking (default)
+            )doc")
+        
+        // SetSmoothing
+        .def("set_smoothing", &BRepOffsetAPI_ThruSections::SetSmoothing,
+            py::arg("use_smoothing"),
+            "Enables/disables smoothing in the approximation algorithm.")
+        
+        // SetParType
+        .def("set_par_type", &BRepOffsetAPI_ThruSections::SetParType,
+            py::arg("par_type"),
+            R"doc(
+            Sets the parametrization type for approximation.
+
+            Parameters:
+              par_type: ChordLength, Centripetal, or IsoParametric
+            )doc")
+        
+        // SetContinuity
+        .def("set_continuity", &BRepOffsetAPI_ThruSections::SetContinuity,
+            py::arg("continuity"),
+            R"doc(
+            Sets the continuity for the approximation.
+
+            Parameters:
+              continuity: Geometric continuity (C0, C1, C2, etc.)
+            )doc")
+        
+        // SetCriteriumWeight
+        .def("set_criterium_weight", &BRepOffsetAPI_ThruSections::SetCriteriumWeight,
+            py::arg("w1"),
+            py::arg("w2"),
+            py::arg("w3"),
+            R"doc(
+            Sets weights for optimization criteria.
+
+            Each weight must be positive (> 0).
+
+            Parameters:
+              w1: Weight for first criterion
+              w2: Weight for second criterion
+              w3: Weight for third criterion
+            )doc")
+        
+        // SetMaxDegree
+        .def("set_max_degree", &BRepOffsetAPI_ThruSections::SetMaxDegree,
+            py::arg("max_deg"),
+            "Sets the maximum U degree for the result surface.")
+        
+        // SetMutableInput
+        .def("set_mutable_input", &BRepOffsetAPI_ThruSections::SetMutableInput,
+            py::arg("is_mutable"),
+            R"doc(
+            Sets whether input profiles can be modified.
+
+            Parameters:
+              is_mutable: If True, input wires may be modified (default);
+                          If False, input wires are preserved
+            )doc")
+        
+        // Properties (read-only getters)
+        .def_property_readonly("par_type", &BRepOffsetAPI_ThruSections::ParType,
+            "Returns the parametrization type used.")
+        
+        .def_property_readonly("continuity", &BRepOffsetAPI_ThruSections::Continuity,
+            "Returns the continuity used in approximation.")
+        
+        .def_property_readonly("max_degree", &BRepOffsetAPI_ThruSections::MaxDegree,
+            "Returns the maximum U degree of result surface.")
+        
+        .def_property_readonly("use_smoothing", &BRepOffsetAPI_ThruSections::UseSmoothing,
+            "Returns True if smoothing is enabled.")
+        
+        .def_property_readonly("is_mutable_input", &BRepOffsetAPI_ThruSections::IsMutableInput,
+            "Returns True if input profiles can be modified.")
+        
+        .def_property_readonly("status", &BRepOffsetAPI_ThruSections::GetStatus,
+            "Returns the status of the thrusections operation.")
+        
+        // CriteriumWeight
+        .def("criterium_weight", [](BRepOffsetAPI_ThruSections& self) {
+                Standard_Real w1, w2, w3;
+                self.CriteriumWeight(w1, w2, w3);
+                return py::make_tuple(w1, w2, w3);
+            },
+            "Returns the criterion weights as a tuple (w1, w2, w3).")
+        
+        // Build
+        .def("build", [](BRepOffsetAPI_ThruSections& self) {
+                self.Build();
+            },
+            "Builds the lofted shape. Check is_done() for success.")
+        
+        // FirstShape / LastShape
+        .def("first_shape", &BRepOffsetAPI_ThruSections::FirstShape,
+            py::return_value_policy::reference,
+            "Returns the bottom face of the loft (if solid).")
+        
+        .def("last_shape", &BRepOffsetAPI_ThruSections::LastShape,
+            py::return_value_policy::reference,
+            "Returns the top face of the loft (if solid).")
+        
+        // GeneratedFace
+        .def("generated_face", &BRepOffsetAPI_ThruSections::GeneratedFace,
+            py::arg("edge"),
+            R"doc(
+            Returns the face generated by an edge.
+
+            For ruled lofts: returns face generated by edge (except last wire).
+            For smoothed lofts: returns face generated by edge of first wire.
+
+            Parameters:
+              edge: An edge from one of the input wires
+
+            Returns:
+              The face generated by the edge
+            )doc")
+        
+        // Wires
+        .def("wires", [](BRepOffsetAPI_ThruSections& self) {
+                const TopTools_ListOfShape& wires = self.Wires();
+                py::list result;
+                for (TopTools_ListIteratorOfListOfShape it(wires); it.More(); it.Next()) {
+                    result.append(it.Value());
+                }
+                return result;
+            },
+            "Returns the list of original input wires.");
 }

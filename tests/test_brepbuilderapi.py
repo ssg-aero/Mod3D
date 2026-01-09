@@ -1528,3 +1528,435 @@ def test_make_offset_shape_sphere():
     assert offset_maker.is_done()
     result = offset_maker.shape()
     assert not result.is_null()
+
+
+# ==================== MiddlePath Tests ====================
+
+def test_middle_path_from_pipe():
+    """Test extracting middle path from a pipe."""
+    # Create a pipe by sweeping a circle along a line
+    # Spine (path)
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(0.0, 0.0, 20.0)
+    spine_edge = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    spine = BRepBuilderAPI.MakeWire(spine_edge).wire()
+    
+    # Profile (circle)
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle = Geom.Circle(ax2, 3.0)
+    profile_edge = BRepBuilderAPI.MakeEdge(circle).edge()
+    profile = BRepBuilderAPI.MakeWire(profile_edge).wire()
+    
+    # Create pipe
+    pipe = BRepBuilderAPI.MakePipe(spine, profile)
+    pipe_shape = pipe.shape()
+    
+    # Get start and end faces
+    start_face = pipe.first_shape()
+    end_face = pipe.last_shape()
+    
+    # Extract middle path
+    middle = BRepOffsetAPI.MiddlePath(pipe_shape, start_face, end_face)
+    middle.build()
+    
+    assert middle.is_done()
+    path = middle.shape()
+    assert not path.is_null()
+
+
+# ==================== NormalProjection Tests ====================
+
+def test_normal_projection_basic():
+    """Test basic normal projection of edge onto face."""
+    # Create a planar face
+    p1 = gp.Pnt(-10, -10, 0)
+    p2 = gp.Pnt(10, -10, 0)
+    p3 = gp.Pnt(10, 10, 0)
+    p4 = gp.Pnt(-10, 10, 0)
+    
+    wire = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(p1, p2).edge(),
+        BRepBuilderAPI.MakeEdge(p2, p3).edge(),
+        BRepBuilderAPI.MakeEdge(p3, p4).edge(),
+        BRepBuilderAPI.MakeEdge(p4, p1).edge()
+    ).wire()
+    face = BRepBuilderAPI.MakeFace(wire, False).face()
+    
+    # Create an edge above the face
+    e1 = gp.Pnt(-5, -5, 5)
+    e2 = gp.Pnt(5, 5, 5)
+    edge_to_project = BRepBuilderAPI.MakeEdge(e1, e2).edge()
+    
+    # Project
+    proj = BRepOffsetAPI.NormalProjection(face)
+    proj.add(edge_to_project)
+    proj.build()
+    
+    assert proj.is_done()
+    result = proj.projection()
+    assert not result.is_null()
+
+
+def test_normal_projection_with_params():
+    """Test normal projection with custom parameters."""
+    # Create a cylindrical surface
+    ax3 = gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    cylinder = Geom.CylindricalSurface(ax3, 5.0)
+    face = BRepBuilderAPI.MakeFace(cylinder, 0, 2*math.pi, 0, 10, 1e-3).face()
+    
+    # Create a wire to project
+    w1 = gp.Pnt(0, 10, 2)
+    w2 = gp.Pnt(0, 10, 8)
+    edge = BRepBuilderAPI.MakeEdge(w1, w2).edge()
+    wire = BRepBuilderAPI.MakeWire(edge).wire()
+    
+    # Project with parameters
+    proj = BRepOffsetAPI.NormalProjection()
+    proj.init(face)
+    proj.set_params(1e-4, 1e-5, GeomAbs.Shape.C2, 14, 16)
+    proj.set_max_distance(20.0)
+    proj.compute_3d(True)
+    proj.add(wire)
+    proj.build()
+    
+    assert proj.is_done()
+
+
+def test_normal_projection_default_constructor():
+    """Test normal projection with default constructor."""
+    # Create target face (simple plane)
+    face = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)),
+        -10, 10, -10, 10
+    ).face()
+    
+    # Edge to project
+    edge = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(-5, 0, 3),
+        gp.Pnt(5, 0, 3)
+    ).edge()
+    
+    proj = BRepOffsetAPI.NormalProjection()
+    proj.init(face)
+    proj.add(edge)
+    proj.build()
+    
+    assert proj.is_done()
+
+
+def test_normal_projection_build_wire():
+    """Test build_wire method."""
+    # Create target
+    face = BRepBuilderAPI.MakeFace(
+        gp.Pln(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)),
+        -10, 10, -10, 10
+    ).face()
+    
+    # Create a simple wire to project
+    edge1 = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(-5, -5, 2), gp.Pnt(5, -5, 2)
+    ).edge()
+    edge2 = BRepBuilderAPI.MakeEdge(
+        gp.Pnt(5, -5, 2), gp.Pnt(5, 5, 2)
+    ).edge()
+    wire = BRepBuilderAPI.MakeWire(edge1, edge2).wire()
+    
+    proj = BRepOffsetAPI.NormalProjection(face)
+    proj.add(wire)
+    proj.build()
+    
+    success, wires = proj.build_wire()
+    # Result depends on topology, but method should work
+    assert isinstance(wires, list)
+
+
+# ==================== ThruSections Tests ====================
+
+def test_thru_sections_basic_shell():
+    """Test basic ThruSections creating a shell."""
+    # Create two circles at different heights
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 3.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    # Create shell through sections
+    loft = BRepOffsetAPI.ThruSections(is_solid=False)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+    result = loft.shape()
+    assert not result.is_null()
+
+
+def test_thru_sections_solid():
+    """Test ThruSections creating a solid."""
+    # Create circles
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    # Create solid (with end caps)
+    loft = BRepOffsetAPI.ThruSections(is_solid=True)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+    result = loft.shape()
+    assert not result.is_null()
+    
+    # Check first/last shapes exist for solids
+    first = loft.first_shape()
+    last = loft.last_shape()
+    assert not first.is_null()
+    assert not last.is_null()
+
+
+def test_thru_sections_ruled():
+    """Test ThruSections with ruled surfaces."""
+    # Create squares at different heights
+    def make_square_wire(center_z, size):
+        half = size / 2
+        pts = [
+            gp.Pnt(-half, -half, center_z),
+            gp.Pnt(half, -half, center_z),
+            gp.Pnt(half, half, center_z),
+            gp.Pnt(-half, half, center_z),
+        ]
+        wire = BRepBuilderAPI.MakeWire()
+        for i in range(4):
+            edge = BRepBuilderAPI.MakeEdge(pts[i], pts[(i+1) % 4]).edge()
+            wire.add(edge)
+        return wire.wire()
+    
+    wire1 = make_square_wire(0, 10)
+    wire2 = make_square_wire(15, 6)
+    
+    # Create ruled loft
+    loft = BRepOffsetAPI.ThruSections(is_solid=True, ruled=True)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+    result = loft.shape()
+    assert not result.is_null()
+
+
+def test_thru_sections_with_vertex():
+    """Test ThruSections with vertex (cone-like shape)."""
+    # Create a circle at base
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle = Geom.Circle(ax1, 5.0)
+    wire = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle).edge()
+    ).wire()
+    
+    # Create apex vertex
+    apex = BRepBuilderAPI.MakeVertex(gp.Pnt(0, 0, 10)).vertex()
+    
+    # Create cone-like solid
+    loft = BRepOffsetAPI.ThruSections(is_solid=True)
+    loft.add_wire(wire)
+    loft.add_vertex(apex)
+    loft.build()
+    
+    assert loft.is_done()
+    result = loft.shape()
+    assert not result.is_null()
+
+
+def test_thru_sections_multiple_wires():
+    """Test ThruSections with three sections."""
+    def make_circle_wire(z, radius):
+        ax = gp.Ax2(gp.Pnt(0, 0, z), gp.Dir(0, 0, 1))
+        circle = Geom.Circle(ax, radius)
+        return BRepBuilderAPI.MakeWire(
+            BRepBuilderAPI.MakeEdge(circle).edge()
+        ).wire()
+    
+    wire1 = make_circle_wire(0, 5.0)
+    wire2 = make_circle_wire(5, 3.0)
+    wire3 = make_circle_wire(10, 5.0)
+    
+    loft = BRepOffsetAPI.ThruSections(is_solid=True)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.add_wire(wire3)
+    loft.build()
+    
+    assert loft.is_done()
+    result = loft.shape()
+    assert not result.is_null()
+
+
+def test_thru_sections_properties():
+    """Test ThruSections property accessors."""
+    loft = BRepOffsetAPI.ThruSections(is_solid=False, ruled=False, pres3d=1e-5)
+    
+    # Set various parameters
+    loft.set_smoothing(True)
+    loft.set_par_type(BRepOffsetAPI.ParametrizationType.ChordLength)
+    loft.set_continuity(GeomAbs.Shape.C2)
+    loft.set_max_degree(10)
+    loft.set_mutable_input(False)
+    
+    # Check properties
+    assert loft.use_smoothing == True
+    assert loft.par_type == BRepOffsetAPI.ParametrizationType.ChordLength
+    assert loft.continuity == GeomAbs.Shape.C2
+    assert loft.max_degree == 10
+    assert loft.is_mutable_input == False
+
+
+def test_thru_sections_check_compatibility():
+    """Test compatibility checking option."""
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    loft = BRepOffsetAPI.ThruSections(is_solid=True)
+    loft.check_compatibility(True)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+
+
+def test_thru_sections_generated_face():
+    """Test generated_face method."""
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    edge1 = BRepBuilderAPI.MakeEdge(circle1).edge()
+    wire1 = BRepBuilderAPI.MakeWire(edge1).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    loft = BRepOffsetAPI.ThruSections(is_solid=True, ruled=True)
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+    
+    # Get generated face from first wire edge
+    gen_face = loft.generated_face(edge1)
+    assert not gen_face.is_null()
+
+
+def test_thru_sections_wires():
+    """Test wires() method returns input wires."""
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    loft = BRepOffsetAPI.ThruSections()
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    
+    wires = loft.wires()
+    assert len(wires) == 2
+
+
+def test_thru_sections_init():
+    """Test reinitializing ThruSections with init()."""
+    loft = BRepOffsetAPI.ThruSections(is_solid=False)
+    
+    # Reinitialize as solid
+    loft.init(is_solid=True, ruled=True, pres3d=1e-4)
+    
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.is_done()
+
+
+def test_thru_sections_criterium_weight():
+    """Test criterium weight getter."""
+    loft = BRepOffsetAPI.ThruSections()
+    loft.set_criterium_weight(1.0, 2.0, 3.0)
+    
+    w1, w2, w3 = loft.criterium_weight()
+    assert w1 == 1.0
+    assert w2 == 2.0
+    assert w3 == 3.0
+
+
+def test_thru_sections_status():
+    """Test status property."""
+    loft = BRepOffsetAPI.ThruSections()
+    
+    # Before build, status should indicate not done
+    status = loft.status
+    assert status == BRepOffsetAPI.ThruSectionStatus.NotDone
+    
+    # After successful build
+    ax1 = gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+    circle1 = Geom.Circle(ax1, 5.0)
+    wire1 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle1).edge()
+    ).wire()
+    
+    ax2 = gp.Ax2(gp.Pnt(0, 0, 10), gp.Dir(0, 0, 1))
+    circle2 = Geom.Circle(ax2, 5.0)
+    wire2 = BRepBuilderAPI.MakeWire(
+        BRepBuilderAPI.MakeEdge(circle2).edge()
+    ).wire()
+    
+    loft.add_wire(wire1)
+    loft.add_wire(wire2)
+    loft.build()
+    
+    assert loft.status == BRepOffsetAPI.ThruSectionStatus.Done
