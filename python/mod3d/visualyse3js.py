@@ -4,7 +4,7 @@ from pythreejs import (
     BufferGeometry, BufferAttribute, Mesh, Scene, Points,
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
     MeshBasicMaterial, OrbitControls, LineSegments,
-    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial,
+    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial, ShaderMaterial,
 )
 
 try:
@@ -13,6 +13,31 @@ try:
 except ImportError:  # Fallback for environments without fat-line support
     _HAS_LINE2 = False
 from ipywidgets import Box, Layout
+
+
+# Custom shader to draw circles instead of squares
+vertex_shader = """
+uniform float size;
+void main() {
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = size;
+    gl_Position = projectionMatrix * mvPosition;
+}
+"""
+
+fragment_shader = """
+uniform vec3 color;
+void main() {
+    // Calculate distance from center of point (0.5, 0.5 is center in gl_PointCoord)
+    vec2 center = gl_PointCoord - vec2(0.5);
+    float dist = length(center);
+    
+    // Discard pixels outside the circle
+    if (dist > 0.5) discard;
+    
+    gl_FragColor = vec4(color, 1.0);
+}
+"""
 
 def faces_mesh(faces_data, color='#2194ce', material = None):
     """
@@ -154,7 +179,7 @@ def edges_mesh(edges_data, color='#000000', linewidth=2, resolution=None):
     # Return list of edge lines
     return edge_lines
 
-def mesh_vertices(vertices, color='#2194ce', size=0.1):
+def mesh_vertices(vertices, color='#2194ce', size=0.1, rounded=True):
     """
     Create a point cloud mesh from vertices.
     
@@ -177,11 +202,22 @@ def mesh_vertices(vertices, color='#2194ce', size=0.1):
             'position': BufferAttribute(vertices.astype(np.float32), normalized=False)
         }
     )
-    material = PointsMaterial(color=color, size=size, sizeAttenuation=False)
+    if rounded:
+        material = ShaderMaterial(
+            vertexShader=vertex_shader,
+            fragmentShader=fragment_shader,
+            uniforms={
+                'size': {'value': size * 2},
+                'color': {'value': color},
+            },
+            transparent=True,
+        )
+    else:
+        material = PointsMaterial(color=color, size=size, sizeAttenuation=False)
     points_mesh = Points(geometry=geometry, material=material)
     return points_mesh
 
-def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
+def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, points_rounded=True, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
     """
     Convert an OCCT shape to pythreejs mesh and edge lines.
     
@@ -227,7 +263,7 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
         return mesh_face, mesh_edges
 
     elif(isinstance(shape, np.ndarray)):
-        points_mesh = mesh_vertices(shape, color=points_color, size=points_size)
+        points_mesh = mesh_vertices(shape, color=points_color, size=points_size, rounded=points_rounded)
         return points_mesh, None
     
     elif(isinstance(shape, list)):
@@ -257,6 +293,7 @@ class ShapeRenderer:
 
         self.point_color = 'blue'
         self.point_size = 5.
+        self.point_rounded = True
         self.curve_color = 'lime'
         self.curve_width = 2
         self.edge_color = 'black'
@@ -290,6 +327,7 @@ class ShapeRenderer:
                     angle_deflection=self.angle_deflection,
                     points_color=self.point_color,
                     points_size=self.point_size,
+                    points_rounded=self.point_rounded,
                     curve_color=self.curve_color,
                     curve_width=self.curve_width,
                     edge_color=self.edge_color,
