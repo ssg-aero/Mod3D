@@ -1,10 +1,10 @@
 import numpy as np
 from mod3d import Render, TopoDS, Geom
 from pythreejs import (
-    BufferGeometry, BufferAttribute, Mesh, Scene, 
+    BufferGeometry, BufferAttribute, Mesh, Scene, Points,
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
-    MeshBasicMaterial, OrbitControls,  LineSegments,
-    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial
+    MeshBasicMaterial, OrbitControls, LineSegments,
+    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial
 )
 from ipywidgets import Box, Layout
 
@@ -139,7 +139,34 @@ def edges_mesh(edges_data, color='#000000', linewidth=2):
     # Return list of edge lines
     return edge_lines
 
-def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
+def mesh_vertices(vertices, color='#2194ce', size=0.1):
+    """
+    Create a point cloud mesh from vertices.
+    
+    Parameters:
+    -----------
+    vertices : np.ndarray
+        Nx3 array of vertex positions
+    color : str
+        Color for the points
+    size : float
+        Size of each point
+        
+    Returns:
+    --------
+    points_mesh : pythreejs.Points
+        The point cloud mesh
+    """
+    geometry = BufferGeometry(
+        attributes={
+            'position': BufferAttribute(vertices.astype(np.float32), normalized=False)
+        }
+    )
+    material = PointsMaterial(color=color, size=size, sizeAttenuation=False)
+    points_mesh = Points(geometry=geometry, material=material)
+    return points_mesh
+
+def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, curve_color='lime', edge_color='black', line_width=2, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
     """
     Convert an OCCT shape to pythreejs mesh and edge lines.
     
@@ -172,14 +199,15 @@ def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
     if(isinstance(shape, Geom.Curve) or isinstance(shape, TopoDS.Edge) or isinstance(shape, TopoDS.Wire)):
         edges_data = Render.extract_curve_tessellation(shape, linear_deflection)
 
-        mesh_edges = edges_mesh([edges_data], color='blue')
+        mesh_edges = edges_mesh([edges_data], color=curve_color, linewidth=line_width, resolution=line_resolution)
 
         return None, mesh_edges
     elif(isinstance(shape, TopoDS.Shape)):
         faces_data, edges_data = Render.extract_tessellation(shape, linear_deflection, **kwargs)
         
-        mesh_face = faces_mesh(faces_data)
-        mesh_edges = edges_mesh(edges_data)
+        face_color = color if color is not None else surface_color
+        mesh_face = faces_mesh(faces_data, color=face_color)
+        mesh_edges = edges_mesh(edges_data, color=edge_color, linewidth=line_width, resolution=line_resolution)
 
         return mesh_face, mesh_edges
     
@@ -187,7 +215,7 @@ def occt_to_threejs(shape, linear_deflection=0.1, **kwargs):
         mesh_face = []
         mesh_edges = []
         for subshape in shape:
-            mf, me = occt_to_threejs(subshape, linear_deflection)
+            mf, me = occt_to_threejs(subshape, linear_deflection, line_resolution=line_resolution, **kwargs)
             if mf is not None:
                 mesh_face.append(mf)
             if me is not None:
@@ -207,6 +235,13 @@ class ShapeRenderer:
         self.width = width
         self.height = height
         self._models = []
+
+        self.point_color = 'blue'
+        self.point_size = 5.
+        self.curve_color = 'lime'
+        self.edge_color = 'black'
+        self.line_width = 2
+        self.surface_color = '#2194ce'
 
     def add_shape(self, shape, color=None):
         """Queue an OCCT shape for rendering."""
