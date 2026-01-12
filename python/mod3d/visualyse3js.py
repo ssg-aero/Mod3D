@@ -48,51 +48,52 @@ def create_trihedron(size=1):
     return axes
 
 
-def make_axis_decoration(color, axis, angle, cylinder_pos, cone_pos):
+def make_axis_decoration(color, axis, angle, cylinder_pos, cone_pos, depth_test, opacity):
     """Create cylinder shaft and cone arrowhead for an axis."""
     quaternion = axis_angle_quaternion(axis, angle)
     cylinder = Mesh(
         geometry=CylinderGeometry(radiusTop=0.05, radiusBottom=0.05, height=0.9, radialSegments=16),
-        material=MeshBasicMaterial(color=color),
+        material=MeshBasicMaterial(color=color, depthTest=depth_test, opacity=opacity, transparent=True),
         quaternion=quaternion,
         position=cylinder_pos,
     )
     cone = Mesh(
         geometry=ConeGeometry(radius=0.1, height=0.3, radialSegments=16),
-        material=MeshBasicMaterial(color=color),
+        material=MeshBasicMaterial(color=color, depthTest=depth_test, opacity=opacity, transparent=True),
         quaternion=quaternion,
         position=cone_pos,
     )
     return cylinder, cone
 
 
-def create_trihedron_helper(show_decorations=True, show_origin_sphere=True):
+def create_trihedron_helper(depth_test, opacity):
     """Create a complete trihedron helper with optional decorations and origin sphere."""
-    trihedron_axes = create_trihedron(size=1)
-    trihedron_lines = Group(children=trihedron_axes)
+    # trihedron_axes = create_trihedron(size=1)
+    # trihedron_lines = Group(children=trihedron_axes)
 
-    children = [trihedron_lines]
+    # children = [trihedron_lines]
 
-    if show_decorations:
-        axis_configs = [
-            ('x', '#ff3333', [0, 0, 1], -np.pi / 2, [0.45, 0, 0], [0.95, 0, 0]),
-            ('y', '#33ff33', [0, 0, 1], 0, [0, 0.45, 0], [0, 0.95, 0]),
-            ('z', '#3333ff', [1, 0, 0], np.pi / 2, [0, 0, 0.45], [0, 0, 0.95]),
-        ]
-        decorations = []
-        for _, color, axis, angle, cyl_pos, cone_pos in axis_configs:
-            cylinder, cone = make_axis_decoration(color, axis, angle, cyl_pos, cone_pos)
-            decorations.extend([cylinder, cone])
-        trihedron_decorations = Group(children=decorations)
-        children.append(trihedron_decorations)
+    children = []
 
-    if show_origin_sphere:
-        origin_sphere = Mesh(
-            geometry=SphereGeometry(radius=0.08, widthSegments=16, heightSegments=16),
-            material=MeshBasicMaterial(color='gray', transparent=True),
-            position=[0, 0, 0],
-        )
-        children.append(origin_sphere)
+    # if show_decorations:
+    axis_configs = [
+        ('x', '#ff3333', [0, 0, 1], -np.pi / 2, [0.45, 0, 0], [0.95, 0, 0]),
+        ('y', '#33ff33', [0, 0, 1], 0, [0, 0.45, 0], [0, 0.95, 0]),
+        ('z', '#3333ff', [1, 0, 0], np.pi / 2, [0, 0, 0.45], [0, 0, 0.95]),
+    ]
+    decorations = []
+    for _, color, axis, angle, cyl_pos, cone_pos in axis_configs:
+        cylinder, cone = make_axis_decoration(color, axis, angle, cyl_pos, cone_pos, depth_test, opacity)
+        decorations.extend([cylinder, cone])
+    trihedron_decorations = Group(children=decorations)
+    children.append(trihedron_decorations)
+
+    origin_sphere = Mesh(
+        geometry=SphereGeometry(radius=0.08, widthSegments=16, heightSegments=16),
+        material=MeshBasicMaterial(color='gray', transparent=True, opacity=opacity, depthTest=depth_test),
+        position=[0, 0, 0],
+    )
+    children.append(origin_sphere)
 
     return Group(children=children)
 
@@ -383,16 +384,16 @@ class ShapeRenderer:
         self.surface_color = '#2194ce'
 
         # Trihedron and grid settings
-        self.show_trihedron = False
-        self.show_trihedron_decorations = True
-        self.show_origin_sphere = True
-        self.trihedron_scale = 20
-        self.show_grid = False
+        self.show_trihedron = True
+        self.trihedron_scale = 2.5
+        self.trihedron_opacity = 0.8
+        self.trihedron_depth_test = False
+        self.show_grid = True
         self.grid_size = 800
         self.grid_divisions = 80
         self.grid_color = '#bbbbbb'
         self.grid_center_color = '#777777'
-        self.show_fog = False
+        self.show_fog = True
         self.fog_color = 'lightgray'
         self.fog_near = 30
         self.fog_far = None  # Auto-calculated from grid_size if None
@@ -473,8 +474,8 @@ class ShapeRenderer:
         helper_root = None
         if self.show_trihedron:
             helper_root = create_trihedron_helper(
-                show_decorations=self.show_trihedron_decorations,
-                show_origin_sphere=self.show_origin_sphere,
+                depth_test=self.trihedron_depth_test,
+                opacity=self.trihedron_opacity,
             )
             initial_distance = np.linalg.norm(np.array(camera_position))
             helper_root.scale = (self.trihedron_scale, self.trihedron_scale, self.trihedron_scale)
