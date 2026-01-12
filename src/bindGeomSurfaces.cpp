@@ -30,7 +30,7 @@ inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs:
     TColgp_Array2OfPnt poles(1, u_size, 1, v_size);
     for (size_t i = 0; i < nu; ++i) {
         for (size_t j = 0; j < nv; ++j) {
-            size_t idx = j + i * nu;
+            size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
             const auto& pt = poles_[idx];
             poles.SetValue(static_cast<Standard_Integer>(i + 1), 
                           static_cast<Standard_Integer>(j + 1), 
@@ -70,7 +70,7 @@ inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(c
     TColgp_Array2OfPnt poles(1, u_size, 1, v_size);
     for (size_t i = 0; i < nu; ++i) {
         for (size_t j = 0; j < nv; ++j) {
-            size_t idx = j + i * nu;
+            size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
             const auto& pt = projected_poles[idx];
             poles.SetValue(static_cast<Standard_Integer>(i + 1), 
                           static_cast<Standard_Integer>(j + 1), 
@@ -82,7 +82,7 @@ inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(c
     TColStd_Array2OfReal weights(1, u_size, 1, v_size);
     for (size_t i = 0; i < nu; ++i) {
         for (size_t j = 0; j < nv; ++j) {
-            size_t idx = j + i * nu;
+            size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
             weights.SetValue(static_cast<Standard_Integer>(i + 1), 
                            static_cast<Standard_Integer>(j + 1), 
                            weights_[idx]);
