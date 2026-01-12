@@ -5,6 +5,7 @@ from pythreejs import (
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
     MeshBasicMaterial, OrbitControls, LineSegments,
     LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial, ShaderMaterial,
+    CylinderGeometry, ConeGeometry, SphereGeometry, GridHelper, Fog, Group,
 )
 
 try:
@@ -13,6 +14,87 @@ try:
 except ImportError:  # Fallback for environments without fat-line support
     _HAS_LINE2 = False
 from ipywidgets import Box, Layout
+
+
+def axis_angle_quaternion(axis, angle):
+    """Convert axis-angle to quaternion (x, y, z, w)."""
+    axis = np.array(axis, dtype=np.float64)
+    axis = axis / np.linalg.norm(axis) if np.linalg.norm(axis) > 0 else axis
+    half_angle = angle / 2.0
+    sin_half = np.sin(half_angle)
+    cos_half = np.cos(half_angle)
+    return (axis[0] * sin_half, axis[1] * sin_half, axis[2] * sin_half, cos_half)
+
+
+def create_trihedron(size=1):
+    """Create XYZ axes (trihedron) for orientation reference."""
+    axes = []
+    colors = ['red', 'green', 'blue']  # X=red, Y=green, Z=blue
+    directions = [
+        [[0, 0, 0], [size, 0, 0]],  # X
+        [[0, 0, 0], [0, size, 0]],  # Y
+        [[0, 0, 0], [0, 0, size]],  # Z
+    ]
+
+    for color, pts in zip(colors, directions):
+        vertices = np.array(pts, dtype=np.float32)
+        geometry = BufferGeometry(attributes={
+            'position': BufferAttribute(vertices, normalized=False)
+        })
+        material = LineBasicMaterial(color=color, linewidth=2)
+        line = Line(geometry=geometry, material=material)
+        axes.append(line)
+
+    return axes
+
+
+def make_axis_decoration(color, axis, angle, cylinder_pos, cone_pos):
+    """Create cylinder shaft and cone arrowhead for an axis."""
+    quaternion = axis_angle_quaternion(axis, angle)
+    cylinder = Mesh(
+        geometry=CylinderGeometry(radiusTop=0.05, radiusBottom=0.05, height=0.9, radialSegments=16),
+        material=MeshBasicMaterial(color=color),
+        quaternion=quaternion,
+        position=cylinder_pos,
+    )
+    cone = Mesh(
+        geometry=ConeGeometry(radius=0.1, height=0.3, radialSegments=16),
+        material=MeshBasicMaterial(color=color),
+        quaternion=quaternion,
+        position=cone_pos,
+    )
+    return cylinder, cone
+
+
+def create_trihedron_helper(show_decorations=True, show_origin_sphere=True):
+    """Create a complete trihedron helper with optional decorations and origin sphere."""
+    trihedron_axes = create_trihedron(size=1)
+    trihedron_lines = Group(children=trihedron_axes)
+
+    children = [trihedron_lines]
+
+    if show_decorations:
+        axis_configs = [
+            ('x', '#ff3333', [0, 0, 1], -np.pi / 2, [0.45, 0, 0], [0.95, 0, 0]),
+            ('y', '#33ff33', [0, 0, 1], 0, [0, 0.45, 0], [0, 0.95, 0]),
+            ('z', '#3333ff', [1, 0, 0], np.pi / 2, [0, 0, 0.45], [0, 0, 0.95]),
+        ]
+        decorations = []
+        for _, color, axis, angle, cyl_pos, cone_pos in axis_configs:
+            cylinder, cone = make_axis_decoration(color, axis, angle, cyl_pos, cone_pos)
+            decorations.extend([cylinder, cone])
+        trihedron_decorations = Group(children=decorations)
+        children.append(trihedron_decorations)
+
+    if show_origin_sphere:
+        origin_sphere = Mesh(
+            geometry=SphereGeometry(radius=0.08, widthSegments=16, heightSegments=16),
+            material=MeshBasicMaterial(color='gray', transparent=True),
+            position=[0, 0, 0],
+        )
+        children.append(origin_sphere)
+
+    return Group(children=children)
 
 
 # Custom shader to draw circles instead of squares
@@ -300,6 +382,21 @@ class ShapeRenderer:
         self.edge_width = 0.5
         self.surface_color = '#2194ce'
 
+        # Trihedron and grid settings
+        self.show_trihedron = False
+        self.show_trihedron_decorations = True
+        self.show_origin_sphere = True
+        self.trihedron_scale = 20
+        self.show_grid = False
+        self.grid_size = 800
+        self.grid_divisions = 80
+        self.grid_color = '#bbbbbb'
+        self.grid_center_color = '#777777'
+        self.show_fog = False
+        self.fog_color = 'lightgray'
+        self.fog_near = 30
+        self.fog_far = None  # Auto-calculated from grid_size if None
+
     def add_shape(self, shape, color=None):
         """Queue an OCCT shape for rendering."""
         self._models.append((shape, color))
@@ -338,12 +435,14 @@ class ShapeRenderer:
             meshes.append((mesh_face, mesh_edges))
         return meshes
 
-    def render(self, background=None, lights=None):
+    def render(self, background=None, lights=None, camera_position=None):
         """Return a renderer showing everything that has been queued via `add_shape`."""
         if not self._models:
             raise RuntimeError("No shapes have been queued for rendering")
 
-        camera = PerspectiveCamera(position=[0, 20, 40], aspect=self.width / self.height)
+        if camera_position is None:
+            camera_position = [0, 20, 40]
+        camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height)
         default_lights = [
             AmbientLight(intensity=0.5),
             DirectionalLight(position=[10, 10, 10], intensity=0.5),
@@ -352,16 +451,47 @@ class ShapeRenderer:
 
         scene_children = [camera, *lights]
         for mesh_face, mesh_edges in self._prepare_meshes():
-            scene_children.append(mesh_face)
+            if mesh_face is not None:
+                if isinstance(mesh_face, list):
+                    scene_children.extend(mesh_face)
+                else:
+                    scene_children.append(mesh_face)
             if mesh_edges:
                 scene_children.extend(mesh_edges)
+
+        # Add grid helper
+        if self.show_grid:
+            grid_helper = GridHelper(
+                size=self.grid_size,
+                divisions=self.grid_divisions,
+                colorCenterLine=self.grid_center_color,
+                colorGrid=self.grid_color,
+            )
+            scene_children.append(grid_helper)
+
+        # Add trihedron helper
+        helper_root = None
+        if self.show_trihedron:
+            helper_root = create_trihedron_helper(
+                show_decorations=self.show_trihedron_decorations,
+                show_origin_sphere=self.show_origin_sphere,
+            )
+            initial_distance = np.linalg.norm(np.array(camera_position))
+            helper_root.scale = (self.trihedron_scale, self.trihedron_scale, self.trihedron_scale)
+            scene_children.append(helper_root)
 
         scene_kwargs = {"children": scene_children}
         if background is not None:
             scene_kwargs["background"] = background
+
+        # Add fog
+        if self.show_fog:
+            fog_far = self.fog_far if self.fog_far is not None else self.grid_size / 2
+            scene_fog = Fog(color=self.fog_color, near=self.fog_near, far=fog_far)
+            scene_kwargs["fog"] = scene_fog
+
         scene = Scene(**scene_kwargs)
         controls = OrbitControls(controlling=camera)
-        # renderer = ShapeRenderer().render(shape)
         renderer = Renderer(
             camera=camera,
             scene=scene,
@@ -370,6 +500,28 @@ class ShapeRenderer:
             height=self.height,
             antialias=True,
         )
+
+        # Setup dynamic trihedron scaling and fog adjustment
+        if self.show_trihedron or self.show_fog:
+            initial_distance = np.linalg.norm(np.array(camera_position))
+            fog_near_base = self.fog_near
+            fog_far_base = self.fog_far if self.fog_far is not None else self.grid_size / 2
+            trihedron_scale = self.trihedron_scale
+            scene_fog_ref = scene_kwargs.get("fog")
+
+            def update_camera_dependent(change):
+                pos = np.array(camera.position)
+                distance = np.linalg.norm(pos)
+                if helper_root is not None:
+                    scale = distance * trihedron_scale / initial_distance
+                    helper_root.scale = (scale, scale, scale)
+                if scene_fog_ref is not None:
+                    scene_fog_ref.near = max(fog_near_base, distance * 0.15)
+                    scene_fog_ref.far = max(fog_far_base, fog_far_base + distance)
+
+            camera.observe(update_camera_dependent, names=['position'])
+            update_camera_dependent(None)
+
         bordered = Box([renderer], layout=Layout(
             border="2px solid #444",
             padding="4px",
