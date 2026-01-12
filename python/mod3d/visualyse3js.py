@@ -4,8 +4,14 @@ from pythreejs import (
     BufferGeometry, BufferAttribute, Mesh, Scene, Points,
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
     MeshBasicMaterial, OrbitControls, LineSegments,
-    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial
+    LineBasicMaterial, MeshPhongMaterial, LineMaterial, Geometry, Line, MeshPhysicalMaterial, PointsMaterial,
 )
+
+try:
+    from pythreejs import Line2, LineGeometry
+    _HAS_LINE2 = True
+except ImportError:  # Fallback for environments without fat-line support
+    _HAS_LINE2 = False
 from ipywidgets import Box, Layout
 
 def faces_mesh(faces_data, color='#2194ce', material = None):
@@ -102,7 +108,7 @@ def faces_mesh(faces_data, color='#2194ce', material = None):
     mesh.renderOrder = 0  # Render faces first
     return mesh
 
-def edges_mesh(edges_data, color='#000000', linewidth=2):
+def edges_mesh(edges_data, color='#000000', linewidth=2, resolution=None):
     """
     Convert OCCT edge tessellation data to pythreejs lines.
     
@@ -121,20 +127,29 @@ def edges_mesh(edges_data, color='#000000', linewidth=2):
     
     # Create separate Line object for each edge
     edge_lines = []
-    material = LineBasicMaterial(linewidth=linewidth, color=color)
-    
-    for _, vertices in edges_data:
-        # The vertices are already in the correct order for the polyline
-        # Just use them directly to create continuous lines
-        vertices_array = vertices.astype(np.float32)
-        
-        # Create geometry with vertices for continuous line
-        geometry = Geometry(vertices=vertices_array.tolist())
-        
-        # Create continuous line for this edge
-        line = Line(geometry=geometry, material=material)
-        line.renderOrder = 1  # Render edges after faces to ensure visibility
-        edge_lines.append(line)
+
+    if _HAS_LINE2:
+        # LineMaterial respects linewidth when used with Line2/LineGeometry; resolution keeps the size stable in px.
+        material = LineMaterial(
+            linewidth=linewidth,
+            color=color,
+            resolution=resolution if resolution is not None else (1200, 800),
+            dashed=False,
+        )
+        for _, vertices in edges_data:
+            vertices_array = vertices.astype(np.float32)
+            geometry = LineGeometry(positions=vertices_array)
+            line = Line2(geometry=geometry, material=material)
+            line.renderOrder = 1  # Render edges after faces to ensure visibility
+            edge_lines.append(line)
+    else:
+        material = LineBasicMaterial(linewidth=linewidth, color=color)
+        for _, vertices in edges_data:
+            vertices_array = vertices.astype(np.float32)
+            geometry = Geometry(vertices=vertices_array.tolist())
+            line = Line(geometry=geometry, material=material)
+            line.renderOrder = 1
+            edge_lines.append(line)
     
     # Return list of edge lines
     return edge_lines
@@ -166,7 +181,7 @@ def mesh_vertices(vertices, color='#2194ce', size=0.1):
     points_mesh = Points(geometry=geometry, material=material)
     return points_mesh
 
-def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, curve_color='lime', edge_color='black', line_width=2, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
+def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
     """
     Convert an OCCT shape to pythreejs mesh and edge lines.
     
@@ -199,7 +214,7 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
     if(isinstance(shape, Geom.Curve) or isinstance(shape, TopoDS.Edge) or isinstance(shape, TopoDS.Wire)):
         edges_data = Render.extract_curve_tessellation(shape, linear_deflection)
 
-        mesh_edges = edges_mesh([edges_data], color=curve_color, linewidth=line_width, resolution=line_resolution)
+        mesh_edges = edges_mesh([edges_data], color=curve_color, linewidth=curve_width, resolution=line_resolution)
 
         return None, mesh_edges
     elif(isinstance(shape, TopoDS.Shape)):
@@ -207,9 +222,13 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
         
         face_color = color if color is not None else surface_color
         mesh_face = faces_mesh(faces_data, color=face_color)
-        mesh_edges = edges_mesh(edges_data, color=edge_color, linewidth=line_width, resolution=line_resolution)
+        mesh_edges = edges_mesh(edges_data, color=edge_color, linewidth=edge_width, resolution=line_resolution)
 
         return mesh_face, mesh_edges
+
+    elif(isinstance(shape, np.ndarray)):
+        points_mesh = mesh_vertices(shape, color=points_color, size=points_size)
+        return points_mesh, None
     
     elif(isinstance(shape, list)):
         mesh_face = []
@@ -239,8 +258,9 @@ class ShapeRenderer:
         self.point_color = 'blue'
         self.point_size = 5.
         self.curve_color = 'lime'
+        self.curve_width = 2
         self.edge_color = 'black'
-        self.line_width = 2
+        self.edge_width = 0.5
         self.surface_color = '#2194ce'
 
     def add_shape(self, shape, color=None):
@@ -260,13 +280,22 @@ class ShapeRenderer:
                     shape,
                     linear_deflection=self.linear_deflection,
                     angle_deflection=self.angle_deflection,
-                    color=color
+                    color=color,
+                    line_resolution=(self.width, self.height),
                 )
             else:
                 mesh_face, mesh_edges = occt_to_threejs(
                     shape,
                     linear_deflection=self.linear_deflection,
                     angle_deflection=self.angle_deflection,
+                    points_color=self.point_color,
+                    points_size=self.point_size,
+                    curve_color=self.curve_color,
+                    curve_width=self.curve_width,
+                    edge_color=self.edge_color,
+                    edge_width=self.edge_width,
+                    line_resolution=(self.width, self.height),
+                    surface_color=self.surface_color,
                 )
             meshes.append((mesh_face, mesh_edges))
         return meshes
