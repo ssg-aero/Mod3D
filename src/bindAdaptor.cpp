@@ -65,6 +65,19 @@ void bind_adaptor(py::module& m) {
         "Note: Polynomial coefficients of BSpline curves used for their evaluation\n"
         "are cached for better performance. Therefore these evaluations are not\n"
         "thread-safe and parallel evaluations need to be prevented.")
+
+        .def(py::init<>([](const opencascade::handle<Geom_Curve>& geom_curve) {
+            return new GeomAdaptor_Curve(geom_curve);
+        }), py::arg("geom_curve"),
+            "Constructor from a Geom_Curve.")
+        .def(py::init<>([](const TopoDS_Edge& edge) {
+            return new BRepAdaptor_Curve(edge);
+        }), py::arg("edge"),
+            "Constructor from a TopoDS_Edge.")
+        .def(py::init<>([](const TopoDS_Wire& wire) {
+            return new BRepAdaptor_CompCurve(wire);
+        }), py::arg("wire"),
+            "Constructor from a TopoDS_Wire.")
         
         // Parameter domain
         .def_property_readonly("first_parameter", &Adaptor3d_Curve::FirstParameter,
@@ -249,6 +262,11 @@ void bind_adaptor(py::module& m) {
         .def("shallow_copy", &Adaptor3d_Curve::ShallowCopy,
             "Returns a shallow copy of this adaptor.");
     
+
+    // implicit constructor registrations
+    py::implicitly_convertible<opencascade::handle<Geom_Curve>, Adaptor3d_Curve>();
+    py::implicitly_convertible<TopoDS_Edge, Adaptor3d_Curve>();
+    py::implicitly_convertible<TopoDS_Wire, Adaptor3d_Curve>();        
     // =========================================================================
     // GeomAdaptor_Curve - Adaptor for Geom_Curve
     // =========================================================================
