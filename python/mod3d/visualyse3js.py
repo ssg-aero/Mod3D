@@ -1,3 +1,4 @@
+from math import hypot
 import numpy as np
 from mod3d import Render, TopoDS, Geom
 from pythreejs import (
@@ -90,7 +91,7 @@ def create_trihedron_helper(depth_test, opacity):
 
     origin_sphere = Mesh(
         geometry=SphereGeometry(radius=0.08, widthSegments=16, heightSegments=16),
-        material=MeshBasicMaterial(color='gray', transparent=True, opacity=opacity, depthTest=depth_test),
+        material=MeshBasicMaterial(color='gray', transparent=True, depthTest=depth_test),
         position=[0, 0, 0],
     )
     children.append(origin_sphere)
@@ -122,7 +123,7 @@ void main() {
 }
 """
 
-def faces_mesh(faces_data, color='#2194ce', material = None):
+def faces_mesh(faces_data, color='#2194ce', material = None, opacity=1.0):
     """
     Convert OCCT face tessellation data to a pythreejs mesh.
     
@@ -196,7 +197,7 @@ def faces_mesh(faces_data, color='#2194ce', material = None):
     # )
 
     if material is None:
-
+        is_transparent = opacity < 1.0
         material = MeshPhysicalMaterial(
             color=color,
             metalness=0.1,                # Low metalness for non-metallic appearance (0-1)
@@ -208,7 +209,10 @@ def faces_mesh(faces_data, color='#2194ce', material = None):
             side='DoubleSide',            # Render both sides of faces
             polygonOffset=True,           # Enable polygon offset to prevent z-fighting with edges
             polygonOffsetFactor=1,        # Offset factor
-            polygonOffsetUnits=1          # Offset units
+            polygonOffsetUnits=1,         # Offset units
+            opacity=opacity,
+            transparent=is_transparent,
+            depthWrite=not is_transparent,  # Disable depth write for transparent objects
         )
 
     
@@ -300,7 +304,7 @@ def mesh_vertices(vertices, color='#2194ce', size=0.1, rounded=True):
     points_mesh = Points(geometry=geometry, material=material)
     return points_mesh
 
-def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_size=5.0, points_rounded=True, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', color=None, **kwargs):
+def occt_to_threejs(shape, deflection=0.01, points_color='blue', points_size=5.0, points_rounded=True, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', face_opacity=1.0, color=None, **kwargs):
     """
     Convert an OCCT shape to pythreejs mesh and edge lines.
     
@@ -331,16 +335,16 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
     """
     # Extract tessellation data
     if(isinstance(shape, Geom.Curve) or isinstance(shape, TopoDS.Edge) or isinstance(shape, TopoDS.Wire)):
-        edges_data = Render.extract_curve_tessellation(shape, linear_deflection)
+        edges_data = Render.extract_curve_tessellation(shape, deflection)
 
         mesh_edges = edges_mesh([edges_data], color=curve_color, linewidth=curve_width, resolution=line_resolution)
 
         return None, mesh_edges
     elif(isinstance(shape, TopoDS.Shape)):
-        faces_data, edges_data = Render.extract_tessellation(shape, linear_deflection, **kwargs)
+        faces_data, edges_data = Render.extract_tessellation(shape,  **kwargs)
         
         face_color = color if color is not None else surface_color
-        mesh_face = faces_mesh(faces_data, color=face_color)
+        mesh_face = faces_mesh(faces_data, color=face_color, opacity=face_opacity)
         mesh_edges = edges_mesh(edges_data, color=edge_color, linewidth=edge_width, resolution=line_resolution)
 
         return mesh_face, mesh_edges
@@ -353,7 +357,7 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
         mesh_face = []
         mesh_edges = []
         for subshape in shape:
-            mf, me = occt_to_threejs(subshape, linear_deflection, line_resolution=line_resolution, **kwargs)
+            mf, me = occt_to_threejs(subshape,  line_resolution=line_resolution, **kwargs)
             if mf is not None:
                 mesh_face.append(mf)
             if me is not None:
@@ -367,7 +371,8 @@ def occt_to_threejs(shape, linear_deflection=0.1, points_color='blue', points_si
 class ShapeRenderer:
     """Simple renderer that can accumulate OCCT shapes and display them in one scene."""
 
-    def __init__(self, linear_deflection=0.1, angle_deflection=15.0, width=1200, height=600):
+    def __init__(self, deflection=0.0001, linear_deflection=0.1, angle_deflection=15.0, width=1200, height=600):
+        self.deflection = deflection
         self.linear_deflection = linear_deflection
         self.angle_deflection = angle_deflection
         self.width = width
@@ -398,9 +403,9 @@ class ShapeRenderer:
         self.fog_near = 30
         self.fog_far = None  # Auto-calculated from grid_size if None
 
-    def add_shape(self, shape, color=None):
+    def add_shape(self, shape, options={}):
         """Queue an OCCT shape for rendering."""
-        self._models.append((shape, color))
+        self._models.append((shape, options))
         return shape
 
     def clear(self):
@@ -409,30 +414,33 @@ class ShapeRenderer:
 
     def _prepare_meshes(self):
         meshes = []
-        for shape, color in self._models:
-            if color is not None:
-                mesh_face, mesh_edges = occt_to_threejs(
-                    shape,
-                    linear_deflection=self.linear_deflection,
-                    angle_deflection=self.angle_deflection,
-                    color=color,
-                    line_resolution=(self.width, self.height),
-                )
-            else:
-                mesh_face, mesh_edges = occt_to_threejs(
-                    shape,
-                    linear_deflection=self.linear_deflection,
-                    angle_deflection=self.angle_deflection,
-                    points_color=self.point_color,
-                    points_size=self.point_size,
-                    points_rounded=self.point_rounded,
-                    curve_color=self.curve_color,
-                    curve_width=self.curve_width,
-                    edge_color=self.edge_color,
-                    edge_width=self.edge_width,
-                    line_resolution=(self.width, self.height),
-                    surface_color=self.surface_color,
-                )
+        for shape, options in self._models:
+            # if color is not None:
+            #     mesh_face, mesh_edges = occt_to_threejs(
+            #         shape,
+            #         deflection=self.deflection,
+            #         linear_deflection=self.linear_deflection,
+            #         angle_deflection=self.angle_deflection,
+            #         color=color,
+            #         line_resolution=(self.width, self.height),
+            #     )
+            # else:
+            mesh_face, mesh_edges = occt_to_threejs(
+                shape,
+                deflection=options.get('deflection', self.deflection),
+                linear_deflection=options.get('linear_deflection', self.linear_deflection),
+                angle_deflection=options.get('angle_deflection', self.angle_deflection),
+                points_color=options.get('points_color', self.point_color),
+                points_size=options.get('points_size', self.point_size),
+                points_rounded=options.get('points_rounded', self.point_rounded),
+                curve_color=options.get('curve_color', self.curve_color),
+                curve_width=options.get('curve_width', self.curve_width),
+                edge_color=options.get('edge_color', self.edge_color),
+                edge_width=options.get('edge_width', self.edge_width),
+                line_resolution=(self.width, self.height),
+                surface_color=options.get('surface_color', self.surface_color),
+                face_opacity=options.get('face_opacity', 1.0),
+            )
             meshes.append((mesh_face, mesh_edges))
         return meshes
 
@@ -443,6 +451,8 @@ class ShapeRenderer:
 
         if camera_position is None:
             camera_position = [0, 20, 40]
+
+        self.trihedron_scale = hypot(camera_position[0], camera_position[1], camera_position[2]) / hypot(0, 20, 40) * self.trihedron_scale
         camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height)
         default_lights = [
             AmbientLight(intensity=0.5),
