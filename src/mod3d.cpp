@@ -13,6 +13,7 @@ namespace py = pybind11;
 // Forward declaration from sub binding fonctions
 
 void bind_gp(py::module_ &m);
+void bind_geom2d(py::module_ &m);
 void bind_geom(py::module_ &m);
 void bind_geom_abs(py::module_ &m);
 void bind_geom_fill(py::module_ &m);
@@ -67,6 +68,7 @@ PYBIND11_MODULE(mod3d, m)
     
     // Create submodules
     py::module_ gp = m.def_submodule("gp", "Geometric primitives");
+    py::module_ Geom2d = m.def_submodule("Geom2d", "Geom2d module");
     py::module_ Geom = m.def_submodule("Geom", "Geom module");
     py::module_ GeomFill = m.def_submodule("GeomFill", "GeomFill module");
     py::module_ GeomAbs = m.def_submodule("GeomAbs", "GeomAbs module");
@@ -122,6 +124,7 @@ PYBIND11_MODULE(mod3d, m)
     bind_geom_abs(GeomAbs);
     bind_geom_fill(GeomFill);
     bind_geom(Geom);
+    bind_geom2d(Geom2d);
     bind_topods(TopoDS);
     bind_adaptor(Adaptor);
     bind_top_abs(TopAbs);

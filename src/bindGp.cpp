@@ -24,6 +24,20 @@
 
 #include <gp_Trsf.hxx>
 
+// 2D types
+#include <gp_XY.hxx>
+#include <gp_Pnt2d.hxx>
+#include <gp_Vec2d.hxx>
+#include <gp_Dir2d.hxx>
+#include <gp_Ax2d.hxx>
+#include <gp_Ax22d.hxx>
+#include <gp_Lin2d.hxx>
+#include <gp_Circ2d.hxx>
+#include <gp_Elips2d.hxx>
+#include <gp_Hypr2d.hxx>
+#include <gp_Parab2d.hxx>
+#include <gp_Trsf2d.hxx>
+
 namespace py = pybind11;
 
 void bind_gp(py::module_ &m)
@@ -1443,6 +1457,664 @@ void bind_gp(py::module_ &m)
             }
             return "gp_Trsf(form=" + form_str + 
                    ", scale=" + std::to_string(self.ScaleFactor()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // 2D GEOMETRIC TYPES
+    // =========================================================================
+
+    // =========================================================================
+    // gp_XY - 2D coordinate pair
+    // =========================================================================
+    py::class_<gp_XY>(m, "XY",
+        "Describes a coordinate pair (X, Y) in 2D space.")
+        .def(py::init<>(), "Creates XY with zero coordinates")
+        .def(py::init<double, double>(), py::arg("x"), py::arg("y"),
+             "Creates XY with given coordinates")
+
+        .def_property("x", &gp_XY::X, &gp_XY::SetX,
+             "Get or set the X coordinate")
+        .def_property("y", &gp_XY::Y, &gp_XY::SetY,
+             "Get or set the Y coordinate")
+        .def_property("coord",
+            [](const gp_XY& self) { return py::make_tuple(self.X(), self.Y()); },
+            [](gp_XY& self, py::tuple t) {
+                if (t.size() != 2)
+                    throw std::runtime_error("Tuple of size 2 expected for coord");
+                self.SetCoord(t[0].cast<double>(), t[1].cast<double>());
+            },
+                "Get or set both coordinates as a tuple (x, y)")
+        .def_property("xy",
+            [](const gp_XY& self) { return self; },
+            [](gp_XY& self, const gp_XY& other) { self.SetX(other.X()); self.SetY(other.Y()); },
+            "Get or set both coordinates using another XY")
+        .def_property_readonly("modulus", &gp_XY::Modulus, "Returns sqrt(X^2 + Y^2)")
+        .def("square_modulus", &gp_XY::SquareModulus, "Returns X^2 + Y^2")
+        .def("is_equal", &gp_XY::IsEqual, py::arg("other"), py::arg("tolerance"),
+             "Returns True if distance to other is <= tolerance")
+        .def("dot", &gp_XY::Dot, py::arg("other"), "Returns the dot product")
+        .def("crossed", &gp_XY::Crossed, py::arg("other"),
+             "Returns the cross product (X1*Y2 - Y1*X2)")
+        .def("normalize", &gp_XY::Normalize, "Normalizes this XY")
+        .def("normalized", &gp_XY::Normalized, "Returns a normalized copy")
+        .def("reverse", &gp_XY::Reverse, "Reverses both coordinates")
+        .def("reversed", &gp_XY::Reversed, "Returns a reversed copy")
+        .def("__add__", &gp_XY::Added, py::arg("other"))
+        .def("__sub__", &gp_XY::Subtracted, py::arg("other"))
+        .def("__mul__", py::overload_cast<double>(&gp_XY::Multiplied, py::const_), py::arg("scalar"))
+        .def("__truediv__", &gp_XY::Divided, py::arg("scalar"))
+        .def("__neg__", &gp_XY::Reversed)
+        .def("__repr__", [](const gp_XY& self) {
+            return "gp_XY(" + std::to_string(self.X()) + ", " + 
+                   std::to_string(self.Y()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Pnt2d - 2D Point
+    // =========================================================================
+    py::class_<gp_Pnt2d>(m, "Pnt2d",
+        "Describes a point in 2D space.")
+        .def(py::init<>(), "Creates point at origin (0, 0)")
+        .def(py::init<const double, const double>(), py::arg("x"), py::arg("y"),
+             "Creates point at (X, Y)")
+        .def(py::init<const gp_XY&>(), py::arg("coord"),
+             "Creates point from XY coordinates")
+        .def_property("x", &gp_Pnt2d::X, &gp_Pnt2d::SetX,
+             "Get or set the X coordinate")
+        .def_property("y", &gp_Pnt2d::Y, &gp_Pnt2d::SetY,
+             "Get or set the Y coordinate")
+        .def_property("xy", [](const gp_Pnt2d& self) { return self.XY(); }, &gp_Pnt2d::SetXY,
+             "Sets both coordinates from XY")
+        .def_property("coord",
+            [](const gp_Pnt2d& self) { return self.Coord(); },
+            &gp_Pnt2d::SetXY,
+            "Get or set the XY coordinates")
+        .def("is_equal", &gp_Pnt2d::IsEqual, py::arg("other"), py::arg("tolerance"),
+             "Returns True if distance to other is <= tolerance")
+        .def("distance", &gp_Pnt2d::Distance, py::arg("other"),
+             "Returns the distance to another point")
+        .def("square_distance", &gp_Pnt2d::SquareDistance, py::arg("other"),
+             "Returns the squared distance to another point")
+        .def("mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Pnt2d::Mirror),
+             py::arg("p"), "Mirrors this point about point P")
+        .def("mirrored", py::overload_cast<const gp_Pnt2d&>(&gp_Pnt2d::Mirrored, py::const_),
+             py::arg("p"), "Returns a point mirrored about point P")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Pnt2d::Mirror),
+             py::arg("a"), "Mirrors this point about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Pnt2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a point mirrored about axis A")
+        .def("rotate", &gp_Pnt2d::Rotate, py::arg("p"), py::arg("angle"),
+             "Rotates this point about point P by angle (radians)")
+        .def("rotated", &gp_Pnt2d::Rotated, py::arg("p"), py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Pnt2d::Scale, py::arg("p"), py::arg("s"),
+             "Scales this point about point P by factor S")
+        .def("scaled", &gp_Pnt2d::Scaled, py::arg("p"), py::arg("s"),
+             "Returns a scaled copy")
+        .def("transform", &gp_Pnt2d::Transform, py::arg("t"),
+             "Transforms this point by transformation T")
+        .def("transformed", &gp_Pnt2d::Transformed, py::arg("t"),
+             "Returns a transformed copy")
+        .def("translate", py::overload_cast<const gp_Vec2d&>(&gp_Pnt2d::Translate),
+             py::arg("v"), "Translates this point by vector V")
+        .def("translated", py::overload_cast<const gp_Vec2d&>(&gp_Pnt2d::Translated, py::const_),
+             py::arg("v"), "Returns a translated copy")
+        .def("__repr__", [](const gp_Pnt2d& self) {
+            return "gp_Pnt2d(" + std::to_string(self.X()) + ", " + 
+                   std::to_string(self.Y()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Vec2d - 2D Vector
+    // =========================================================================
+    py::class_<gp_Vec2d>(m, "Vec2d",
+        "Describes a vector in 2D space.")
+        .def(py::init<>(), "Creates a null vector")
+        .def(py::init<double, double>(), py::arg("x"), py::arg("y"),
+             "Creates vector with components (X, Y)")
+        .def(py::init<const gp_XY&>(), py::arg("coord"),
+             "Creates vector from XY coordinates")
+        .def(py::init<const gp_Dir2d&>(), py::arg("v"),
+             "Creates a unit vector from a direction")
+        .def(py::init<const gp_Pnt2d&, const gp_Pnt2d&>(), py::arg("p1"), py::arg("p2"),
+             "Creates vector from P1 to P2")
+        .def_property("x", &gp_Vec2d::X, &gp_Vec2d::SetX,
+             "Get or set the X component")
+        .def_property("y", &gp_Vec2d::Y, &gp_Vec2d::SetY,
+             "Get or set the Y component")
+        .def_property("xy",
+            [](const gp_Vec2d& self) { return self.XY(); }, 
+             &gp_Vec2d::SetXY 
+        )
+        .def_property("coord",
+            [](const gp_Vec2d& self) { return self.XY(); }, 
+             &gp_Vec2d::SetXY 
+        )
+        .def_property_readonly("magnitude", &gp_Vec2d::Magnitude, "Returns the magnitude")
+        .def_property_readonly("square_magnitude", &gp_Vec2d::SquareMagnitude, "Returns the squared magnitude")
+        .def("is_equal", &gp_Vec2d::IsEqual, py::arg("other"), py::arg("linear_tolerance"), py::arg("angular_tolerance"),
+             "Tests equality within tolerances")
+        .def("is_normal", &gp_Vec2d::IsNormal, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if vectors are normal (perpendicular)")
+        .def("is_opposite", &gp_Vec2d::IsOpposite, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if vectors are opposite")
+        .def("is_parallel", &gp_Vec2d::IsParallel, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if vectors are parallel")
+        .def("angle", &gp_Vec2d::Angle, py::arg("other"),
+             "Returns the angle to another vector (-PI to PI)")
+        .def("dot", &gp_Vec2d::Dot, py::arg("other"), "Returns the dot product")
+        .def("crossed", &gp_Vec2d::Crossed, py::arg("other"),
+             "Returns the cross product (X1*Y2 - Y1*X2)")
+        .def("cross_magnitude", &gp_Vec2d::CrossMagnitude, py::arg("other"),
+             "Returns the magnitude of the cross product")
+        .def("cross_square_magnitude", &gp_Vec2d::CrossSquareMagnitude, py::arg("other"),
+             "Returns the squared magnitude of the cross product")
+        .def("normalize", &gp_Vec2d::Normalize, "Normalizes this vector")
+        .def("normalized", &gp_Vec2d::Normalized, "Returns a normalized copy")
+        .def("reverse", &gp_Vec2d::Reverse, "Reverses this vector")
+        .def("reversed", &gp_Vec2d::Reversed, "Returns a reversed copy")
+        .def("mirror", py::overload_cast<const gp_Vec2d&>(&gp_Vec2d::Mirror),
+             py::arg("v"), "Mirrors this vector about vector V")
+        .def("mirrored", py::overload_cast<const gp_Vec2d&>(&gp_Vec2d::Mirrored, py::const_),
+             py::arg("v"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Vec2d::Mirror),
+             py::arg("a"), "Mirrors this vector about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Vec2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Vec2d::Rotate, py::arg("angle"),
+             "Rotates this vector by angle (radians)")
+        .def("rotated", &gp_Vec2d::Rotated, py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Vec2d::Scale, py::arg("s"), "Scales this vector")
+        .def("scaled", &gp_Vec2d::Scaled, py::arg("s"), "Returns a scaled copy")
+        .def("transform", &gp_Vec2d::Transform, py::arg("t"),
+             "Transforms this vector")
+        .def("transformed", &gp_Vec2d::Transformed, py::arg("t"),
+             "Returns a transformed copy")
+        .def("__add__", &gp_Vec2d::Added, py::arg("other"))
+        .def("__sub__", &gp_Vec2d::Subtracted, py::arg("other"))
+        .def("__mul__", &gp_Vec2d::Multiplied, py::arg("scalar"))
+        .def("__truediv__", &gp_Vec2d::Divided, py::arg("scalar"))
+        .def("__neg__", &gp_Vec2d::Reversed)
+        .def("__repr__", [](const gp_Vec2d& self) {
+            return "gp_Vec2d(" + std::to_string(self.X()) + ", " + 
+                   std::to_string(self.Y()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Dir2d - 2D Direction (unit vector)
+    // =========================================================================
+    py::class_<gp_Dir2d>(m, "Dir2d",
+        "Describes a unit vector (direction) in 2D space.\n"
+        "Always normalized to have magnitude 1.")
+        .def(py::init<>(), "Creates direction (1, 0)")
+        .def(py::init<double, double>(), py::arg("x"), py::arg("y"),
+             "Creates direction from components (will be normalized)")
+        .def(py::init<const gp_XY&>(), py::arg("coord"),
+             "Creates direction from XY (will be normalized)")
+        .def(py::init<const gp_Vec2d&>(), py::arg("v"),
+             "Creates direction from vector (will be normalized)")
+        .def_property("x", &gp_Dir2d::X, &gp_Dir2d::SetX,
+             "Get or set the X component (will renormalize on set)")
+        .def_property("y", &gp_Dir2d::Y, &gp_Dir2d::SetY,
+             "Get or set the Y component (will renormalize on set)")
+        .def_property("xy",
+            [](const gp_Dir2d& self) { return self.XY(); },
+            &gp_Dir2d::SetXY,
+            "Get or set the XY components (will be normalized on set)")
+        .def_property("coord",
+            [](const gp_Dir2d& self) { return self.XY(); },
+            &gp_Dir2d::SetXY,
+            "Get or set the XY components (will be normalized on set)")
+        .def("is_equal", &gp_Dir2d::IsEqual, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests equality within angular tolerance")
+        .def("is_normal", &gp_Dir2d::IsNormal, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if directions are normal (perpendicular)")
+        .def("is_opposite", &gp_Dir2d::IsOpposite, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if directions are opposite")
+        .def("is_parallel", &gp_Dir2d::IsParallel, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if directions are parallel")
+        .def("angle", &gp_Dir2d::Angle, py::arg("other"),
+             "Returns the angle to another direction (-PI to PI)")
+        .def("dot", &gp_Dir2d::Dot, py::arg("other"), "Returns the dot product")
+        .def("crossed", &gp_Dir2d::Crossed, py::arg("other"),
+             "Returns the cross product (X1*Y2 - Y1*X2)")
+        .def("reverse", &gp_Dir2d::Reverse, "Reverses this direction")
+        .def("reversed", &gp_Dir2d::Reversed, "Returns a reversed copy")
+        .def("mirror", py::overload_cast<const gp_Dir2d&>(&gp_Dir2d::Mirror),
+             py::arg("v"), "Mirrors about direction V")
+        .def("mirrored", py::overload_cast<const gp_Dir2d&>(&gp_Dir2d::Mirrored, py::const_),
+             py::arg("v"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Dir2d::Mirror),
+             py::arg("a"), "Mirrors about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Dir2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Dir2d::Rotate, py::arg("angle"),
+             "Rotates by angle (radians)")
+        .def("rotated", &gp_Dir2d::Rotated, py::arg("angle"),
+             "Returns a rotated copy")
+        .def("transform", &gp_Dir2d::Transform, py::arg("t"),
+             "Transforms this direction")
+        .def("transformed", &gp_Dir2d::Transformed, py::arg("t"),
+             "Returns a transformed copy")
+        .def("__repr__", [](const gp_Dir2d& self) {
+            return "gp_Dir2d(" + std::to_string(self.X()) + ", " + 
+                   std::to_string(self.Y()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Ax2d - 2D Axis (point + direction)
+    // =========================================================================
+    py::class_<gp_Ax2d>(m, "Ax2d",
+        "Describes an axis in 2D space: a point (location) and a direction.")
+        .def(py::init<>(), "Creates an axis at origin with direction (1, 0)")
+        .def(py::init<const gp_Pnt2d&, const gp_Dir2d&>(), py::arg("p"), py::arg("v"),
+             "Creates an axis at point P with direction V")
+        .def_property("location", &gp_Ax2d::Location, &gp_Ax2d::SetLocation,
+             "Get or set the location point")
+        .def_property("direction", &gp_Ax2d::Direction, &gp_Ax2d::SetDirection,
+                "Get or set the direction")
+        .def("is_coaxial", &gp_Ax2d::IsCoaxial, py::arg("other"), 
+             py::arg("angular_tolerance"), py::arg("linear_tolerance"),
+             "Tests if axes are coaxial within tolerances")
+        .def("is_normal", &gp_Ax2d::IsNormal, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if axes are normal (perpendicular)")
+        .def("is_opposite", &gp_Ax2d::IsOpposite, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if axes are opposite")
+        .def("is_parallel", &gp_Ax2d::IsParallel, py::arg("other"), py::arg("angular_tolerance"),
+             "Tests if axes are parallel")
+        .def("angle", &gp_Ax2d::Angle, py::arg("other"),
+             "Returns the angle between directions")
+        .def("reverse", &gp_Ax2d::Reverse, "Reverses the direction")
+        .def("reversed", &gp_Ax2d::Reversed, "Returns a reversed copy")
+        .def("mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Ax2d::Mirror),
+             py::arg("p"), "Mirrors about point P")
+        .def("mirrored", py::overload_cast<const gp_Pnt2d&>(&gp_Ax2d::Mirrored, py::const_),
+             py::arg("p"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Ax2d::Mirror),
+             py::arg("a"), "Mirrors about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Ax2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Ax2d::Rotate, py::arg("p"), py::arg("angle"),
+             "Rotates about point P by angle (radians)")
+        .def("rotated", &gp_Ax2d::Rotated, py::arg("p"), py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Ax2d::Scale, py::arg("p"), py::arg("s"),
+             "Scales about point P by factor S")
+        .def("scaled", &gp_Ax2d::Scaled, py::arg("p"), py::arg("s"),
+             "Returns a scaled copy")
+        .def("transform", &gp_Ax2d::Transform, py::arg("t"),
+             "Transforms this axis")
+        .def("transformed", &gp_Ax2d::Transformed, py::arg("t"),
+             "Returns a transformed copy")
+        .def("translate", py::overload_cast<const gp_Vec2d&>(&gp_Ax2d::Translate),
+             py::arg("v"), "Translates by vector V")
+        .def("translated", py::overload_cast<const gp_Vec2d&>(&gp_Ax2d::Translated, py::const_),
+             py::arg("v"), "Returns a translated copy")
+        .def("__repr__", [](const gp_Ax2d& self) {
+            return "gp_Ax2d(location=(" + std::to_string(self.Location().X()) + ", " + 
+                   std::to_string(self.Location().Y()) + "), direction=(" +
+                   std::to_string(self.Direction().X()) + ", " + 
+                   std::to_string(self.Direction().Y()) + "))";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Ax22d - 2D Coordinate System (point + two orthogonal directions)
+    // =========================================================================
+    py::class_<gp_Ax22d>(m, "Ax22d",
+        "Describes a coordinate system in 2D: an origin and two perpendicular axes (X and Y).")
+        .def(py::init<>(), "Creates a coordinate system at origin with X=(1,0), Y=(0,1)")
+        .def(py::init<const gp_Pnt2d&, const gp_Dir2d&, const gp_Dir2d&>(),
+             py::arg("p"), py::arg("vx"), py::arg("vy"),
+             "Creates a coordinate system at P with X direction Vx and Y direction Vy")
+        .def(py::init<const gp_Pnt2d&, const gp_Dir2d&, bool>(),
+             py::arg("p"), py::arg("v"), py::arg("sense") = true,
+             "Creates a coordinate system at P with X direction V.\n"
+             "Y is computed perpendicular (counter-clockwise if sense=True)")
+        .def(py::init<const gp_Ax2d&, bool>(), py::arg("a"), py::arg("sense") = true,
+             "Creates a coordinate system from axis A")
+        .def("location", &gp_Ax22d::Location, "Returns the origin")
+        .def("x_axis", &gp_Ax22d::XAxis, "Returns the X axis")
+        .def("y_axis", &gp_Ax22d::YAxis, "Returns the Y axis")
+        .def("x_direction", &gp_Ax22d::XDirection, "Returns the X direction")
+        .def("y_direction", &gp_Ax22d::YDirection, "Returns the Y direction")
+        .def("set_location", &gp_Ax22d::SetLocation, py::arg("p"), "Sets the origin")
+        .def("set_x_axis", &gp_Ax22d::SetXAxis, py::arg("a"), "Sets the X axis")
+        .def("set_y_axis", &gp_Ax22d::SetYAxis, py::arg("a"), "Sets the Y axis")
+        .def("set_x_direction", &gp_Ax22d::SetXDirection, py::arg("vx"), "Sets the X direction")
+        .def("set_y_direction", &gp_Ax22d::SetYDirection, py::arg("vy"), "Sets the Y direction")
+        .def("mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Ax22d::Mirror),
+             py::arg("p"), "Mirrors about point P")
+        .def("mirrored", py::overload_cast<const gp_Pnt2d&>(&gp_Ax22d::Mirrored, py::const_),
+             py::arg("p"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Ax22d::Mirror),
+             py::arg("a"), "Mirrors about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Ax22d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Ax22d::Rotate, py::arg("p"), py::arg("angle"),
+             "Rotates about point P")
+        .def("rotated", &gp_Ax22d::Rotated, py::arg("p"), py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Ax22d::Scale, py::arg("p"), py::arg("s"), "Scales about point P")
+        .def("scaled", &gp_Ax22d::Scaled, py::arg("p"), py::arg("s"), "Returns a scaled copy")
+        .def("transform", &gp_Ax22d::Transform, py::arg("t"), "Transforms this coordinate system")
+        .def("transformed", &gp_Ax22d::Transformed, py::arg("t"), "Returns a transformed copy")
+        .def("translate", py::overload_cast<const gp_Vec2d&>(&gp_Ax22d::Translate),
+             py::arg("v"), "Translates by vector V")
+        .def("translated", py::overload_cast<const gp_Vec2d&>(&gp_Ax22d::Translated, py::const_),
+             py::arg("v"), "Returns a translated copy")
+        .def("__repr__", [](const gp_Ax22d& self) {
+            return "gp_Ax22d(origin=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "))";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Lin2d - 2D Line
+    // =========================================================================
+    py::class_<gp_Lin2d>(m, "Lin2d",
+        "Describes an infinite line in 2D space: a point and a direction.")
+        .def(py::init<>(), "Creates a line along X axis through origin")
+        .def(py::init<const gp_Ax2d&>(), py::arg("a"),
+             "Creates a line from an axis")
+        .def(py::init<const gp_Pnt2d&, const gp_Dir2d&>(), py::arg("p"), py::arg("v"),
+             "Creates a line through point P with direction V")
+        .def(py::init<double, double, double>(), py::arg("a"), py::arg("b"), py::arg("c"),
+             "Creates a line from equation A*X + B*Y + C = 0")
+        .def("location", &gp_Lin2d::Location, "Returns a point on the line")
+        .def("direction", &gp_Lin2d::Direction, "Returns the direction")
+        .def("position", &gp_Lin2d::Position, "Returns the axis")
+        .def("set_location", &gp_Lin2d::SetLocation, py::arg("p"), "Sets the location")
+        .def("set_direction", &gp_Lin2d::SetDirection, py::arg("v"), "Sets the direction")
+        .def("set_position", &gp_Lin2d::SetPosition, py::arg("a"), "Sets the axis")
+        .def("coefficients", [](const gp_Lin2d& self) {
+            double a, b, c;
+            self.Coefficients(a, b, c);
+            return py::make_tuple(a, b, c);
+        }, "Returns the coefficients (A, B, C) of A*X + B*Y + C = 0")
+        .def("angle", &gp_Lin2d::Angle, py::arg("other"),
+             "Returns the angle to another line")
+        .def("contains", &gp_Lin2d::Contains, py::arg("p"), py::arg("linear_tolerance"),
+             "Tests if point P is on the line within tolerance")
+        .def("distance", py::overload_cast<const gp_Pnt2d&>(&gp_Lin2d::Distance, py::const_),
+             py::arg("p"), "Returns the distance to point P")
+        .def("distance", py::overload_cast<const gp_Lin2d&>(&gp_Lin2d::Distance, py::const_),
+             py::arg("other"), "Returns the distance to another line")
+        .def("square_distance", py::overload_cast<const gp_Pnt2d&>(&gp_Lin2d::SquareDistance, py::const_),
+             py::arg("p"), "Returns the squared distance to point P")
+        .def("square_distance", py::overload_cast<const gp_Lin2d&>(&gp_Lin2d::SquareDistance, py::const_),
+             py::arg("other"), "Returns the squared distance to another line")
+        .def("normal", &gp_Lin2d::Normal, py::arg("p"),
+             "Returns a line perpendicular to this line through point P")
+        .def("reverse", &gp_Lin2d::Reverse, "Reverses the direction")
+        .def("reversed", &gp_Lin2d::Reversed, "Returns a reversed copy")
+        .def("mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Lin2d::Mirror),
+             py::arg("p"), "Mirrors about point P")
+        .def("mirrored", py::overload_cast<const gp_Pnt2d&>(&gp_Lin2d::Mirrored, py::const_),
+             py::arg("p"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Lin2d::Mirror),
+             py::arg("a"), "Mirrors about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Lin2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Lin2d::Rotate, py::arg("p"), py::arg("angle"),
+             "Rotates about point P")
+        .def("rotated", &gp_Lin2d::Rotated, py::arg("p"), py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Lin2d::Scale, py::arg("p"), py::arg("s"), "Scales about point P")
+        .def("scaled", &gp_Lin2d::Scaled, py::arg("p"), py::arg("s"), "Returns a scaled copy")
+        .def("transform", &gp_Lin2d::Transform, py::arg("t"), "Transforms this line")
+        .def("transformed", &gp_Lin2d::Transformed, py::arg("t"), "Returns a transformed copy")
+        .def("translate", py::overload_cast<const gp_Vec2d&>(&gp_Lin2d::Translate),
+             py::arg("v"), "Translates by vector V")
+        .def("translated", py::overload_cast<const gp_Vec2d&>(&gp_Lin2d::Translated, py::const_),
+             py::arg("v"), "Returns a translated copy")
+        .def("__repr__", [](const gp_Lin2d& self) {
+            return "gp_Lin2d(location=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "), direction=(" +
+                   std::to_string(self.Direction().X()) + ", " +
+                   std::to_string(self.Direction().Y()) + "))";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Circ2d - 2D Circle
+    // =========================================================================
+    py::class_<gp_Circ2d>(m, "Circ2d",
+        "Describes a circle in 2D space: a center point and a radius.")
+        .def(py::init<>(), "Creates a circle with center at origin and radius 1")
+        .def(py::init<const gp_Ax2d&, double, bool>(),
+             py::arg("a"), py::arg("radius"), py::arg("sense") = true,
+             "Creates a circle with axis A (center at A.Location()) and radius")
+        .def(py::init<const gp_Ax22d&, double>(), py::arg("a"), py::arg("radius"),
+             "Creates a circle with coordinate system A and radius")
+        .def("location", &gp_Circ2d::Location, "Returns the center")
+        .def("radius", &gp_Circ2d::Radius, "Returns the radius")
+        .def("axis", &gp_Circ2d::Axis, "Returns the main axis")
+        .def("position", &gp_Circ2d::Position, "Returns the coordinate system")
+        .def("x_axis", &gp_Circ2d::XAxis, "Returns the X axis")
+        .def("y_axis", &gp_Circ2d::YAxis, "Returns the Y axis")
+        .def("set_location", &gp_Circ2d::SetLocation, py::arg("p"), "Sets the center")
+        .def("set_radius", &gp_Circ2d::SetRadius, py::arg("r"), "Sets the radius")
+        .def("set_axis", &gp_Circ2d::SetAxis, py::arg("a"), "Sets the main axis")
+        .def("set_x_axis", &gp_Circ2d::SetXAxis, py::arg("a"), "Sets the X axis")
+        .def("set_y_axis", &gp_Circ2d::SetYAxis, py::arg("a"), "Sets the Y axis")
+        .def("area", &gp_Circ2d::Area, "Returns the area")
+        .def("length", &gp_Circ2d::Length, "Returns the circumference")
+        .def("contains", &gp_Circ2d::Contains, py::arg("p"), py::arg("linear_tolerance"),
+             "Tests if point P is on the circle within tolerance")
+        .def("distance", &gp_Circ2d::Distance, py::arg("p"),
+             "Returns the distance to point P")
+        .def("square_distance", &gp_Circ2d::SquareDistance, py::arg("p"),
+             "Returns the squared distance to point P")
+        .def("reverse", &gp_Circ2d::Reverse, "Reverses the orientation")
+        .def("reversed", &gp_Circ2d::Reversed, "Returns a reversed copy")
+        .def("is_direct", &gp_Circ2d::IsDirect,
+             "Returns True if the coordinate system is direct (counter-clockwise)")
+        .def("mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Circ2d::Mirror),
+             py::arg("p"), "Mirrors about point P")
+        .def("mirrored", py::overload_cast<const gp_Pnt2d&>(&gp_Circ2d::Mirrored, py::const_),
+             py::arg("p"), "Returns a mirrored copy")
+        .def("mirror", py::overload_cast<const gp_Ax2d&>(&gp_Circ2d::Mirror),
+             py::arg("a"), "Mirrors about axis A")
+        .def("mirrored", py::overload_cast<const gp_Ax2d&>(&gp_Circ2d::Mirrored, py::const_),
+             py::arg("a"), "Returns a mirrored copy")
+        .def("rotate", &gp_Circ2d::Rotate, py::arg("p"), py::arg("angle"),
+             "Rotates about point P")
+        .def("rotated", &gp_Circ2d::Rotated, py::arg("p"), py::arg("angle"),
+             "Returns a rotated copy")
+        .def("scale", &gp_Circ2d::Scale, py::arg("p"), py::arg("s"), "Scales about point P")
+        .def("scaled", &gp_Circ2d::Scaled, py::arg("p"), py::arg("s"), "Returns a scaled copy")
+        .def("transform", &gp_Circ2d::Transform, py::arg("t"), "Transforms this circle")
+        .def("transformed", &gp_Circ2d::Transformed, py::arg("t"), "Returns a transformed copy")
+        .def("translate", py::overload_cast<const gp_Vec2d&>(&gp_Circ2d::Translate),
+             py::arg("v"), "Translates by vector V")
+        .def("translated", py::overload_cast<const gp_Vec2d&>(&gp_Circ2d::Translated, py::const_),
+             py::arg("v"), "Returns a translated copy")
+        .def("__repr__", [](const gp_Circ2d& self) {
+            return "gp_Circ2d(center=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "), radius=" +
+                   std::to_string(self.Radius()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Elips2d - 2D Ellipse
+    // =========================================================================
+    py::class_<gp_Elips2d>(m, "Elips2d",
+        "Describes an ellipse in 2D space.")
+        .def(py::init<>(), "Creates an ellipse")
+        .def(py::init<const gp_Ax2d&, double, double, bool>(),
+             py::arg("a"), py::arg("major_radius"), py::arg("minor_radius"), py::arg("sense") = true,
+             "Creates an ellipse with axis A and radii")
+        .def(py::init<const gp_Ax22d&, double, double>(),
+             py::arg("a"), py::arg("major_radius"), py::arg("minor_radius"),
+             "Creates an ellipse with coordinate system A and radii")
+        .def("location", &gp_Elips2d::Location, "Returns the center")
+        .def("major_radius", &gp_Elips2d::MajorRadius, "Returns the major radius")
+        .def("minor_radius", &gp_Elips2d::MinorRadius, "Returns the minor radius")
+        .def("axis", &gp_Elips2d::Axis, "Returns the main axis")
+        .def("x_axis", &gp_Elips2d::XAxis, "Returns the major axis")
+        .def("y_axis", &gp_Elips2d::YAxis, "Returns the minor axis")
+        .def("set_location", &gp_Elips2d::SetLocation, py::arg("p"), "Sets the center")
+        .def("set_major_radius", &gp_Elips2d::SetMajorRadius, py::arg("r"), "Sets the major radius")
+        .def("set_minor_radius", &gp_Elips2d::SetMinorRadius, py::arg("r"), "Sets the minor radius")
+        .def("set_axis", &gp_Elips2d::SetAxis, py::arg("a"), "Sets the main axis")
+        .def("set_x_axis", &gp_Elips2d::SetXAxis, py::arg("a"), "Sets the major axis")
+        .def("set_y_axis", &gp_Elips2d::SetYAxis, py::arg("a"), "Sets the minor axis")
+        .def("area", &gp_Elips2d::Area, "Returns the area")
+        .def("eccentricity", &gp_Elips2d::Eccentricity, "Returns the eccentricity")
+        .def("focal", &gp_Elips2d::Focal, "Returns the focal distance")
+        .def("focus1", &gp_Elips2d::Focus1, "Returns the first focus")
+        .def("focus2", &gp_Elips2d::Focus2, "Returns the second focus")
+        .def("parameter", &gp_Elips2d::Parameter, "Returns the parameter")
+        .def("directrix1", &gp_Elips2d::Directrix1, "Returns the first directrix")
+        .def("directrix2", &gp_Elips2d::Directrix2, "Returns the second directrix")
+        .def("is_direct", &gp_Elips2d::IsDirect, "Returns True if direct orientation")
+        .def("reverse", &gp_Elips2d::Reverse, "Reverses the orientation")
+        .def("reversed", &gp_Elips2d::Reversed, "Returns a reversed copy")
+        .def("__repr__", [](const gp_Elips2d& self) {
+            return "gp_Elips2d(center=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "), major=" +
+                   std::to_string(self.MajorRadius()) + ", minor=" +
+                   std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Hypr2d - 2D Hyperbola
+    // =========================================================================
+    py::class_<gp_Hypr2d>(m, "Hypr2d",
+        "Describes a hyperbola in 2D space.")
+        .def(py::init<>(), "Creates a hyperbola")
+        .def(py::init<const gp_Ax2d&, double, double, bool>(),
+             py::arg("a"), py::arg("major_radius"), py::arg("minor_radius"), py::arg("sense") = true,
+             "Creates a hyperbola with axis A and radii")
+        .def(py::init<const gp_Ax22d&, double, double>(),
+             py::arg("a"), py::arg("major_radius"), py::arg("minor_radius"),
+             "Creates a hyperbola with coordinate system A and radii")
+        .def("location", &gp_Hypr2d::Location, "Returns the center")
+        .def("major_radius", &gp_Hypr2d::MajorRadius, "Returns the major radius")
+        .def("minor_radius", &gp_Hypr2d::MinorRadius, "Returns the minor radius")
+        .def("axis", &gp_Hypr2d::Axis, "Returns the main axis")
+        .def("x_axis", &gp_Hypr2d::XAxis, "Returns the transverse axis")
+        .def("y_axis", &gp_Hypr2d::YAxis, "Returns the conjugate axis")
+        .def("set_location", &gp_Hypr2d::SetLocation, py::arg("p"), "Sets the center")
+        .def("set_major_radius", &gp_Hypr2d::SetMajorRadius, py::arg("r"), "Sets the major radius")
+        .def("set_minor_radius", &gp_Hypr2d::SetMinorRadius, py::arg("r"), "Sets the minor radius")
+        .def("set_axis", &gp_Hypr2d::SetAxis, py::arg("a"), "Sets the main axis")
+        .def("set_x_axis", &gp_Hypr2d::SetXAxis, py::arg("a"), "Sets the transverse axis")
+        .def("set_y_axis", &gp_Hypr2d::SetYAxis, py::arg("a"), "Sets the conjugate axis")
+        .def("eccentricity", &gp_Hypr2d::Eccentricity, "Returns the eccentricity")
+        .def("focal", &gp_Hypr2d::Focal, "Returns the focal distance")
+        .def("focus1", &gp_Hypr2d::Focus1, "Returns the first focus")
+        .def("focus2", &gp_Hypr2d::Focus2, "Returns the second focus")
+        .def("parameter", &gp_Hypr2d::Parameter, "Returns the parameter")
+        .def("asymptote1", &gp_Hypr2d::Asymptote1, "Returns the first asymptote")
+        .def("asymptote2", &gp_Hypr2d::Asymptote2, "Returns the second asymptote")
+        .def("directrix1", &gp_Hypr2d::Directrix1, "Returns the first directrix")
+        .def("directrix2", &gp_Hypr2d::Directrix2, "Returns the second directrix")
+        .def("conjugate_branch1", &gp_Hypr2d::ConjugateBranch1, "Returns the first conjugate branch")
+        .def("conjugate_branch2", &gp_Hypr2d::ConjugateBranch2, "Returns the second conjugate branch")
+        .def("other_branch", &gp_Hypr2d::OtherBranch, "Returns the other branch")
+        .def("is_direct", &gp_Hypr2d::IsDirect, "Returns True if direct orientation")
+        .def("reverse", &gp_Hypr2d::Reverse, "Reverses the orientation")
+        .def("reversed", &gp_Hypr2d::Reversed, "Returns a reversed copy")
+        .def("__repr__", [](const gp_Hypr2d& self) {
+            return "gp_Hypr2d(center=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "), major=" +
+                   std::to_string(self.MajorRadius()) + ", minor=" +
+                   std::to_string(self.MinorRadius()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Parab2d - 2D Parabola
+    // =========================================================================
+    py::class_<gp_Parab2d>(m, "Parab2d",
+        "Describes a parabola in 2D space.")
+        .def(py::init<>(), "Creates a parabola")
+        .def(py::init<const gp_Ax2d&, double, bool>(),
+             py::arg("a"), py::arg("focal"), py::arg("sense") = true,
+             "Creates a parabola with axis A and focal length")
+        .def(py::init<const gp_Ax22d&, double>(), py::arg("a"), py::arg("focal"),
+             "Creates a parabola with coordinate system A and focal length")
+        .def("location", &gp_Parab2d::Location, "Returns the vertex")
+        .def("focal", &gp_Parab2d::Focal, "Returns the focal length")
+        .def("axis", &gp_Parab2d::Axis, "Returns the axis of symmetry")
+        .def("mirror_axis", &gp_Parab2d::MirrorAxis, "Returns the axis of symmetry")
+        .def("set_location", &gp_Parab2d::SetLocation, py::arg("p"), "Sets the vertex")
+        .def("set_focal", &gp_Parab2d::SetFocal, py::arg("f"), "Sets the focal length")
+        .def("set_axis", &gp_Parab2d::SetAxis, py::arg("a"), "Sets the axis")
+        .def("set_mirror_axis", &gp_Parab2d::SetMirrorAxis, py::arg("a"), "Sets the axis")
+        .def("focus", &gp_Parab2d::Focus, "Returns the focus")
+        .def("directrix", &gp_Parab2d::Directrix, "Returns the directrix")
+        .def("parameter", &gp_Parab2d::Parameter, "Returns the parameter (2 * focal)")
+        .def("is_direct", &gp_Parab2d::IsDirect, "Returns True if direct orientation")
+        .def("reverse", &gp_Parab2d::Reverse, "Reverses the orientation")
+        .def("reversed", &gp_Parab2d::Reversed, "Returns a reversed copy")
+        .def("__repr__", [](const gp_Parab2d& self) {
+            return "gp_Parab2d(vertex=(" + std::to_string(self.Location().X()) + ", " +
+                   std::to_string(self.Location().Y()) + "), focal=" +
+                   std::to_string(self.Focal()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Trsf2d - 2D Transformation
+    // =========================================================================
+    py::class_<gp_Trsf2d>(m, "Trsf2d",
+        "Describes a 2D transformation: translation, rotation, scaling, or combination.")
+        .def(py::init<>(), "Creates an identity transformation")
+        .def("set_mirror", py::overload_cast<const gp_Pnt2d&>(&gp_Trsf2d::SetMirror),
+             py::arg("p"), "Sets as point mirror about P")
+        .def("set_mirror", py::overload_cast<const gp_Ax2d&>(&gp_Trsf2d::SetMirror),
+             py::arg("a"), "Sets as axis mirror about A")
+        .def("set_rotation", &gp_Trsf2d::SetRotation, py::arg("p"), py::arg("angle"),
+             "Sets as rotation about point P")
+        .def("set_scale", &gp_Trsf2d::SetScale, py::arg("p"), py::arg("s"),
+             "Sets as scaling about point P")
+        .def("set_translation", py::overload_cast<const gp_Vec2d&>(&gp_Trsf2d::SetTranslation),
+             py::arg("v"), "Sets as translation by vector V")
+        .def("set_translation", py::overload_cast<const gp_Pnt2d&, const gp_Pnt2d&>(&gp_Trsf2d::SetTranslation),
+             py::arg("p1"), py::arg("p2"), "Sets as translation from P1 to P2")
+        .def("set_transformation", py::overload_cast<const gp_Ax2d&, const gp_Ax2d&>(&gp_Trsf2d::SetTransformation),
+             py::arg("from_system"), py::arg("to_system"),
+             "Sets transformation between coordinate systems")
+        .def("set_transformation", py::overload_cast<const gp_Ax2d&>(&gp_Trsf2d::SetTransformation),
+             py::arg("to_system"), "Sets transformation from global to local system")
+        .def("is_negative", &gp_Trsf2d::IsNegative, "Returns True if determinant is negative")
+        .def("form", &gp_Trsf2d::Form, "Returns the transformation form")
+        .def("scale_factor", &gp_Trsf2d::ScaleFactor, "Returns the scale factor")
+        .def("rotation_part", &gp_Trsf2d::RotationPart, "Returns the rotation angle")
+        .def("translation_part", &gp_Trsf2d::TranslationPart, "Returns the translation vector")
+        .def("value", &gp_Trsf2d::Value, py::arg("row"), py::arg("col"),
+             "Returns the coefficient at row, col (1-indexed)")
+        .def("invert", &gp_Trsf2d::Invert, "Inverts this transformation")
+        .def("inverted", &gp_Trsf2d::Inverted, "Returns the inverse")
+        .def("multiply", &gp_Trsf2d::Multiply, py::arg("t"),
+             "Composes with transformation T: self = self * T")
+        .def("multiplied", &gp_Trsf2d::Multiplied, py::arg("t"),
+             "Returns the composition self * T")
+        .def("pre_multiply", &gp_Trsf2d::PreMultiply, py::arg("t"),
+             "Composes with transformation T: self = T * self")
+        .def("power", &gp_Trsf2d::Power, py::arg("n"),
+             "Raises to power n")
+        .def("powered", &gp_Trsf2d::Powered, py::arg("n"),
+             "Returns raised to power n")
+        .def("transforms", [](const gp_Trsf2d& self, double x, double y) {
+            Standard_Real tx = x, ty = y;
+            self.Transforms(tx, ty);
+            return py::make_tuple(tx, ty);
+        }, py::arg("x"), py::arg("y"), "Transforms coordinates and returns (x, y)")
+        .def("__mul__", &gp_Trsf2d::Multiplied, py::arg("t"))
+        .def("__repr__", [](const gp_Trsf2d& self) {
+            return "gp_Trsf2d(scale=" + std::to_string(self.ScaleFactor()) + ")";
         })
     ;
     
