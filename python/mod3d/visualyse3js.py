@@ -398,6 +398,7 @@ class ShapeRenderer:
         self.grid_divisions = 80
         self.grid_color = '#bbbbbb'
         self.grid_center_color = '#777777'
+        self.grid_normal = 'Y'
         self.show_fog = True
         self.fog_color = 'lightgray'
         self.fog_near = 30
@@ -478,7 +479,17 @@ class ShapeRenderer:
                 colorCenterLine=self.grid_center_color,
                 colorGrid=self.grid_color,
             )
-            scene_children.append(grid_helper)
+            # Wrap grid in a Group to apply rotation via quaternion (avoids trait sync issues)
+            if self.grid_normal == 'X':
+                angle = np.pi / 2
+                quaternion = (0, np.sin(angle/2), 0, np.cos(angle/2))
+            elif self.grid_normal == 'Z':
+                angle = np.pi / 2
+                quaternion = (np.sin(angle/2), 0, 0, np.cos(angle/2))
+            else:  # 'Y' or default
+                quaternion = (0, 0, 0, 1)  # No rotation needed for Y (default orientation)
+            grid_group = Group(children=[grid_helper], quaternion=quaternion)
+            scene_children.append(grid_group)
 
         # Add trihedron helper
         helper_root = None
