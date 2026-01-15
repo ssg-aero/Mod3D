@@ -94,16 +94,16 @@ void bind_geom_curves(py::module_ &m)
         .def("parametric_transformation", &Geom_Curve::ParametricTransformation, py::arg("t"))
         
         // Parameter bounds
-        .def("first_parameter", &Geom_Curve::FirstParameter)
-        .def("last_parameter", &Geom_Curve::LastParameter)
-        .def("bounds", [](const Geom_Curve& self) {
+        .def_property_readonly("first_parameter", &Geom_Curve::FirstParameter)
+        .def_property_readonly("last_parameter", &Geom_Curve::LastParameter)
+        .def_property_readonly("bounds", [](const Geom_Curve& self) {
             return py::make_tuple(self.FirstParameter(), self.LastParameter());
         })
         // Properties
-        .def("is_closed", &Geom_Curve::IsClosed)
-        .def("is_periodic", &Geom_Curve::IsPeriodic)
-        .def("period", &Geom_Curve::Period)
-        .def("continuity", &Geom_Curve::Continuity)
+        .def_property_readonly("is_closed", &Geom_Curve::IsClosed)
+        .def_property_readonly("is_periodic", &Geom_Curve::IsPeriodic)
+        .def_property_readonly("period", &Geom_Curve::Period)
+        .def_property_readonly("continuity", &Geom_Curve::Continuity)
         .def("is_cn", &Geom_Curve::IsCN, py::arg("n"))
         
         // Evaluation
@@ -155,8 +155,8 @@ void bind_geom_curves(py::module_ &m)
     bind_geom_curves_conics(m);
 
     py::class_<Geom_BoundedCurve, opencascade::handle<Geom_BoundedCurve>, Geom_Curve>(m, "BoundedCurve")
-        .def("start_point", &Geom_BoundedCurve::StartPoint)
-        .def("end_point", &Geom_BoundedCurve::EndPoint)
+        .def_property_readonly("start_point", &Geom_BoundedCurve::StartPoint)
+        .def_property_readonly("end_point", &Geom_BoundedCurve::EndPoint)
     ;
 
     py::class_<Geom_TrimmedCurve, opencascade::handle<Geom_TrimmedCurve>, Geom_BoundedCurve>(m, "TrimmedCurve")
@@ -167,7 +167,7 @@ void bind_geom_curves(py::module_ &m)
             py::arg("sense") = true, py::arg("adjust_periodic") = true)
         
         // Basis curve
-        .def("basis_curve", &Geom_TrimmedCurve::BasisCurve)
+        .def_property_readonly("basis_curve", &Geom_TrimmedCurve::BasisCurve)
         
         // Set trim
         .def("set_trim", &Geom_TrimmedCurve::SetTrim, 

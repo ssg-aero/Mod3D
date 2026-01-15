@@ -135,18 +135,18 @@ void bind_geom_curves_splines(py::module_ &m)
            py::arg("StartingCondition"), py::arg("EndingCondition"))
         
         // Properties
-        .def("degree", &Geom_BSplineCurve::Degree)
-        .def("is_rational", &Geom_BSplineCurve::IsRational)
-        .def("is_periodic", &Geom_BSplineCurve::IsPeriodic)
-        .def("is_closed", &Geom_BSplineCurve::IsClosed)
-        .def("continuity", &Geom_BSplineCurve::Continuity)
+        .def_property_readonly("degree", &Geom_BSplineCurve::Degree)
+        .def_property_readonly("is_rational", &Geom_BSplineCurve::IsRational)
+        // .def_property_readonly("is_periodic", &Geom_BSplineCurve::IsPeriodic)
+        // .def_property_readonly("is_closed", &Geom_BSplineCurve::IsClosed)
+        // .def_property_readonly("continuity", &Geom_BSplineCurve::Continuity)
         .def("is_g1", &Geom_BSplineCurve::IsG1, py::arg("theTf"), py::arg("theTl"), py::arg("theAngTol"))
         
         // Knot information
-        .def("nb_knots", &Geom_BSplineCurve::NbKnots)
-        .def("nb_poles", &Geom_BSplineCurve::NbPoles)
-        .def("first_u_knot_index", &Geom_BSplineCurve::FirstUKnotIndex)
-        .def("last_u_knot_index", &Geom_BSplineCurve::LastUKnotIndex)
+        .def_property_readonly("nb_knots", &Geom_BSplineCurve::NbKnots)
+        .def_property_readonly("nb_poles", &Geom_BSplineCurve::NbPoles)
+        .def_property_readonly("first_u_knot_index", &Geom_BSplineCurve::FirstUKnotIndex)
+        .def_property_readonly("last_u_knot_index", &Geom_BSplineCurve::LastUKnotIndex)
         .def("knot", &Geom_BSplineCurve::Knot, py::arg("Index"))
         .def("multiplicity", &Geom_BSplineCurve::Multiplicity, py::arg("Index"))
         
@@ -155,19 +155,19 @@ void bind_geom_curves_splines(py::module_ &m)
         .def("weight", &Geom_BSplineCurve::Weight, py::arg("Index"))
         
         // Access arrays as numpy arrays by default
-        .def("knots", [](const Geom_BSplineCurve& self) {
+        .def_property_readonly("knots", [](const Geom_BSplineCurve& self) {
             return occt_array_to_numpy(self.Knots());
         }, "Get knots as numpy array")
         
-        .def("multiplicities", [](const Geom_BSplineCurve& self) {
+        .def_property_readonly("multiplicities", [](const Geom_BSplineCurve& self) {
             return occt_array_to_numpy(self.Multiplicities());
         }, "Get multiplicities as numpy array")
         
-        .def("poles", [](const Geom_BSplineCurve& self) {
+        .def_property_readonly("poles", [](const Geom_BSplineCurve& self) {
             return pnt_array_to_numpy(self.Poles());
         }, "Get poles as numpy array of shape (n,3)")
         
-        .def("weights", [](const Geom_BSplineCurve& self) {
+        .def_property_readonly("weights", [](const Geom_BSplineCurve& self) {
             const TColStd_Array1OfReal* weights_ptr = self.Weights();
             if (weights_ptr) {
                 return occt_array_to_numpy(*weights_ptr);
@@ -176,7 +176,7 @@ void bind_geom_curves_splines(py::module_ &m)
         }, "Get weights as numpy array")
         
         // Knot sequence (with repetitions)
-        .def("knot_sequence", [](const Geom_BSplineCurve& self) {
+        .def_property_readonly("knot_sequence", [](const Geom_BSplineCurve& self) {
             return occt_array_to_numpy(self.KnotSequence());
         }, "Get knot sequence as numpy array")
         
@@ -281,26 +281,26 @@ void bind_geom_curves_splines(py::module_ &m)
              "Segment the curve between parameters U1 and U2")
         
         // Properties
-        .def("degree", &Geom_BezierCurve::Degree, "Get the degree of the Bezier curve")
-        .def("is_rational", &Geom_BezierCurve::IsRational, "Check if curve is rational")
-        .def("is_closed", &Geom_BezierCurve::IsClosed, "Check if curve is closed")
-        .def("is_periodic", &Geom_BezierCurve::IsPeriodic, "Check if curve is periodic")
-        .def("continuity", &Geom_BezierCurve::Continuity, "Get continuity of the curve")
+        .def_property_readonly("degree", &Geom_BezierCurve::Degree, "Get the degree of the Bezier curve")
+        .def_property_readonly("is_rational", &Geom_BezierCurve::IsRational, "Check if curve is rational")
+        // .def_property_readonly("is_closed", &Geom_BezierCurve::IsClosed, "Check if curve is closed")
+        // .def_property_readonly("is_periodic", &Geom_BezierCurve::IsPeriodic, "Check if curve is periodic")
+        .def_property_readonly("continuity", &Geom_BezierCurve::Continuity, "Get continuity of the curve")
         .def("is_cn", &Geom_BezierCurve::IsCN, py::arg("N"), "Check if curve has CN continuity")
         
         // Pole and weight information
-        .def("nb_poles", &Geom_BezierCurve::NbPoles, "Get number of poles")
+        .def_property_readonly("nb_poles", &Geom_BezierCurve::NbPoles, "Get number of poles")
         .def("pole", &Geom_BezierCurve::Pole, py::arg("index"), py::return_value_policy::reference_internal,
              "Get pole at given index (1-based)")
         .def("weight", &Geom_BezierCurve::Weight, py::arg("index"), 
              "Get weight at given index (1-based)")
         
         // Access arrays as numpy arrays by default
-        .def("poles", [](const Geom_BezierCurve& self) {
+        .def_property_readonly("poles", [](const Geom_BezierCurve& self) {
             return pnt_array_to_numpy(self.Poles());
         }, "Get all poles as numpy array of shape (n,3)")
         
-        .def("weights", [](const Geom_BezierCurve& self) {
+        .def_property_readonly("weights", [](const Geom_BezierCurve& self) {
             const TColStd_Array1OfReal* weights_ptr = self.Weights();
             if (weights_ptr) {
                 return occt_array_to_numpy(*weights_ptr);

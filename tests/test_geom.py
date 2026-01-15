@@ -37,11 +37,11 @@ def test_bspline_creation_with_lists():
 
     curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
 
-    assert curve.degree() == degree
-    assert curve.nb_poles() == 4
-    assert curve.nb_knots() == 3
-    assert not curve.is_rational()
-    assert not curve.is_periodic()
+    assert curve.degree == degree
+    assert curve.nb_poles == 4
+    assert curve.nb_knots == 3
+    assert not curve.is_rational
+    assert not curve.is_periodic
 
 
 def test_bspline_creation_with_numpy():
@@ -59,9 +59,9 @@ def test_bspline_creation_with_numpy():
 
     curve = Geom.BSplineCurve(poles_np, knots_np, mults_np, degree)
 
-    assert curve.degree() == degree
-    assert curve.nb_poles() == 4
-    assert curve.nb_knots() == 3
+    assert curve.degree == degree
+    assert curve.nb_poles == 4
+    assert curve.nb_knots == 3
 
 
 def test_bspline_rational_curve():
@@ -78,9 +78,9 @@ def test_bspline_rational_curve():
 
     curve = Geom.BSplineCurve(poles, weights, knots, multiplicities, degree)
 
-    assert curve.is_rational()
-    assert curve.degree() == degree
-    assert curve.nb_poles() == 3
+    assert curve.is_rational
+    assert curve.degree == degree
+    assert curve.nb_poles == 3
 
 
 def test_bspline_data_access_numpy():
@@ -98,25 +98,25 @@ def test_bspline_data_access_numpy():
     curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
 
     # Test poles as numpy array
-    poles_array = curve.poles()
+    poles_array = curve.poles
     assert isinstance(poles_array, np.ndarray)
     assert poles_array.shape == (4, 3)
     np.testing.assert_array_equal(poles_array[0], [0.0, 0.0, 0.0])
     np.testing.assert_array_equal(poles_array[3], [3.0, 0.0, 0.0])
 
     # Test knots as numpy array
-    knots_array = curve.knots()
+    knots_array = curve.knots
     assert isinstance(knots_array, np.ndarray)
     assert len(knots_array) == 3
     np.testing.assert_array_equal(knots_array, [0.0, 1.0, 2.0])
 
     # Test multiplicities as numpy array
-    mults_array = curve.multiplicities()
+    mults_array = curve.multiplicities
     assert isinstance(mults_array, np.ndarray)
     np.testing.assert_array_equal(mults_array, [3, 1, 3])
 
     # Test knot sequence
-    knot_seq = curve.knot_sequence()
+    knot_seq = curve.knot_sequence
     assert isinstance(knot_seq, np.ndarray)
     expected_seq = [0.0, 0.0, 0.0, 1.0, 2.0, 2.0, 2.0]
     np.testing.assert_array_equal(knot_seq, expected_seq)
@@ -136,7 +136,7 @@ def test_bspline_weights_access():
 
     curve = Geom.BSplineCurve(poles, weights, knots, multiplicities, degree)
 
-    weights_array = curve.weights()
+    weights_array = curve.weights
     assert isinstance(weights_array, np.ndarray)
     np.testing.assert_array_almost_equal(weights_array, [1.0, 0.7, 1.0])
 
@@ -155,15 +155,15 @@ def test_bspline_curve_evaluation():
     curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
 
     # Test point evaluation
-    start_point = curve.start_point()
-    end_point = curve.end_point()
+    start_point = curve.start_point
+    end_point = curve.end_point
 
     assert abs(start_point.x - 0.0) < 1e-10
     assert abs(end_point.x - 1.0) < 1e-10
 
     # Test parameter bounds
-    assert abs(curve.first_parameter() - 0.0) < 1e-10
-    assert abs(curve.last_parameter() - 1.0) < 1e-10
+    assert abs(curve.first_parameter - 0.0) < 1e-10
+    assert abs(curve.last_parameter - 1.0) < 1e-10
 
     # Test evaluation at midpoint
     mid_point = curve.value(0.5)
@@ -183,9 +183,9 @@ def test_bspline_curve_properties():
 
     curve = Geom.BSplineCurve(poles, knots, multiplicities, degree)
 
-    assert not curve.is_closed()
-    assert not curve.is_periodic()
-    assert not curve.is_rational()
+    assert not curve.is_closed
+    assert not curve.is_periodic
+    assert not curve.is_rational
 
     # Test continuity
     assert curve.is_cn(0)  # At least C0
@@ -260,8 +260,8 @@ def test_bspline_numpy_constructor_mixed():
     mults_list = [2, 2]
 
     curve = Geom.BSplineCurve(poles_np, knots_list, mults_list, 1)
-    assert curve.nb_poles() == 2
-    assert curve.degree() == 1
+    assert curve.nb_poles == 2
+    assert curve.degree == 1
 
 
 # ==================== BezierCurve Tests ====================
@@ -278,10 +278,10 @@ def test_bezier_creation_with_lists():
     
     curve = Geom.BezierCurve(poles)
     
-    assert curve.degree() == 3  # degree = nb_poles - 1
-    assert curve.nb_poles() == 4
-    assert not curve.is_rational()
-    assert not curve.is_periodic()
+    assert curve.degree == 3  # degree = nb_poles - 1
+    assert curve.nb_poles == 4
+    assert not curve.is_rational
+    assert not curve.is_periodic
 
 
 def test_bezier_creation_with_numpy():
@@ -296,9 +296,9 @@ def test_bezier_creation_with_numpy():
     
     curve = Geom.BezierCurve(poles_np)
     
-    assert curve.degree() == 3
-    assert curve.nb_poles() == 4
-    assert not curve.is_rational()
+    assert curve.degree == 3
+    assert curve.nb_poles == 4
+    assert not curve.is_rational
 
 
 def test_bezier_rational_curve():
@@ -312,9 +312,9 @@ def test_bezier_rational_curve():
     
     curve = Geom.BezierCurve(poles, weights)
     
-    assert curve.is_rational()
-    assert curve.degree() == 2
-    assert curve.nb_poles() == 3
+    assert curve.is_rational
+    assert curve.degree == 2
+    assert curve.nb_poles == 3
 
 
 def test_bezier_data_access_numpy():
@@ -329,14 +329,14 @@ def test_bezier_data_access_numpy():
     curve = Geom.BezierCurve(poles)
     
     # Test poles as numpy array
-    poles_array = curve.poles()
+    poles_array = curve.poles
     assert isinstance(poles_array, np.ndarray)
     assert poles_array.shape == (4, 3)
     np.testing.assert_array_equal(poles_array[0], [0.0, 0.0, 0.0])
     np.testing.assert_array_equal(poles_array[3], [3.0, 0.0, 0.0])
     
     # Test weights (should be empty for non-rational curve)
-    weights_array = curve.weights()
+    weights_array = curve.weights
     assert isinstance(weights_array, np.ndarray)
     assert len(weights_array) == 0  # Non-rational curve has no weights
 
@@ -352,7 +352,7 @@ def test_bezier_rational_weights_access():
     
     curve = Geom.BezierCurve(poles, weights)
     
-    weights_array = curve.weights()
+    weights_array = curve.weights
     assert isinstance(weights_array, np.ndarray)
     np.testing.assert_array_almost_equal(weights_array, [1.0, 0.7, 1.0])
 
@@ -368,12 +368,12 @@ def test_bezier_curve_evaluation():
     curve = Geom.BezierCurve(poles)
     
     # Test parameter bounds (always 0 to 1 for Bezier)
-    assert abs(curve.first_parameter() - 0.0) < 1e-10
-    assert abs(curve.last_parameter() - 1.0) < 1e-10
+    assert abs(curve.first_parameter - 0.0) < 1e-10
+    assert abs(curve.last_parameter - 1.0) < 1e-10
     
     # Test start and end points
-    start_point = curve.start_point()
-    end_point = curve.end_point()
+    start_point = curve.start_point
+    end_point = curve.end_point
     
     assert abs(start_point.x - 0.0) < 1e-10
     assert abs(end_point.x - 1.0) < 1e-10
@@ -393,9 +393,9 @@ def test_bezier_curve_properties():
     
     curve = Geom.BezierCurve(poles)
     
-    assert not curve.is_closed()
-    assert not curve.is_periodic()
-    assert not curve.is_rational()
+    assert not curve.is_closed
+    assert not curve.is_periodic
+    assert not curve.is_rational
     
     # Bezier curves are infinitely smooth
     assert curve.is_cn(0)  # At least C0
@@ -440,7 +440,7 @@ def test_bezier_modification():
     ]
     
     curve = Geom.BezierCurve(poles)
-    assert curve.degree() == 2
+    assert curve.degree == 2
     
     # Test pole modification
     new_pole = gp.Pnt(1.0, 1.0, 0.0)
@@ -452,7 +452,7 @@ def test_bezier_modification():
     
     # Test adding weight (making it rational)
     curve.set_pole(2, new_pole, 0.5)
-    assert curve.is_rational()
+    assert curve.is_rational
     assert abs(curve.weight(2) - 0.5) < 1e-10
 
 
@@ -465,13 +465,13 @@ def test_bezier_pole_insertion_removal():
     ]
     
     curve = Geom.BezierCurve(poles)
-    assert curve.nb_poles() == 3
+    assert curve.nb_poles == 3
     
     # Insert a pole
     new_pole = gp.Pnt(0.5, 0.5, 0.0)
     curve.insert_pole_after(1, new_pole)
-    assert curve.nb_poles() == 4
-    assert curve.degree() == 3
+    assert curve.nb_poles == 4
+    assert curve.degree == 3
     
     # Check the inserted pole
     inserted_pole = curve.pole(2)  # Should be at position 2 now
@@ -480,8 +480,8 @@ def test_bezier_pole_insertion_removal():
     
     # Remove a pole
     curve.remove_pole(2)
-    assert curve.nb_poles() == 3
-    assert curve.degree() == 2
+    assert curve.nb_poles == 3
+    assert curve.degree == 2
 
 
 def test_bezier_degree_increase():
@@ -492,16 +492,16 @@ def test_bezier_degree_increase():
     ]
     
     curve = Geom.BezierCurve(poles)
-    assert curve.degree() == 1
+    assert curve.degree == 1
     
     # Increase degree to 3
     curve.increase(3)
-    assert curve.degree() == 3
-    assert curve.nb_poles() == 4
+    assert curve.degree == 3
+    assert curve.nb_poles == 4
     
     # Start and end points should remain the same
-    start_point = curve.start_point()
-    end_point = curve.end_point()
+    start_point = curve.start_point
+    end_point = curve.end_point
     assert abs(start_point.x - 0.0) < 1e-10
     assert abs(end_point.x - 1.0) < 1e-10
 
@@ -520,11 +520,11 @@ def test_bezier_segmentation():
     curve.segment(0.25, 0.75)
     
     # Parameter range should still be [0, 1]
-    assert abs(curve.first_parameter() - 0.0) < 1e-10
-    assert abs(curve.last_parameter() - 1.0) < 1e-10
+    assert abs(curve.first_parameter - 0.0) < 1e-10
+    assert abs(curve.last_parameter - 1.0) < 1e-10
     
     # Degree should remain the same
-    assert curve.degree() == 2
+    assert curve.degree == 2
 
 
 def test_bezier_error_cases():
@@ -588,9 +588,9 @@ def test_bezier_numpy_constructor_mixed():
     weights_list = [1.0, 0.5, 1.0]
     
     curve = Geom.BezierCurve(poles_np, weights_list)
-    assert curve.nb_poles() == 3
-    assert curve.degree() == 2
-    assert curve.is_rational()
+    assert curve.nb_poles == 3
+    assert curve.degree == 2
+    assert curve.is_rational
 
 # ==================== OffsetCurve Tests ====================
 
@@ -744,7 +744,7 @@ def test_offset_curve_continuity():
     offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
     
     # Test continuity
-    continuity = offset_curve.continuity()
+    continuity = offset_curve.continuity
     assert continuity is not None
     
     # Test basis curve continuity
@@ -789,8 +789,8 @@ def test_offset_curve_parameter_bounds():
     offset_curve = Geom.OffsetCurve(basis_line, offset_distance, offset_direction)
     
     # Test parameter bounds (should match basis curve)
-    first_param = offset_curve.first_parameter()
-    last_param = offset_curve.last_parameter()
+    first_param = offset_curve.first_parameter
+    last_param = offset_curve.last_parameter
     
     assert first_param is not None
     assert last_param is not None
@@ -855,9 +855,9 @@ def test_gbs_bspline_creation():
     occt_curve_converted = Geom.BSplineCurve(gbs_curve)
 
     # Verify conversions work
-    assert occt_curve.degree() == occt_curve_converted.degree()
-    assert occt_curve.nb_poles() == occt_curve_converted.nb_poles()
-    assert occt_curve.nb_knots() == occt_curve_converted.nb_knots()
+    assert occt_curve.degree == occt_curve_converted.degree
+    assert occt_curve.nb_poles == occt_curve_converted.nb_poles
+    assert occt_curve.nb_knots == occt_curve_converted.nb_knots
 
     # Test that gbs curves work with builders (implicit conversion through Geom_Curve)
     ed_occt = BRepBuilderAPI.MakeEdge(occt_curve).edge()
