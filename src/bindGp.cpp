@@ -17,11 +17,12 @@
 #include <gp_Hypr.hxx>
 #include <gp_Parab.hxx>
 #include <gp_Quaternion.hxx>
+#include <gp_EulerSequence.hxx>
 #include <gp_Cylinder.hxx>
 #include <gp_Cone.hxx>
 #include <gp_Sphere.hxx>
 #include <gp_Torus.hxx>
-
+#include <gp_Mat.hxx>
 #include <gp_Trsf.hxx>
 
 // 2D types
@@ -1457,6 +1458,257 @@ void bind_gp(py::module_ &m)
             }
             return "gp_Trsf(form=" + form_str + 
                    ", scale=" + std::to_string(self.ScaleFactor()) + ")";
+        })
+    ;
+
+    // =========================================================================
+    // gp_Mat - 3x3 Matrix
+    // =========================================================================
+    py::class_<gp_Mat>(m, "Mat",
+        "Describes a three column, three row matrix for various vectorial or matrix computations.")
+        .def(py::init<>(), "Creates a matrix with null coefficients")
+        .def(py::init<double, double, double,
+                      double, double, double,
+                      double, double, double>(),
+             py::arg("a11"), py::arg("a12"), py::arg("a13"),
+             py::arg("a21"), py::arg("a22"), py::arg("a23"),
+             py::arg("a31"), py::arg("a32"), py::arg("a33"),
+             "Creates a matrix with specified coefficients")
+        .def(py::init<const gp_XYZ&, const gp_XYZ&, const gp_XYZ&>(),
+             py::arg("col1"), py::arg("col2"), py::arg("col3"),
+             "Creates a matrix from three column vectors")
+
+        // Properties
+        .def_property_readonly("determinant", &gp_Mat::Determinant,
+             "Returns the determinant of the matrix")
+        .def_property_readonly("diagonal", &gp_Mat::Diagonal,
+             "Returns the main diagonal as gp_XYZ")
+        .def_property_readonly("is_singular", &gp_Mat::IsSingular,
+             "Returns True if the matrix is singular (determinant ~ 0)")
+
+        // Element access
+        .def("value", &gp_Mat::Value, py::arg("row"), py::arg("col"),
+             "Returns the coefficient at (row, col), 1-indexed")
+        .def("set_value", &gp_Mat::SetValue, py::arg("row"), py::arg("col"), py::arg("value"),
+             "Sets the coefficient at (row, col), 1-indexed")
+        .def("column", &gp_Mat::Column, py::arg("col"),
+             "Returns the column of given index (1-3) as gp_XYZ")
+        .def("row", &gp_Mat::Row, py::arg("row"),
+             "Returns the row of given index (1-3) as gp_XYZ")
+        .def("set_col", &gp_Mat::SetCol, py::arg("col"), py::arg("value"),
+             "Assigns gp_XYZ to the column of given index")
+        .def("set_cols", &gp_Mat::SetCols, py::arg("col1"), py::arg("col2"), py::arg("col3"),
+             "Assigns three gp_XYZ to the columns")
+        .def("set_row", &gp_Mat::SetRow, py::arg("row"), py::arg("value"),
+             "Assigns gp_XYZ to the row of given index")
+        .def("set_rows", &gp_Mat::SetRows, py::arg("row1"), py::arg("row2"), py::arg("row3"),
+             "Assigns three gp_XYZ to the rows")
+        .def("set_diagonal", &gp_Mat::SetDiagonal, py::arg("x1"), py::arg("x2"), py::arg("x3"),
+             "Modifies the main diagonal of the matrix")
+
+        // Special matrices
+        .def("set_identity", &gp_Mat::SetIdentity,
+             "Modifies this matrix to represent the identity matrix")
+        .def("set_rotation", &gp_Mat::SetRotation, py::arg("axis"), py::arg("angle"),
+             "Sets this matrix to represent a rotation around axis by angle (radians)")
+        .def("set_scale", &gp_Mat::SetScale, py::arg("scale"),
+             "Sets this matrix to represent uniform scaling")
+        .def("set_cross", &gp_Mat::SetCross, py::arg("ref"),
+             "Sets matrix M such that M * v = ref.Cross(v)")
+        .def("set_dot", &gp_Mat::SetDot, py::arg("ref"),
+             "Sets matrix M such that M * v = ref.Dot(v)")
+
+        // Operations
+        .def("invert", &gp_Mat::Invert, "Inverts this matrix in place")
+        .def("inverted", &gp_Mat::Inverted, "Returns the inverse matrix")
+        .def("transpose", &gp_Mat::Transpose, "Transposes this matrix in place")
+        .def("transposed", &gp_Mat::Transposed, "Returns the transposed matrix")
+        .def("power", &gp_Mat::Power, py::arg("n"),
+             "Computes self^n in place. n=0 gives identity, n<0 gives inverse^|n|")
+        .def("powered", &gp_Mat::Powered, py::arg("n"),
+             "Returns self^n")
+
+        // Python operators
+        .def("__add__", &gp_Mat::Added, py::arg("other"))
+        .def("__sub__", &gp_Mat::Subtracted, py::arg("other"))
+        .def("__mul__", py::overload_cast<const gp_Mat&>(&gp_Mat::Multiplied, py::const_), py::arg("other"))
+        .def("__mul__", py::overload_cast<double>(&gp_Mat::Multiplied, py::const_), py::arg("scalar"))
+        .def("__rmul__", py::overload_cast<double>(&gp_Mat::Multiplied, py::const_), py::arg("scalar"))
+        .def("__truediv__", &gp_Mat::Divided, py::arg("scalar"))
+        .def("__iadd__", [](gp_Mat& self, const gp_Mat& other) { self.Add(other); return self; })
+        .def("__isub__", [](gp_Mat& self, const gp_Mat& other) { self.Subtract(other); return self; })
+        .def("__imul__", [](gp_Mat& self, const gp_Mat& other) { self.Multiply(other); return self; })
+        .def("__imul__", [](gp_Mat& self, double scalar) { self.Multiply(scalar); return self; })
+        .def("__itruediv__", [](gp_Mat& self, double scalar) { self.Divide(scalar); return self; })
+
+        .def("__getitem__", [](const gp_Mat& self, std::pair<int, int> idx) {
+            return self.Value(idx.first, idx.second);
+        }, py::arg("index"), "Access element by (row, col) tuple, 1-indexed")
+        .def("__setitem__", [](gp_Mat& self, std::pair<int, int> idx, double value) {
+            self.SetValue(idx.first, idx.second, value);
+        }, py::arg("index"), py::arg("value"), "Set element by (row, col) tuple, 1-indexed")
+
+        .def("__repr__", [](const gp_Mat& self) {
+            return "gp_Mat([" + 
+                   std::to_string(self.Value(1,1)) + ", " + std::to_string(self.Value(1,2)) + ", " + std::to_string(self.Value(1,3)) + "; " +
+                   std::to_string(self.Value(2,1)) + ", " + std::to_string(self.Value(2,2)) + ", " + std::to_string(self.Value(2,3)) + "; " +
+                   std::to_string(self.Value(3,1)) + ", " + std::to_string(self.Value(3,2)) + ", " + std::to_string(self.Value(3,3)) + "])";
+        })
+    ;
+
+    // =========================================================================
+    // gp_EulerSequence - Euler angle sequence enumeration
+    // =========================================================================
+    py::enum_<gp_EulerSequence>(m, "EulerSequence",
+        "Enumerates all 24 possible variants of generalized Euler angles.")
+        .value("EulerAngles", gp_EulerAngles, "Classic Euler angles (Intrinsic ZXZ)")
+        .value("YawPitchRoll", gp_YawPitchRoll, "Yaw Pitch Roll (Intrinsic ZYX)")
+        .value("Extrinsic_XYZ", gp_Extrinsic_XYZ)
+        .value("Extrinsic_XZY", gp_Extrinsic_XZY)
+        .value("Extrinsic_YZX", gp_Extrinsic_YZX)
+        .value("Extrinsic_YXZ", gp_Extrinsic_YXZ)
+        .value("Extrinsic_ZXY", gp_Extrinsic_ZXY)
+        .value("Extrinsic_ZYX", gp_Extrinsic_ZYX)
+        .value("Intrinsic_XYZ", gp_Intrinsic_XYZ)
+        .value("Intrinsic_XZY", gp_Intrinsic_XZY)
+        .value("Intrinsic_YZX", gp_Intrinsic_YZX)
+        .value("Intrinsic_YXZ", gp_Intrinsic_YXZ)
+        .value("Intrinsic_ZXY", gp_Intrinsic_ZXY)
+        .value("Intrinsic_ZYX", gp_Intrinsic_ZYX)
+        .value("Extrinsic_XYX", gp_Extrinsic_XYX)
+        .value("Extrinsic_XZX", gp_Extrinsic_XZX)
+        .value("Extrinsic_YZY", gp_Extrinsic_YZY)
+        .value("Extrinsic_YXY", gp_Extrinsic_YXY)
+        .value("Extrinsic_ZYZ", gp_Extrinsic_ZYZ)
+        .value("Extrinsic_ZXZ", gp_Extrinsic_ZXZ)
+        .value("Intrinsic_XYX", gp_Intrinsic_XYX)
+        .value("Intrinsic_XZX", gp_Intrinsic_XZX)
+        .value("Intrinsic_YZY", gp_Intrinsic_YZY)
+        .value("Intrinsic_YXY", gp_Intrinsic_YXY)
+        .value("Intrinsic_ZXZ", gp_Intrinsic_ZXZ)
+        .value("Intrinsic_ZYZ", gp_Intrinsic_ZYZ)
+        .export_values()
+    ;
+
+    // =========================================================================
+    // gp_Quaternion - Quaternion for 3D rotations
+    // =========================================================================
+    py::class_<gp_Quaternion>(m, "Quaternion",
+        "Represents rotation in 3D space as a quaternion and provides operations\n"
+        "with rotations based on quaternion mathematics. Also provides conversion\n"
+        "to/from other rotation representations (matrix, axis+angle, Euler angles).")
+        .def(py::init<>(), "Creates an identity quaternion (no rotation)")
+        .def(py::init<double, double, double, double>(),
+             py::arg("x"), py::arg("y"), py::arg("z"), py::arg("w"),
+             "Creates quaternion from components (x, y, z, w)")
+        .def(py::init<const gp_Vec&, const gp_Vec&>(),
+             py::arg("vec_from"), py::arg("vec_to"),
+             "Creates quaternion for shortest-arc rotation from vec_from to vec_to")
+        .def(py::init<const gp_Vec&, const gp_Vec&, const gp_Vec&>(),
+             py::arg("vec_from"), py::arg("vec_to"), py::arg("help_cross_vec"),
+             "Creates quaternion for rotation from vec_from to vec_to with preferred axis")
+        .def(py::init<const gp_Vec&, double>(),
+             py::arg("axis"), py::arg("angle"),
+             "Creates quaternion for rotation around axis by angle (radians)")
+        .def(py::init<const gp_Mat&>(),
+             py::arg("matrix"),
+             "Creates quaternion from 3x3 rotation matrix")
+
+        // Component properties
+        .def_property_readonly("x", &gp_Quaternion::X, "X component of quaternion")
+        .def_property_readonly("y", &gp_Quaternion::Y, "Y component of quaternion")
+        .def_property_readonly("z", &gp_Quaternion::Z, "Z component of quaternion")
+        .def_property_readonly("w", &gp_Quaternion::W, "W (scalar) component of quaternion")
+        .def_property_readonly("norm", &gp_Quaternion::Norm, "Returns the norm of the quaternion")
+        .def_property_readonly("square_norm", &gp_Quaternion::SquareNorm, "Returns the square norm")
+        .def_property_readonly("rotation_angle", &gp_Quaternion::GetRotationAngle,
+             "Returns the rotation angle from -PI to PI")
+
+        // Setting
+        .def("set", py::overload_cast<double, double, double, double>(&gp_Quaternion::Set),
+             py::arg("x"), py::arg("y"), py::arg("z"), py::arg("w"),
+             "Sets quaternion components")
+        .def("set_ident", &gp_Quaternion::SetIdent,
+             "Sets this to identity quaternion (no rotation)")
+        .def("set_rotation", py::overload_cast<const gp_Vec&, const gp_Vec&>(&gp_Quaternion::SetRotation),
+             py::arg("vec_from"), py::arg("vec_to"),
+             "Sets quaternion to shortest-arc rotation from vec_from to vec_to")
+        .def("set_rotation", py::overload_cast<const gp_Vec&, const gp_Vec&, const gp_Vec&>(&gp_Quaternion::SetRotation),
+             py::arg("vec_from"), py::arg("vec_to"), py::arg("help_cross_vec"),
+             "Sets quaternion to rotation from vec_from to vec_to with preferred axis")
+
+        // Axis-angle representation
+        .def("set_vector_and_angle", &gp_Quaternion::SetVectorAndAngle,
+             py::arg("axis"), py::arg("angle"),
+             "Sets quaternion from axis and angle (radians)")
+        .def("get_vector_and_angle", [](const gp_Quaternion& self) {
+            gp_Vec axis;
+            double angle;
+            self.GetVectorAndAngle(axis, angle);
+            return py::make_tuple(axis, angle);
+        }, "Returns (axis, angle) tuple representing the rotation")
+
+        // Matrix representation
+        .def("set_matrix", &gp_Quaternion::SetMatrix, py::arg("matrix"),
+             "Sets quaternion from 3x3 rotation matrix")
+        .def_property_readonly("matrix", &gp_Quaternion::GetMatrix,
+             "Returns rotation as 3x3 matrix")
+
+        // Euler angles
+        .def("set_euler_angles", &gp_Quaternion::SetEulerAngles,
+             py::arg("order"), py::arg("alpha"), py::arg("beta"), py::arg("gamma"),
+             "Sets quaternion from Euler angles (radians) in specified sequence")
+        .def("get_euler_angles", [](const gp_Quaternion& self, gp_EulerSequence order) {
+            double alpha, beta, gamma;
+            self.GetEulerAngles(order, alpha, beta, gamma);
+            return py::make_tuple(alpha, beta, gamma);
+        }, py::arg("order"), "Returns (alpha, beta, gamma) Euler angles in specified sequence")
+
+        // Operations
+        .def("is_equal", &gp_Quaternion::IsEqual, py::arg("other"),
+             "Tests equality (simple comparison without tolerance)")
+        .def("reverse", &gp_Quaternion::Reverse,
+             "Reverses the rotation direction (conjugates) in place")
+        .def("reversed", &gp_Quaternion::Reversed,
+             "Returns quaternion with reversed rotation direction")
+        .def("invert", &gp_Quaternion::Invert,
+             "Inverts this quaternion (both direction and norm) in place")
+        .def("inverted", &gp_Quaternion::Inverted,
+             "Returns the inverse quaternion q^-1")
+        .def("normalize", &gp_Quaternion::Normalize,
+             "Scales quaternion so its norm becomes 1")
+        .def("normalized", &gp_Quaternion::Normalized,
+             "Returns normalized copy of quaternion")
+        .def("stabilize_length", &gp_Quaternion::StabilizeLength,
+             "Stabilizes quaternion length within 1 - 1/4 (faster than normalize)")
+        .def("scale", &gp_Quaternion::Scale, py::arg("scale"),
+             "Scales all components by given factor")
+        .def("scaled", &gp_Quaternion::Scaled, py::arg("scale"),
+             "Returns quaternion with all components scaled")
+        .def("dot", &gp_Quaternion::Dot, py::arg("other"),
+             "Returns the dot product with another quaternion")
+        .def("multiply_vec", py::overload_cast<const gp_Vec&>(&gp_Quaternion::Multiply, py::const_),
+             py::arg("vec"), "Rotates vector by this quaternion")
+
+        // Python operators
+        .def("__neg__", &gp_Quaternion::Negated)
+        .def("__add__", &gp_Quaternion::Added, py::arg("other"))
+        .def("__sub__", &gp_Quaternion::Subtracted, py::arg("other"))
+        .def("__mul__", py::overload_cast<const gp_Quaternion&>(&gp_Quaternion::Multiplied, py::const_), py::arg("other"))
+        .def("__mul__", py::overload_cast<double>(&gp_Quaternion::Scaled, py::const_), py::arg("scalar"))
+        .def("__mul__", py::overload_cast<const gp_Vec&>(&gp_Quaternion::Multiply, py::const_), py::arg("vec"))
+        .def("__rmul__", py::overload_cast<double>(&gp_Quaternion::Scaled, py::const_), py::arg("scalar"))
+        .def("__iadd__", [](gp_Quaternion& self, const gp_Quaternion& other) { self.Add(other); return self; })
+        .def("__isub__", [](gp_Quaternion& self, const gp_Quaternion& other) { self.Subtract(other); return self; })
+        .def("__imul__", [](gp_Quaternion& self, const gp_Quaternion& other) { self.Multiply(other); return self; })
+        .def("__imul__", [](gp_Quaternion& self, double scalar) { self.Scale(scalar); return self; })
+
+        .def("__repr__", [](const gp_Quaternion& self) {
+            return "gp_Quaternion(" + 
+                   std::to_string(self.X()) + ", " + 
+                   std::to_string(self.Y()) + ", " + 
+                   std::to_string(self.Z()) + ", " + 
+                   std::to_string(self.W()) + ")";
         })
     ;
 
