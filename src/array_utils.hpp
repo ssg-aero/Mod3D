@@ -11,6 +11,17 @@
 #include <TColgp_Array2OfPnt.hxx>
 #include <gp_Pnt.hxx>
 
+// Handle array types for interpolation APIs
+#include <TColgp_HArray1OfPnt.hxx>
+#include <TColgp_HArray1OfPnt2d.hxx>
+#include <TColgp_Array1OfVec.hxx>
+#include <TColgp_Array1OfVec2d.hxx>
+#include <TColStd_HArray1OfReal.hxx>
+#include <TColStd_HArray1OfBoolean.hxx>
+#include <gp_Vec.hxx>
+#include <gp_Vec2d.hxx>
+#include <gp_Pnt2d.hxx>
+
 namespace {
     namespace py = pybind11;
     // Utility functions for container conversion
@@ -239,4 +250,114 @@ namespace {
         }
         return py_list;
     };
+
+    // ========== Handle Array (HArray) utilities for interpolation APIs ==========
+
+    // Convert vector of gp_Pnt to Handle(TColgp_HArray1OfPnt)
+    inline Handle(TColgp_HArray1OfPnt) vector_to_HArray1OfPnt(const std::vector<gp_Pnt>& points) {
+        if (points.empty()) {
+            throw std::runtime_error("Points array cannot be empty");
+        }
+        Handle(TColgp_HArray1OfPnt) arr = new TColgp_HArray1OfPnt(1, static_cast<Standard_Integer>(points.size()));
+        for (size_t i = 0; i < points.size(); ++i) {
+            arr->SetValue(static_cast<Standard_Integer>(i + 1), points[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of gp_Pnt2d to Handle(TColgp_HArray1OfPnt2d)
+    inline Handle(TColgp_HArray1OfPnt2d) vector_to_HArray1OfPnt2d(const std::vector<gp_Pnt2d>& points) {
+        if (points.empty()) {
+            throw std::runtime_error("Points array cannot be empty");
+        }
+        Handle(TColgp_HArray1OfPnt2d) arr = new TColgp_HArray1OfPnt2d(1, static_cast<Standard_Integer>(points.size()));
+        for (size_t i = 0; i < points.size(); ++i) {
+            arr->SetValue(static_cast<Standard_Integer>(i + 1), points[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of doubles to Handle(TColStd_HArray1OfReal)
+    inline Handle(TColStd_HArray1OfReal) vector_to_HArray1OfReal(const std::vector<double>& values) {
+        if (values.empty()) {
+            throw std::runtime_error("Values array cannot be empty");
+        }
+        Handle(TColStd_HArray1OfReal) arr = new TColStd_HArray1OfReal(1, static_cast<Standard_Integer>(values.size()));
+        for (size_t i = 0; i < values.size(); ++i) {
+            arr->SetValue(static_cast<Standard_Integer>(i + 1), values[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of bools to Handle(TColStd_HArray1OfBoolean)
+    inline Handle(TColStd_HArray1OfBoolean) vector_to_HArray1OfBoolean(const std::vector<bool>& values) {
+        if (values.empty()) {
+            throw std::runtime_error("Values array cannot be empty");
+        }
+        Handle(TColStd_HArray1OfBoolean) arr = new TColStd_HArray1OfBoolean(1, static_cast<Standard_Integer>(values.size()));
+        for (size_t i = 0; i < values.size(); ++i) {
+            arr->SetValue(static_cast<Standard_Integer>(i + 1), values[i] ? Standard_True : Standard_False);
+        }
+        return arr;
+    }
+
+    // Convert vector of gp_Vec to TColgp_Array1OfVec
+    inline TColgp_Array1OfVec vector_to_Array1OfVec(const std::vector<gp_Vec>& vecs) {
+        if (vecs.empty()) {
+            throw std::runtime_error("Vectors array cannot be empty");
+        }
+        TColgp_Array1OfVec arr(1, static_cast<Standard_Integer>(vecs.size()));
+        for (size_t i = 0; i < vecs.size(); ++i) {
+            arr.SetValue(static_cast<Standard_Integer>(i + 1), vecs[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of gp_Vec2d to TColgp_Array1OfVec2d
+    inline TColgp_Array1OfVec2d vector_to_Array1OfVec2d(const std::vector<gp_Vec2d>& vecs) {
+        if (vecs.empty()) {
+            throw std::runtime_error("Vectors array cannot be empty");
+        }
+        TColgp_Array1OfVec2d arr(1, static_cast<Standard_Integer>(vecs.size()));
+        for (size_t i = 0; i < vecs.size(); ++i) {
+            arr.SetValue(static_cast<Standard_Integer>(i + 1), vecs[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of gp_Pnt to TColgp_Array1OfPnt
+    inline TColgp_Array1OfPnt vector_to_Array1OfPnt(const std::vector<gp_Pnt>& points) {
+        if (points.empty()) {
+            throw std::runtime_error("Points array cannot be empty");
+        }
+        TColgp_Array1OfPnt arr(1, static_cast<Standard_Integer>(points.size()));
+        for (size_t i = 0; i < points.size(); ++i) {
+            arr.SetValue(static_cast<Standard_Integer>(i + 1), points[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of gp_Pnt2d to TColgp_Array1OfPnt2d
+    inline TColgp_Array1OfPnt2d vector_to_Array1OfPnt2d(const std::vector<gp_Pnt2d>& points) {
+        if (points.empty()) {
+            throw std::runtime_error("Points array cannot be empty");
+        }
+        TColgp_Array1OfPnt2d arr(1, static_cast<Standard_Integer>(points.size()));
+        for (size_t i = 0; i < points.size(); ++i) {
+            arr.SetValue(static_cast<Standard_Integer>(i + 1), points[i]);
+        }
+        return arr;
+    }
+
+    // Convert vector of doubles to TColStd_Array1OfReal
+    inline TColStd_Array1OfReal vector_to_Array1OfReal(const std::vector<double>& values) {
+        if (values.empty()) {
+            throw std::runtime_error("Values array cannot be empty");
+        }
+        TColStd_Array1OfReal arr(1, static_cast<Standard_Integer>(values.size()));
+        for (size_t i = 0; i < values.size(); ++i) {
+            arr.SetValue(static_cast<Standard_Integer>(i + 1), values[i]);
+        }
+        return arr;
+    }
 } // namespace
