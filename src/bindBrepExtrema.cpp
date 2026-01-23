@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepExtrema_SupportType.hxx>
@@ -173,6 +174,20 @@ void bind_brep_extrema(py::module_ &m)
             return py::make_tuple(u, v);
         }, py::arg("n"),
             "Return the parameters (u, v) if the Nth solution is on a face of the second shape")
+
+        .def("points_and_distances", [](const BRepExtrema_DistShapeShape& self) {
+            std::vector<py::tuple> results;
+            Standard_Integer n = self.NbSolution();
+            for (Standard_Integer i = 1; i <= n; i++) {
+                gp_Pnt p1 = self.PointOnShape1(i);
+                gp_Pnt p2 = self.PointOnShape2(i);
+                Standard_Real dist = p1.Distance(p2);
+                results.push_back(py::make_tuple(p1, p2, dist));
+            }
+            return results;
+        },
+            "Returns a list of tuples (point_on_shape1, point_on_shape2, distance) for each solution"
+        )
         
         // Obsolete methods (kept for compatibility)
         .def("set_flag", &BRepExtrema_DistShapeShape::SetFlag,
