@@ -44,6 +44,7 @@ pybind11_add_module(mod3d
     src/bindGeomSurfacesElementary.cpp
     src/bindGeomSweptSurfaces.cpp
     src/bindGeom.cpp
+    src/bindGeomAPI.cpp
     src/bindGeom2d.cpp
     src/bindGeom2dCurvesConics.cpp
     src/bindGeom2dCurvesSplines.cpp

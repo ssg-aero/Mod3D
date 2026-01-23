@@ -17,6 +17,7 @@ void bind_geom2d(py::module_ &m);
 void bind_geom(py::module_ &m);
 void bind_geom_abs(py::module_ &m);
 void bind_geom_fill(py::module_ &m);
+void bind_geom_api(py::module_ &m);
 void bind_topods(py::module_ &m);
 void bind_top_abs(py::module_ &m);
 void bind_adaptor(py::module_ &m);
@@ -73,6 +74,7 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ Geom = m.def_submodule("Geom", "Geom module");
     py::module_ GeomFill = m.def_submodule("GeomFill", "GeomFill module");
     py::module_ GeomAbs = m.def_submodule("GeomAbs", "GeomAbs module");
+    py::module_ GeomAPI = m.def_submodule("GeomAPI", "GeomAPI module");
 
     py::module_ TopoDS = m.def_submodule("TopoDS", "Topology data structures");
     py::module_ Adaptor = m.def_submodule("Adaptor", "Adaptor module");
@@ -98,34 +100,12 @@ PYBIND11_MODULE(mod3d, m)
 
     m.doc() = "Open Cascade helpers exposed via pybind11 as part of the mod3d package.";
 
-    // m.def("occt_version", &occt_version_string, "Return the Open Cascade runtime version.");
-    m.def("create_box_summary",
-          &create_box_summary,
-          py::arg("dx") = 10.0,
-          py::arg("dy") = 10.0,
-          py::arg("dz") = 10.0,
-          "Build a box primitve and return its bounding information.");
-
-    m.def(
-        "create_box",
-        [](double dx, double dy, double dz) {
-            if (dx <= 0.0 || dy <= 0.0 || dz <= 0.0) {
-                throw std::invalid_argument("All box extents must be positive");
-            }
-            BRepPrimAPI_MakeBox box_maker(dx, dy, dz);
-            return box_maker.Solid();
-        },
-        py::arg("dx") = 10.0,
-        py::arg("dy") = 10.0,
-        py::arg("dz") = 10.0,
-        "Create and return a box shape with the given dimensions.   "
-    );
-
     // Bind submodules
     bind_gp(gp);
     bind_geom_abs(GeomAbs);
     bind_geom_fill(GeomFill);
     bind_geom(Geom);
+    bind_geom_api(GeomAPI);
     bind_geom2d(Geom2d);
     bind_topods(TopoDS);
     bind_adaptor(Adaptor);

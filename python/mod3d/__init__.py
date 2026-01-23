@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-# from .mod3d import create_box_summary, create_box
-
 # Re-export submodules for convenient access
 from .mod3d import gp
 from .mod3d import Geom2d
 from .mod3d import Geom
+from .mod3d import GeomAPI
 from .mod3d import GeomFill
 from .mod3d import GeomAbs
 from .mod3d import TopoDS
@@ -32,6 +31,7 @@ __all__ = [
     "create_box",
     "gp",
     "Geom",
+    "GeomAPI",
     "Geom2d",
     "GeomFill",
     "GeomAbs",
