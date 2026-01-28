@@ -280,7 +280,7 @@ void bind_brep_boolean_op(py::module_ &m)
                 
             Returns:
             --------
-            TopTools_ListOfShape
+            list[TopoDS_Shape]
                 List of modified shapes (splits) contained in the result)")
         
         .def("generated", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
@@ -305,7 +305,7 @@ void bind_brep_boolean_op(py::module_ &m)
                 
             Returns:
             --------
-            TopTools_ListOfShape
+            list[TopoDS_Shape]
                 List of generated shapes)"
 )
         .def("is_deleted", &BRepAlgoAPI_BuilderAlgo::IsDeleted,
