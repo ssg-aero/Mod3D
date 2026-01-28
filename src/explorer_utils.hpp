@@ -1,5 +1,6 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Edge.hxx>
+#include <TopoDS_Solid.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS.hxx>
 #include <TopExp_Explorer.hxx>
@@ -26,7 +27,11 @@ auto get_shapes_of_type(const TopoDS_Shape& shape) {
         } else if constexpr (E == TopAbs_VERTEX) {
             TopoDS_Vertex s = TopoDS::Vertex(exp.Current());
             shapes.append(s);
+        } else if constexpr (E == TopAbs_SOLID) {
+            TopoDS_Solid s = TopoDS::Solid(exp.Current());
+            shapes.append(s);
         }
+
     }
     return shapes;
 }

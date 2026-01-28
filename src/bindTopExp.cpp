@@ -154,7 +154,17 @@ void bind_top_exp(py::module_ &m)
     ;
 
     
-
+    m.def("get_solids",
+        [](const TopoDS_Shape& shape) {
+            return get_shapes_of_type<TopAbs_SOLID>(shape);
+        },
+        py::arg("shape"),
+        "Returns a list of all solids in the given shape.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n\n"
+        "Returns:\n"
+        "  A list of TopoDS_Solid objects contained in the shape"
+    );
 
     m.def("get_faces",
         [](const TopoDS_Shape& shape) {
