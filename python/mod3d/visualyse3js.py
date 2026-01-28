@@ -379,6 +379,9 @@ class ShapeRenderer:
         self.height = height
         self._models = []
 
+        self.near = 0.1
+        self.far = 1000
+
         self.point_color = 'blue'
         self.point_size = 5.
         self.point_rounded = True
@@ -454,7 +457,7 @@ class ShapeRenderer:
             camera_position = [0, 20, 40]
 
         self.trihedron_scale = hypot(camera_position[0], camera_position[1], camera_position[2]) / hypot(0, 20, 40) * self.trihedron_scale
-        camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height)
+        camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height, fov=45, near=self.near, far=self.far)
         default_lights = [
             AmbientLight(intensity=0.5),
             DirectionalLight(position=light_position or [10, 10, 10], intensity=0.5),
