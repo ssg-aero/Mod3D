@@ -9,7 +9,7 @@ package:
   version: ${{ version }}
 
 source:
-  path: .
+  path: ..
 
 build:
   number: 0
@@ -32,9 +32,13 @@ build:
 
 requirements:
   build:
-    - ${{ compiler('cxx') }}
+    - ${{ "clangxx" if linux else compiler('cxx') }}
+    - ${{"clang-tools" if linux}}
+    - ${{"llvm-tools" if linux}}
+    # - ${{ compiler('cxx') }}
     # - clangxx
     # - clang-tools
+    # - llvm-tools
     - ${{"vs2022_win-64" if win}}
     - cmake >=3.30
     - ninja
@@ -58,17 +62,18 @@ tests:
         # - mod3d.Geom
         # - mod3d.TopoDS
 
-# about:
-#   homepage: https://github.com/yourusername/Mod3D
-#   license: MIT
-#   license_file: LICENSE
-#   summary: Python bindings for OpenCASCADE geometry and topology via pybind11
-#   description: |
-#     Mod3D provides lightweight Python bindings for Open Cascade Technology (OCCT)
-#     using pybind11. It exposes geometry primitives (gp), curves, surfaces, topology
-#     (TopoDS), and various modeling algorithms for CAD/CAM workflows.
-#   documentation: https://github.com/yourusername/Mod3D#readme
+about:
+  homepage: https://github.com/ssg-aero/Mod3D
+  license: MIT
+  license_file: LICENSE
+  summary: Python bindings for OpenCASCADE geometry and topology via pybind11
+  description: |
+    Mod3D provides lightweight Python bindings for Open Cascade Technology (OCCT)
+    using pybind11. It exposes geometry primitives (gp), curves, surfaces, topology
+    (TopoDS), and various modeling algorithms for CAD/CAM workflows.
+  documentation: https://github.com/ssg-aero/Mod3D#readme
 
-# extra:
-#   recipe-maintainers:
-#     - sebas
+extra:
+  recipe-maintainers:
+    - szebos
+    - ssg-aero
