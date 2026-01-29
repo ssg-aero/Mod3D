@@ -14,11 +14,13 @@ message("  -> includes: " ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
-find_package(opencascade REQUIRED COMPONENTS
+find_package(OpenCASCADE REQUIRED COMPONENTS
     FoundationClasses
     ModelingData
     ModelingAlgorithms
-    OpenCASCADE_DataExchange_LIBRARIES
+    Visualization
+    ApplicationFramework
+    DataExchange
 )
 
 message("Found OpenCASCADE version: ${OpenCASCADE_MAJOR_VERSION}.${OpenCASCADE_MINOR_VERSION}.${OpenCASCADE_MAINTENANCE_VERSION}")
@@ -26,7 +28,7 @@ message("OpenCASCADE :${OpenCASCADE_INCLUDE_DIR}")
 
 find_package(pybind11 REQUIRED)
 
-find_package(gbs REQUIRED)
+find_package(Gbs REQUIRED)
 find_package (Eigen3 REQUIRED NO_MODULE) # ToDo prperly add dep to GBS
 
 
@@ -75,6 +77,10 @@ target_compile_definitions(mod3d PRIVATE
     VERSION_INFO=\"${PROJECT_VERSION}\" 
     _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS # For Eigen
 )
+target_link_directories(
+    mod3d PRIVATE
+    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+)
 target_link_libraries(mod3d PRIVATE
     pybind11::module
     ${OpenCASCADE_FoundationClasses_LIBRARIES}
@@ -86,7 +92,7 @@ target_link_libraries(mod3d PRIVATE
 target_include_directories(mod3d PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/src 
     ${OpenCASCADE_INCLUDE_DIR}
-    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/gbs
+    ${GBS_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
 )
 
