@@ -20,6 +20,7 @@
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TColStd_Array1OfInteger.hxx>
+#include <GeomLProp_CLProps.hxx>
 
 #include <gbs/bscurve.h>
 
@@ -132,6 +133,18 @@ void bind_geom_curves(py::module_ &m)
             return py::make_tuple(p, v1, v2, v3);
         }, py::arg("u"))
         .def("dn", &Geom_Curve::DN, py::arg("u"), py::arg("n"))
+        .def("curvature", [](const Geom_Curve& self, double u) {
+          const opencascade::handle<Geom_Curve> h_curve(&self);
+          GeomLProp_CLProps props(h_curve, u, 2, Precision::Confusion());
+          return props.Curvature();
+        }, py::arg("u"), "Returns (curvature, first derivative of curvature) at parameter U")
+        .def("centter_of_curvature", [](const Geom_Curve& self, double u) {
+          const opencascade::handle<Geom_Curve> h_curve(&self);
+          GeomLProp_CLProps props(h_curve, u, 2, Precision::Confusion());
+          gp_Pnt center;
+          props.CentreOfCurvature(center);
+          return center;
+        }, py::arg("u"), "Returns the center of curvature at parameter U")
     ;
 
     // Register implicit conversions from gbs types to Geom_Curve

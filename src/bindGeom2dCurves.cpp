@@ -1,3 +1,6 @@
+#include <Geom_Curve.hxx>
+#include <Precision.hxx>
+#include <gp.hxx>
 #include <pybind11/cast.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -9,10 +12,7 @@
 #include <gp_Ax22d.hxx>
 #include <gp_Vec2d.hxx>
 #include <gp_Lin2d.hxx>
-// #include <gp_Circ2d.hxx>
-// #include <gp_Elips2d.hxx>
-// #include <gp_Hypr2d.hxx>
-// #include <gp_Parab2d.hxx>
+
 #include <gp_Trsf2d.hxx>
 
 #include <Geom2d_Geometry.hxx>
@@ -21,20 +21,13 @@
 #include <Geom2d_BoundedCurve.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <Geom2d_OffsetCurve.hxx>
-// #include <Geom2d_Conic.hxx>
-// #include <Geom2d_Circle.hxx>
-// #include <Geom2d_Ellipse.hxx>
-// #include <Geom2d_Hyperbola.hxx>
-// #include <Geom2d_Parabola.hxx>
-// #include <Geom2d_BSplineCurve.hxx>
-// #include <Geom2d_BezierCurve.hxx>
 
 #include <TColgp_Array1OfPnt2d.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TColStd_Array1OfInteger.hxx>
 #include <GeomAbs_Shape.hxx>
 
-#include "array_utils.hpp"
+#include <Geom2dLProp_CLProps2d.hxx>
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
@@ -114,6 +107,18 @@ void bind_geom2d_curves(py::module_ &m)
         }, py::arg("u"), "Returns (point, d1, d2, d3) at parameter U")
         .def("dn", &Geom2d_Curve::DN, py::arg("u"), py::arg("n"),
              "Returns the Nth derivative vector at parameter U")
+        .def("curvature", [](const Geom2d_Curve& self, double u) {
+          const opencascade::handle<Geom2d_Curve> h_curve(&self);
+          Geom2dLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          return props.Curvature();
+        }, py::arg("u"), "Returns (curvature, first derivative of curvature) at parameter U")
+        .def("centter_of_curvature", [](const Geom2d_Curve& self, double u) {
+          const opencascade::handle<Geom2d_Curve> h_curve(&self);
+          Geom2dLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          gp_Pnt2d center;
+          props.CentreOfCurvature(center);
+          return center;
+        }, py::arg("u"), "Returns the center of curvature at parameter U")
     ;
 
     // =========================================================================
