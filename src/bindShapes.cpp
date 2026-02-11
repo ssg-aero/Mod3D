@@ -1,6 +1,8 @@
 #include <Geom_Curve.hxx>
 #include <Standard_Handle.hxx>
 #include <gp_Pnt.hxx>
+#include <gp_Trsf.hxx>
+#include <gp_Ax1.hxx>
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h> // for py::self * py::self etc.
 
@@ -17,7 +19,9 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <BRep_Tool.hxx>
+#include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
+#include <TopExp_Explorer.hxx>
 #include <pybind11/pytypes.h>
 
 namespace py = pybind11;
@@ -320,7 +324,36 @@ void bind_shapes(py::module_ &m) {
             },
             py::arg("transformation"), py::arg("raise_exc") = false,
             "Returns a copy with location multiplied by transformation")
-        
+        .def("translate", [](TopoDS_Shape &self, const gp_Vec &theVec) {
+            gp_Trsf trsf;
+            trsf.SetTranslation(theVec);
+            self.Move(TopLoc_Location(trsf));
+        }, py::arg("vector"), "Translates the shape by the given vector")
+        .def("translated", [](const TopoDS_Shape &self, const gp_Vec &theVec) {
+            gp_Trsf trsf;
+            trsf.SetTranslation(theVec);
+            return self.Moved(TopLoc_Location(trsf));
+        }, py::arg("vector"), "Returns a translated copy of the shape by the given vector")
+        .def("rotate", [](TopoDS_Shape &self, const gp_Ax1 &theAxis, Standard_Real theAngle) {
+            gp_Trsf trsf;
+            trsf.SetRotation(theAxis, theAngle);
+            self.Move(TopLoc_Location(trsf));
+        }, py::arg("axis"), py::arg("angle"), "Rotates the shape around the given axis by the given angle (in radians)")
+        .def("rotated", [](const TopoDS_Shape &self, const gp_Ax1 &theAxis, Standard_Real theAngle) {
+            gp_Trsf trsf;
+            trsf.SetRotation(theAxis, theAngle);
+            return self.Moved(TopLoc_Location(trsf));
+        }, py::arg("axis"), py::arg("angle"), "Returns a rotated copy of the shape around the given axis by the given angle (in radians)")
+        .def("scale", [](TopoDS_Shape &self, const gp_Pnt &theCenter, Standard_Real theFactor) {
+            gp_Trsf trsf;
+            trsf.SetScale(theCenter, theFactor);
+            self.Move(TopLoc_Location(trsf));
+        }, py::arg("center"), py::arg("factor"), "Scales the shape by the given factor with respect to the given center point")
+        .def("scaled", [](const TopoDS_Shape &self, const gp_Pnt &theCenter, Standard_Real theFactor) {
+            gp_Trsf trsf;
+            trsf.SetScale(theCenter, theFactor);
+            return self.Moved(TopLoc_Location(trsf));
+        }, py::arg("center"), py::arg("factor"), "Returns a scaled copy of the shape by the given factor with respect to the given center point)")
         // Orientation manipulation
         .def("reverse", &TopoDS_Shape::Reverse,
             "Reverses the orientation.\n\n"
@@ -463,6 +496,24 @@ void bind_shapes(py::module_ &m) {
         }),
             py::arg("shape"),
             "Creates a face from a shape (casts to face type)")
+        .def("surface", [](const TopoDS_Face& self) {
+            return BRep_Tool::Surface(self);
+        })
+        .def("bound", [](const TopoDS_Face& self) {
+            return BRepTools::OuterWire(self);
+        })
+        .def("holes", [](const TopoDS_Face& self) {
+            std::vector<TopoDS_Wire> holes;
+            auto outer_wire = BRepTools::OuterWire(self);
+            for (TopExp_Explorer exp(self, TopAbs_WIRE); exp.More(); exp.Next()) {
+                const TopoDS_Wire& wire = TopoDS::Wire(exp.Current());
+                if (!wire.IsSame(outer_wire)) {
+                    holes.push_back(wire);
+                }
+            }
+            return holes;
+        })
+
     ;
 
     py::class_<TopoDS_Wire, std::shared_ptr<TopoDS_Wire>, TopoDS_Shape>(m, "Wire",
