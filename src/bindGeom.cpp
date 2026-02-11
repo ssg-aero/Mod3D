@@ -52,6 +52,15 @@ void bind_geom(py::module_ &m)
         
         // Debug
         .def("dump_json", &Geom_Geometry::DumpJson, py::arg("stream"), py::arg("depth") = -1)
+        
+        // Hash and equality (identity-based)
+        .def("__hash__", [](const opencascade::handle<Geom_Geometry>& self) {
+            return std::hash<Geom_Geometry*>{}(self.get());
+        }, "Returns hash value based on object identity")
+        .def("__eq__", [](const opencascade::handle<Geom_Geometry>& self, 
+                          const opencascade::handle<Geom_Geometry>& other) {
+            return self.get() == other.get();
+        }, py::arg("other"), "Returns True if both refer to the same geometry object")
     ;
 
     bind_geom_curves(m);
