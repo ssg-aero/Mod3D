@@ -12,6 +12,7 @@
 #include <TopoDS_Shape.hxx>
 #include <TopoDS.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <Precision.hxx>
 
 namespace py = pybind11;
 
@@ -138,6 +139,13 @@ void bind_brep_boolean_op(py::module_ &m)
             "Clears all warnings")
     ;
     
+    py::enum_<BOPAlgo_GlueEnum>(m, "GlueEnum",
+        "Enumeration for gluing options in Boolean operations")
+        .value("Off", BOPAlgo_GlueOff, "No gluing - default")
+        .value("Shift", BOPAlgo_GlueShift, "Gluing enabled for partial coincident sub-shapes")
+        .value("Full", BOPAlgo_GlueFull, "Gluing enabled for full coincident sub-shapes")
+        .export_values();
+
     // BRepAlgoAPI_BuilderAlgo - General fuse algorithm
     py::class_<BRepAlgoAPI_BuilderAlgo, BRepAlgoAPI_Algo>(m, "BuilderAlgo",
         R"(General Fuse algorithm for Boolean operations.
@@ -245,7 +253,7 @@ void bind_brep_boolean_op(py::module_ &m)
         .def("simplify_result", &BRepAlgoAPI_BuilderAlgo::SimplifyResult,
             py::arg("unify_edges") = true,
             py::arg("unify_faces") = true,
-            py::arg("angular_tol") = 1e-4,
+            py::arg("angular_tol") = Precision::Angular(),
             R"(Simplifies the result by unifying tangential edges and faces.
             
             Uses ShapeUpgrade_UnifySameDomain algorithm to simplify the result
@@ -259,7 +267,7 @@ void bind_brep_boolean_op(py::module_ &m)
             unify_faces : bool
                 Controls face unification (default: True)
             angular_tol : float
-                Angular criteria for tangency (default: 1e-4))")
+                Angular criteria for tangency (default: Precision::Angular())")
         
         // History queries
         .def("modified", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
