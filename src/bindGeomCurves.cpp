@@ -21,6 +21,8 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <TColStd_Array1OfInteger.hxx>
 #include <GeomLProp_CLProps.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <GeomAdaptor_Curve.hxx>
 
 #include <gbs/bscurve.h>
 
@@ -133,18 +135,44 @@ void bind_geom_curves(py::module_ &m)
             return py::make_tuple(p, v1, v2, v3);
         }, py::arg("u"))
         .def("dn", &Geom_Curve::DN, py::arg("u"), py::arg("n"))
+        .def("length", [](const Geom_Curve& self, Standard_Real u1, Standard_Real u2) {
+            const opencascade::handle<Geom_Curve> h_curve(&self);
+            GeomAdaptor_Curve adaptor(h_curve);
+            return GCPnts_AbscissaPoint::Length(adaptor, u1, u2);
+        }, py::arg("u1"), py::arg("u2"), 
+             "Compute the length of the curve between parameters U1 and U2")
+        .def("length", [](const Geom_Curve& self) {
+            const opencascade::handle<Geom_Curve> h_curve(&self);
+            GeomAdaptor_Curve adaptor(h_curve);
+            return GCPnts_AbscissaPoint::Length(adaptor);
+        },
+             "Compute the length of the curve")
         .def("curvature", [](const Geom_Curve& self, double u) {
           const opencascade::handle<Geom_Curve> h_curve(&self);
           GeomLProp_CLProps props(h_curve, u, 2, Precision::Confusion());
           return props.Curvature();
         }, py::arg("u"), "Returns (curvature, first derivative of curvature) at parameter U")
-        .def("centter_of_curvature", [](const Geom_Curve& self, double u) {
+        .def("center_of_curvature", [](const Geom_Curve& self, double u) {
           const opencascade::handle<Geom_Curve> h_curve(&self);
           GeomLProp_CLProps props(h_curve, u, 2, Precision::Confusion());
           gp_Pnt center;
           props.CentreOfCurvature(center);
           return center;
         }, py::arg("u"), "Returns the center of curvature at parameter U")
+        .def("normal", [](const Geom_Curve& self, double u) {
+            const opencascade::handle<Geom_Curve> h_curve(&self);
+            GeomLProp_CLProps props(h_curve, u, 2, Precision::Confusion());
+            gp_Dir normal;
+            props.Normal(normal);
+            return normal;
+            }, py::arg("u"), "Returns the normal vector at parameter U")
+        .def("tangent", [](const Geom_Curve& self, double u) {
+            const opencascade::handle<Geom_Curve> h_curve(&self);
+            GeomLProp_CLProps props(h_curve, u, 1, Precision::Confusion());
+            gp_Dir tangent;
+            props.Tangent(tangent);
+            return tangent;
+        }, py::arg("u"), "Returns the tangent vector at parameter U")
     ;
 
     // Register implicit conversions from gbs types to Geom_Curve

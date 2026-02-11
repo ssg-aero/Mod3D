@@ -28,6 +28,8 @@
 #include <GeomAbs_Shape.hxx>
 
 #include <Geom2dLProp_CLProps2d.hxx>
+#include <Geom2dAdaptor_Curve.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
@@ -107,18 +109,45 @@ void bind_geom2d_curves(py::module_ &m)
         }, py::arg("u"), "Returns (point, d1, d2, d3) at parameter U")
         .def("dn", &Geom2d_Curve::DN, py::arg("u"), py::arg("n"),
              "Returns the Nth derivative vector at parameter U")
+        .def("length", [](const Geom2d_Curve& self, Standard_Real u1, Standard_Real u2) {
+            const opencascade::handle<Geom2d_Curve> h_curve(&self);
+            Geom2dAdaptor_Curve adaptor(h_curve);
+            return GCPnts_AbscissaPoint::Length(adaptor, u1, u2);
+        }, py::arg("u1"), py::arg("u2"),
+             "Compute the length of the curve between parameters U1 and U2")
+        .def("length", [](const Geom2d_Curve& self) {
+            const opencascade::handle<Geom2d_Curve> h_curve(&self);
+            Geom2dAdaptor_Curve adaptor(h_curve);
+            return GCPnts_AbscissaPoint::Length(adaptor);
+        }, 
+             "Compute the length of the curve")
         .def("curvature", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
           Geom2dLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
           return props.Curvature();
         }, py::arg("u"), "Returns (curvature, first derivative of curvature) at parameter U")
-        .def("centter_of_curvature", [](const Geom2d_Curve& self, double u) {
+        .def("center_of_curvature", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
           Geom2dLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
           gp_Pnt2d center;
           props.CentreOfCurvature(center);
           return center;
         }, py::arg("u"), "Returns the center of curvature at parameter U")
+        .def("normal", [](const Geom2d_Curve& self, double u) {
+          const opencascade::handle<Geom2d_Curve> h_curve(&self);
+          Geom2dLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          gp_Dir2d normal;
+          props.Normal(normal);
+          return normal;
+        }, py::arg("u"), "Returns the normal direction at parameter U ")
+        .def("tangent", [](const Geom2d_Curve& self, double u) {
+          const opencascade::handle<Geom2d_Curve> h_curve(&self);
+          Geom2dLProp_CLProps2d props(h_curve, u, 1, Precision::Confusion());
+          gp_Dir2d tangent;
+          props.Tangent(tangent);
+          return tangent;
+        }, py::arg("u"), "Returns the tangent direction at parameter U ")
+
     ;
 
     // =========================================================================
