@@ -1,8 +1,17 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Wire.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <pybind11/pytypes.h>
+#include <TopExp.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 
 #include <explorer_utils.hpp>
 
@@ -200,5 +209,164 @@ void bind_top_exp(py::module_ &m)
         "  shape: The shape to explore\n\n"
         "Returns:\n"
         "  A list of TopoDS_Vertex objects contained in the shape"
+    );
+
+    // TopExp static methods as free functions
+
+    m.def("map_shapes",
+        [](const TopoDS_Shape& S, TopAbs_ShapeEnum T) {
+            TopTools_IndexedMapOfShape M;
+            TopExp::MapShapes(S, T, M);
+            return M;
+        },
+        py::arg("shape"), py::arg("shape_type"),
+        "Returns an indexed map of all sub-shapes of a given type.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n"
+        "  shape_type: The type of sub-shapes to find (e.g., TopAbs.ShapeEnum.FACE)\n\n"
+        "Returns:\n"
+        "  TopTools_IndexedMapOfShape containing all sub-shapes of the requested type"
+    );
+
+    m.def("map_all_shapes",
+        [](const TopoDS_Shape& S, bool cumOri = true, bool cumLoc = true) {
+            TopTools_IndexedMapOfShape M;
+            TopExp::MapShapes(S, M, cumOri, cumLoc);
+            return M;
+        },
+        py::arg("shape"), py::arg("cum_ori") = true, py::arg("cum_loc") = true,
+        "Returns an indexed map of all sub-shapes.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n"
+        "  cum_ori: If True, composes sub-shapes with orientation of S (default: True)\n"
+        "  cum_loc: If True, multiplies sub-shapes by location of S (default: True)\n\n"
+        "Returns:\n"
+        "  TopTools_IndexedMapOfShape containing all sub-shapes"
+    );
+
+    m.def("map_shapes_and_ancestors",
+        [](const TopoDS_Shape& S, TopAbs_ShapeEnum TS, TopAbs_ShapeEnum TA) {
+            TopTools_IndexedDataMapOfShapeListOfShape M;
+            TopExp::MapShapesAndAncestors(S, TS, TA, M);
+            py::dict result;
+            for (int i = 1; i <= M.Extent(); ++i) {
+                py::list ancestors;
+                for (const auto& shape : M.FindFromIndex(i)) {
+                    ancestors.append(shape);
+                }
+                result[py::cast(M.FindKey(i))] = ancestors;
+            }
+            return result;
+        },
+        py::arg("shape"), py::arg("shape_type"), py::arg("ancestor_type"),
+        "Returns a dict mapping sub-shapes to their ancestors.\n\n"
+        "For each sub-shape of type shape_type, builds a list of ancestor shapes\n"
+        "of type ancestor_type. For example, map all edges to their adjacent faces.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n"
+        "  shape_type: The type of sub-shapes to find (e.g., TopAbs.ShapeEnum.EDGE)\n"
+        "  ancestor_type: The type of ancestors to collect (e.g., TopAbs.ShapeEnum.FACE)\n\n"
+        "Returns:\n"
+        "  dict[Shape, list[Shape]] mapping sub-shapes to ancestor lists"
+    );
+
+    m.def("map_shapes_and_unique_ancestors",
+        [](const TopoDS_Shape& S, TopAbs_ShapeEnum TS, TopAbs_ShapeEnum TA, bool useOrientation = false) {
+            TopTools_IndexedDataMapOfShapeListOfShape M;
+            TopExp::MapShapesAndUniqueAncestors(S, TS, TA, M, useOrientation);
+            py::dict result;
+            for (int i = 1; i <= M.Extent(); ++i) {
+                py::list ancestors;
+                for (const auto& shape : M.FindFromIndex(i)) {
+                    ancestors.append(shape);
+                }
+                result[py::cast(M.FindKey(i))] = ancestors;
+            }
+            return result;
+        },
+        py::arg("shape"), py::arg("shape_type"), py::arg("ancestor_type"), py::arg("use_orientation") = false,
+        "Returns a dict mapping sub-shapes to their unique ancestors.\n\n"
+        "Similar to map_shapes_and_ancestors but only includes unique ancestors.\n\n"
+        "Parameters:\n"
+        "  shape: The shape to explore\n"
+        "  shape_type: The type of sub-shapes to find\n"
+        "  ancestor_type: The type of ancestors to collect\n"
+        "  use_orientation: If True, takes ancestor orientation into account (default: False)\n\n"
+        "Returns:\n"
+        "  dict[Shape, list[Shape]] mapping sub-shapes to unique ancestor lists"
+    );
+
+    m.def("first_vertex",
+        [](const TopoDS_Edge& E, bool cumOri = false) {
+            return TopExp::FirstVertex(E, cumOri);
+        },
+        py::arg("edge"), py::arg("cum_ori") = false,
+        "Returns the first vertex (FORWARD orientation) of an edge.\n\n"
+        "Parameters:\n"
+        "  edge: The edge to query\n"
+        "  cum_ori: If True, takes edge orientation into account (default: False)\n\n"
+        "Returns:\n"
+        "  The first vertex, or a null shape if none exists"
+    );
+
+    m.def("last_vertex",
+        [](const TopoDS_Edge& E, bool cumOri = false) {
+            return TopExp::LastVertex(E, cumOri);
+        },
+        py::arg("edge"), py::arg("cum_ori") = false,
+        "Returns the last vertex (REVERSED orientation) of an edge.\n\n"
+        "Parameters:\n"
+        "  edge: The edge to query\n"
+        "  cum_ori: If True, takes edge orientation into account (default: False)\n\n"
+        "Returns:\n"
+        "  The last vertex, or a null shape if none exists"
+    );
+
+    m.def("vertices_of_edge",
+        [](const TopoDS_Edge& E, bool cumOri = false) {
+            TopoDS_Vertex Vfirst, Vlast;
+            TopExp::Vertices(E, Vfirst, Vlast, cumOri);
+            return std::make_pair(Vfirst, Vlast);
+        },
+        py::arg("edge"), py::arg("cum_ori") = false,
+        "Returns the first and last vertices of an edge.\n\n"
+        "Parameters:\n"
+        "  edge: The edge to query\n"
+        "  cum_ori: If True, takes edge orientation into account (default: False)\n\n"
+        "Returns:\n"
+        "  A tuple (first_vertex, last_vertex). May be null shapes."
+    );
+
+    m.def("vertices_of_wire",
+        [](const TopoDS_Wire& W) {
+            TopoDS_Vertex Vfirst, Vlast;
+            TopExp::Vertices(W, Vfirst, Vlast);
+            return std::make_pair(Vfirst, Vlast);
+        },
+        py::arg("wire"),
+        "Returns the first and last vertices of an open wire.\n\n"
+        "If the wire is closed, both vertices will be the same vertex.\n"
+        "If the wire is non-manifold, both will be null shapes.\n\n"
+        "Parameters:\n"
+        "  wire: The wire to query\n\n"
+        "Returns:\n"
+        "  A tuple (first_vertex, last_vertex)"
+    );
+
+    m.def("common_vertex",
+        [](const TopoDS_Edge& E1, const TopoDS_Edge& E2) -> py::object {
+            TopoDS_Vertex V;
+            if (TopExp::CommonVertex(E1, E2, V)) {
+                return py::cast(V);
+            }
+            return py::none();
+        },
+        py::arg("edge1"), py::arg("edge2"),
+        "Returns the common vertex between two edges, if any.\n\n"
+        "Parameters:\n"
+        "  edge1: First edge\n"
+        "  edge2: Second edge\n\n"
+        "Returns:\n"
+        "  The common vertex, or None if the edges have no common vertex"
     );
 }
