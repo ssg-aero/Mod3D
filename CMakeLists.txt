@@ -31,41 +31,42 @@ find_package(pybind11 REQUIRED)
 find_package(Gbs REQUIRED)
 find_package (Eigen3 REQUIRED NO_MODULE) # ToDo prperly add dep to GBS
 
+if(WIN32)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif(WIN32)
+add_library(occt-extend SHARED
+    src/extend/UnionFaces.cpp
+    src/extend/geomSurfaceCompare.cpp
+    src/extend/shapes.cpp
+)
+# if(WIN32)
+#     set_target_properties(occt-extend PROPERTIES
+#         WINDOWS_EXPORT_ALL_SYMBOLS ON
+#     )
+# endif(WIN32)
+# set_target_properties(occt-extend PROPERTIES
+#     $<$<PLATFORM_ID:Windows>:WINDOWS_EXPORT_ALL_SYMBOLS> ON
+# )
+target_link_libraries(occt-extend PRIVATE
+    ${OpenCASCADE_FoundationClasses_LIBRARIES}
+    ${OpenCASCADE_ModelingData_LIBRARIES}
+    ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+    ${OpenCASCADE_DataExchange_LIBRARIES}
+)
 
-# Build the Python extension module with OCCT linkage
-pybind11_add_module(mod3d 
-    src/mod3d.cpp
-    src/bindGp.cpp
-    src/bindGeomFill.cpp
-    src/bindGeomAbs.cpp
-    src/bindGeomCurvesSplines.cpp
-    src/bindGeomCurvesConics.cpp
-    src/bindGeomCurves.cpp
-    src/bindGeomSurfaces.cpp
-    src/bindGeomSurfacesSplines.cpp
-    src/bindGeomSurfacesElementary.cpp
-    src/bindGeomSweptSurfaces.cpp
-    src/bindGeom.cpp
-    src/bindGeomAPI.cpp
-    src/bindGeom2d.cpp
-    src/bindGeom2dCurvesConics.cpp
-    src/bindGeom2dCurvesSplines.cpp
-    src/bindGeom2dCurves.cpp
-    src/bindTopoDS.cpp
-    src/bindTopAbs.cpp
-    src/bindTopExp.cpp
-    src/bindShapes.cpp
-    src/bindAdaptor.cpp
-    src/bindBRep.cpp
-    src/bindBRepPrim.cpp
-    src/bindBRepPrimAPI.cpp
-    src/bindBRepPrimAPIOneAxis.cpp
-    src/bindBRepPrimAPISweep.cpp
-    src/bindBRepBuilderAPI.cpp
-    src/bindBRepOffsetAPI.cpp
-    src/bindBRepExtrema.cpp
-    src/bindBRepFillet.cpp
-    src/bindBRepBooleanOp.cpp
+target_include_directories(occt-extend PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src 
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc 
+    ${OpenCASCADE_INCLUDE_DIR}
+    ${GBS_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
+)
+cmake_policy(SET CMP0177 NEW)
+install(TARGETS occt-extend
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+)
         src/bindBRepTools.cpp
         # src/bindBRepFillet2d.cpp
         src/bindBRepGProp.cpp
