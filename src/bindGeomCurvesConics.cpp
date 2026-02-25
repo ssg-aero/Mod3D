@@ -34,38 +34,18 @@ void bind_geom_curves_conics(py::module_ &m)
         "- origin, X Direction and Y Direction define the plane of the conic\n"
         "- main Direction is the vector normal to the plane")
         
-        // Setters for position and orientation
-        .def("set_axis", &Geom_Conic::SetAxis, py::arg("axis"),
-             "Changes the orientation of the conic's plane. The normal axis to the plane is A1.\n"
-             "The XAxis and YAxis are recomputed.\n"
-             "Raises exception if A1 is parallel to the XAxis of the conic")
-        .def("set_location", &Geom_Conic::SetLocation, py::arg("location"),
-             "Changes the location point of the conic")
-        .def("set_position", &Geom_Conic::SetPosition, py::arg("position"),
-             "Changes the local coordinate system of the conic")
-        
-        // Getters for position and orientation
-        .def("axis", &Geom_Conic::Axis,
-             "Returns the main Axis of this conic. This axis is normal to the plane of the conic")
-        .def("location", &Geom_Conic::Location,
-             "Returns the location point of the conic.\n"
-             "For circle, ellipse and hyperbola: center of the conic\n"
-             "For parabola: the apex of the parabola")
-        .def("position", &Geom_Conic::Position,
-             "Returns the local coordinate system of the conic.\n"
-             "The main direction is normal to the plane of the conic.\n"
-             "The X direction corresponds to the origin for the parametric value u")
-        .def("x_axis", &Geom_Conic::XAxis,
-             "Returns the XAxis of the conic.\n"
-             "This axis defines the origin of parametrization of the conic.\n"
-             "This axis is perpendicular to the main Axis and defines the plane with YAxis")
-        .def("y_axis", &Geom_Conic::YAxis,
-             "Returns the YAxis of the conic.\n"
-             "The YAxis is perpendicular to the XAxis.\n"
-             "This axis and XAxis define the plane of the conic")
-        
-        // Properties
-        .def("eccentricity", &Geom_Conic::Eccentricity,
+        // Properties for position and orientation
+        .def_property("axis", &Geom_Conic::Axis, &Geom_Conic::SetAxis,
+             "Get or set the main Axis of this conic (normal to the plane)")
+        .def_property("location", &Geom_Conic::Location, &Geom_Conic::SetLocation,
+             "Get or set the location point of the conic")
+        .def_property("position", &Geom_Conic::Position, &Geom_Conic::SetPosition,
+             "Get or set the local coordinate system of the conic")
+        .def_property_readonly("x_axis", &Geom_Conic::XAxis,
+             "Returns the XAxis of the conic (defines origin of parametrization)")
+        .def_property_readonly("y_axis", &Geom_Conic::YAxis,
+             "Returns the YAxis of the conic (perpendicular to XAxis)")
+        .def_property_readonly("eccentricity", &Geom_Conic::Eccentricity,
              "Returns the eccentricity value of the conic:\n"
              "e = 0 for a circle\n"
              "0 < e < 1 for an ellipse (e = 0 if MajorRadius = MinorRadius)\n"
@@ -99,22 +79,11 @@ void bind_geom_curves_conics(py::module_ &m)
              "- a2 is the local coordinate system of the circle\n"
              "Note: Radius can be 0.0. Raises exception if radius < 0")
         
-        // Setters
-        .def("set_circ", &Geom_Circle::SetCirc, py::arg("c"),
-             "Set this circle to have the same geometric properties as c")
-        .def("set_radius", &Geom_Circle::SetRadius, py::arg("r"),
-             "Assigns the value r to the radius of this circle.\n"
-             "Note: Radius can be 0.0. Raises exception if r < 0")
-        
-        // Getters
-        .def("circ", &Geom_Circle::Circ,
-             "Returns the non-transient circle from gp with the same geometric properties")
-        .def("radius", &Geom_Circle::Radius,
-             "Returns the radius of this circle")
-        
-        // Properties (Python-style access)
+        // Properties
+        .def_property("circ", &Geom_Circle::Circ, &Geom_Circle::SetCirc,
+             "Get or set the gp_Circ with the same geometric properties")
         .def_property("radius", &Geom_Circle::Radius, &Geom_Circle::SetRadius,
-                      "Get or set the radius of the circle")
+             "Get or set the radius of the circle")
     ;
 
     py::class_<Geom_Ellipse, opencascade::handle<Geom_Ellipse>, Geom_Conic>(m, "Ellipse",
@@ -142,46 +111,30 @@ void bind_geom_curves_conics(py::module_ &m)
              "- Y Direction defines the minor axis\n"
              "Raises exception if major_radius < minor_radius or minor_radius < 0")
         
-        // Setters
-        .def("set_elips", &Geom_Ellipse::SetElips, py::arg("e"),
-             "Converts the gp_Elips ellipse into this ellipse")
-        .def("set_major_radius", &Geom_Ellipse::SetMajorRadius, py::arg("major_radius"),
-             "Assigns a value to the major radius. Raises exception if major_radius < minor_radius")
-        .def("set_minor_radius", &Geom_Ellipse::SetMinorRadius, py::arg("minor_radius"),
-             "Assigns a value to the minor radius. Raises exception if major_radius < minor_radius or minor_radius < 0")
+        // Properties
+        .def_property("elips", &Geom_Ellipse::Elips, &Geom_Ellipse::SetElips,
+             "Get or set the gp_Elips with the same geometric properties")
+        .def_property("major_radius", &Geom_Ellipse::MajorRadius, &Geom_Ellipse::SetMajorRadius,
+             "Get or set the major radius of the ellipse")
+        .def_property("minor_radius", &Geom_Ellipse::MinorRadius, &Geom_Ellipse::SetMinorRadius,
+             "Get or set the minor radius of the ellipse")
         
-        // Getters
-        .def("elips", &Geom_Ellipse::Elips,
-             "Returns the non-transient ellipse from gp with the same geometric properties")
-        .def("major_radius", &Geom_Ellipse::MajorRadius,
-             "Returns the major radius of this ellipse")
-        .def("minor_radius", &Geom_Ellipse::MinorRadius,
-             "Returns the minor radius of this ellipse")
-        
-        // Geometric properties
-        .def("directrix1", &Geom_Ellipse::Directrix1,
+        // Geometric properties (read-only)
+        .def_property_readonly("directrix1", &Geom_Ellipse::Directrix1,
              "Returns the first directrix of the ellipse.\n"
              "This directrix is normal to the XAxis at distance d = MajorRadius / e from center,\n"
              "where e is the eccentricity. Parallel to YAxis, on positive side of XAxis.\n"
              "Raises exception if eccentricity = 0 (ellipse degenerates into circle)")
-        .def("directrix2", &Geom_Ellipse::Directrix2,
-             "Returns the second directrix (symmetrical transformation of directrix1 w.r.t. YAxis).\n"
-             "Raises exception if eccentricity = 0 (ellipse degenerates into circle)")
-        .def("focal", &Geom_Ellipse::Focal,
+        .def_property_readonly("directrix2", &Geom_Ellipse::Directrix2,
+             "Returns the second directrix (symmetrical transformation of directrix1 w.r.t. YAxis)")
+        .def_property_readonly("focal", &Geom_Ellipse::Focal,
              "Computes the focal distance (distance between the two foci)")
-        .def("focus1", &Geom_Ellipse::Focus1,
+        .def_property_readonly("focus1", &Geom_Ellipse::Focus1,
              "Returns the first focus of the ellipse (on positive side of XAxis)")
-        .def("focus2", &Geom_Ellipse::Focus2,
+        .def_property_readonly("focus2", &Geom_Ellipse::Focus2,
              "Returns the second focus of the ellipse (on negative side of XAxis)")
-        .def("parameter", &Geom_Ellipse::Parameter,
-             "Returns p = (1 - e²) * MajorRadius where e is the eccentricity.\n"
-             "Returns 0 if MajorRadius = 0")
-        
-        // Properties
-        .def_property("major_radius", &Geom_Ellipse::MajorRadius, &Geom_Ellipse::SetMajorRadius,
-                      "Get or set the major radius of the ellipse")
-        .def_property("minor_radius", &Geom_Ellipse::MinorRadius, &Geom_Ellipse::SetMinorRadius,
-                      "Get or set the minor radius of the ellipse")
+        .def_property_readonly("parameter", &Geom_Ellipse::Parameter,
+             "Returns p = (1 - e²) * MajorRadius where e is the eccentricity")
     ;
 
     py::class_<Geom_Hyperbola, opencascade::handle<Geom_Hyperbola>, Geom_Conic>(m, "Hyperbola",
@@ -210,58 +163,38 @@ void bind_geom_curves_conics(py::module_ &m)
              "- Y Direction defines the minor axis\n"
              "Raises exception if major_radius < 0 or minor_radius < 0")
         
-        // Setters
-        .def("set_hypr", &Geom_Hyperbola::SetHypr, py::arg("h"),
-             "Converts the gp_Hypr hyperbola into this hyperbola")
-        .def("set_major_radius", &Geom_Hyperbola::SetMajorRadius, py::arg("major_radius"),
-             "Assigns a value to the major radius. Raises exception if major_radius < 0")
-        .def("set_minor_radius", &Geom_Hyperbola::SetMinorRadius, py::arg("minor_radius"),
-             "Assigns a value to the minor radius. Raises exception if minor_radius < 0")
+        // Properties
+        .def_property("hypr", &Geom_Hyperbola::Hypr, &Geom_Hyperbola::SetHypr,
+             "Get or set the gp_Hypr with the same geometric properties")
+        .def_property("major_radius", &Geom_Hyperbola::MajorRadius, &Geom_Hyperbola::SetMajorRadius,
+             "Get or set the major radius of the hyperbola")
+        .def_property("minor_radius", &Geom_Hyperbola::MinorRadius, &Geom_Hyperbola::SetMinorRadius,
+             "Get or set the minor radius of the hyperbola")
         
-        // Getters
-        .def("hypr", &Geom_Hyperbola::Hypr,
-             "Returns the non-transient hyperbola from gp with the same geometric properties")
-        .def("major_radius", &Geom_Hyperbola::MajorRadius,
-             "Returns the major radius of this hyperbola.\n"
-             "Also the distance between center and apex of the main branch (on X Axis)")
-        .def("minor_radius", &Geom_Hyperbola::MinorRadius,
-             "Returns the minor radius of this hyperbola.\n"
-             "Also the distance between center and apex of a conjugate branch (on Y Axis)")
-        
-        // Geometric properties
-        .def("asymptote1", &Geom_Hyperbola::Asymptote1,
+        // Geometric properties (read-only)
+        .def_property_readonly("asymptote1", &Geom_Hyperbola::Asymptote1,
              "Returns the first asymptote of the hyperbola (equation: Y = (B/A)*X).\n"
              "Raises exception if MajorRadius = 0")
-        .def("asymptote2", &Geom_Hyperbola::Asymptote2,
-             "Returns the second asymptote of the hyperbola (equation: Y = -(B/A)*X).\n"
-             "Raises exception if MajorRadius = 0")
-        .def("conjugate_branch1", &Geom_Hyperbola::ConjugateBranch1,
+        .def_property_readonly("asymptote2", &Geom_Hyperbola::Asymptote2,
+             "Returns the second asymptote of the hyperbola")
+        .def_property_readonly("conjugate_branch1", &Geom_Hyperbola::ConjugateBranch1,
              "Returns the conjugate branch on the positive side of the YAxis")
-        .def("conjugate_branch2", &Geom_Hyperbola::ConjugateBranch2,
+        .def_property_readonly("conjugate_branch2", &Geom_Hyperbola::ConjugateBranch2,
              "Returns the conjugate branch on the negative side of the YAxis")
-        .def("directrix1", &Geom_Hyperbola::Directrix1,
-             "Returns the first directrix of the hyperbola.\n"
-             "This directrix is normal to the XAxis at distance d = MajorRadius / e from center,\n"
-             "where e is the eccentricity. Parallel to YAxis, on positive side of XAxis")
-        .def("directrix2", &Geom_Hyperbola::Directrix2,
-             "Returns the second directrix (symmetrical transformation of directrix1 w.r.t. YAxis)")
-        .def("focal", &Geom_Hyperbola::Focal,
+        .def_property_readonly("directrix1", &Geom_Hyperbola::Directrix1,
+             "Returns the first directrix of the hyperbola")
+        .def_property_readonly("directrix2", &Geom_Hyperbola::Directrix2,
+             "Returns the second directrix of the hyperbola")
+        .def_property_readonly("focal", &Geom_Hyperbola::Focal,
              "Computes the focal distance (distance between the two foci)")
-        .def("focus1", &Geom_Hyperbola::Focus1,
+        .def_property_readonly("focus1", &Geom_Hyperbola::Focus1,
              "Returns the first focus of the hyperbola (on positive side of XAxis)")
-        .def("focus2", &Geom_Hyperbola::Focus2,
+        .def_property_readonly("focus2", &Geom_Hyperbola::Focus2,
              "Returns the second focus of the hyperbola (on negative side of XAxis)")
-        .def("other_branch", &Geom_Hyperbola::OtherBranch,
-             "Returns the other branch of this hyperbola (symmetrical branch w.r.t. center)")
-        .def("parameter", &Geom_Hyperbola::Parameter,
-             "Returns p = (e² - 1) * MajorRadius where e is the eccentricity.\n"
-             "Raises exception if MajorRadius = 0")
-        
-        // Properties
-        .def_property("major_radius", &Geom_Hyperbola::MajorRadius, &Geom_Hyperbola::SetMajorRadius,
-                      "Get or set the major radius of the hyperbola")
-        .def_property("minor_radius", &Geom_Hyperbola::MinorRadius, &Geom_Hyperbola::SetMinorRadius,
-                      "Get or set the minor radius of the hyperbola")
+        .def_property_readonly("other_branch", &Geom_Hyperbola::OtherBranch,
+             "Returns the other branch of this hyperbola")
+        .def_property_readonly("parameter", &Geom_Hyperbola::Parameter,
+             "Returns p = (e² - 1) * MajorRadius where e is the eccentricity")
     ;
 
     py::class_<Geom_Parabola, opencascade::handle<Geom_Parabola>, Geom_Conic>(m, "Parabola",
@@ -297,34 +230,22 @@ void bind_geom_curves_conics(py::module_ &m)
              "but its location point is the vertex of the parabola.\n"
              "The YAxis is parallel to d with location at the vertex")
         
-        // Setters
-        .def("set_focal", &Geom_Parabola::SetFocal, py::arg("focal"),
-             "Assigns the value to the focal distance. Raises exception if focal < 0")
-        .def("set_parab", &Geom_Parabola::SetParab, py::arg("prb"),
-             "Converts the gp_Parab parabola into this parabola")
+        // Properties
+        .def_property("parab", &Geom_Parabola::Parab, &Geom_Parabola::SetParab,
+             "Get or set the gp_Parab with the same geometric properties")
+        .def_property("focal", &Geom_Parabola::Focal, &Geom_Parabola::SetFocal,
+             "Get or set the focal distance")
         
-        // Getters
-        .def("parab", &Geom_Parabola::Parab,
-             "Returns the non-transient parabola from gp with the same geometric properties")
-        .def("focal", &Geom_Parabola::Focal,
-             "Returns the focal distance (distance between apex and focus)")
-        
-        // Geometric properties
-        .def("directrix", &Geom_Parabola::Directrix,
+        // Geometric properties (read-only)
+        .def_property_readonly("directrix", &Geom_Parabola::Directrix,
              "Returns the directrix of this parabola.\n"
              "This is a line normal to the axis of symmetry, in the plane of the parabola,\n"
              "on the negative side of its axis, at distance from apex equal to focal length.\n"
              "Origin is located on the X Axis of this parabola")
-        .def("focus", &Geom_Parabola::Focus,
+        .def_property_readonly("focus", &Geom_Parabola::Focus,
              "Returns the focus of this parabola (on positive side of X Axis)")
-        .def("parameter", &Geom_Parabola::Parameter,
-             "Returns the parameter of the parabola (distance between focus and directrix).\n"
-             "This distance is twice the focal length.\n"
-             "If P is the parameter, the equation is: Y² = 2*P*X")
-        
-        // Properties
-        .def_property("focal", &Geom_Parabola::Focal, &Geom_Parabola::SetFocal,
-                      "Get or set the focal length of the parabola")
+        .def_property_readonly("parameter", &Geom_Parabola::Parameter,
+             "Returns the parameter of the parabola (distance between focus and directrix)")
     ;
 
         

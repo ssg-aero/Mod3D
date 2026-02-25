@@ -66,7 +66,6 @@ void bind_geom2d_curves_conics(py::module_ &m)
         // Properties
         .def_property("circ2d", &Geom2d_Circle::Circ2d, &Geom2d_Circle::SetCirc2d)
         .def_property("radius", &Geom2d_Circle::Radius, &Geom2d_Circle::SetRadius)
-        .def_property("radius", &Geom2d_Circle::Radius, &Geom2d_Circle::SetRadius)
     ;
 
     // =========================================================================
