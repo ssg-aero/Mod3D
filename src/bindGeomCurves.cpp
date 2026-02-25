@@ -24,52 +24,53 @@
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GeomAdaptor_Curve.hxx>
 
-#include <gbs/bscurve.h>
-
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
-// Helper functions to convert gbs curves to OCCT
-inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_to_occt(const gbs::BSCurve<double,3>& crv) {
-    auto poles_ = crv.poles();
-    TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
-    for (size_t i = 0; i < poles_.size(); ++i) {
-        poles.SetValue(static_cast<Standard_Integer>(i + 1), 
-                       gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+#if HAS_GBS
+    #include <gbs/bscurve.h>
+    // Helper functions to convert gbs curves to OCCT
+    inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_to_occt(const gbs::BSCurve<double,3>& crv) {
+        auto poles_ = crv.poles();
+        TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
+        for (size_t i = 0; i < poles_.size(); ++i) {
+            poles.SetValue(static_cast<Standard_Integer>(i + 1), 
+            gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+        }
+        auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
+        TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
+        TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
+        for (size_t i = 0; i < knots.size(); ++i) {
+            occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
+            occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
+        }
+        return new Geom_BSplineCurve(poles, occt_knots, occt_mults, crv.degree());
     }
-    auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
-    TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
-    TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
-    for (size_t i = 0; i < knots.size(); ++i) {
-        occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
-        occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
-    }
-    return new Geom_BSplineCurve(poles, occt_knots, occt_mults, crv.degree());
-}
 
-inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_rational_to_occt(const gbs::BSCurveRational<double,3>& crv) {
-    auto poles_ = crv.polesProjected();
-    TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
-    for (size_t i = 0; i < poles_.size(); ++i) {
-        poles.SetValue(static_cast<Standard_Integer>(i + 1), 
-                       gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+    inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_rational_to_occt(const gbs::BSCurveRational<double,3>& crv) {
+        auto poles_ = crv.polesProjected();
+        TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
+        for (size_t i = 0; i < poles_.size(); ++i) {
+            poles.SetValue(static_cast<Standard_Integer>(i + 1), 
+                        gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+                    }
+        auto weights_ = crv.weights();
+        TColStd_Array1OfReal weights(1, static_cast<Standard_Integer>(weights_.size()));
+        for (size_t i = 0; i < weights_.size(); ++i) {
+            weights.SetValue(static_cast<Standard_Integer>(i + 1), weights_[i]);
+        }
+        auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
+        TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
+        TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
+        for (size_t i = 0; i < knots.size(); ++i) {
+            occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
+            occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
+        }
+        return new Geom_BSplineCurve(poles, weights, occt_knots, occt_mults, crv.degree());
     }
-    auto weights_ = crv.weights();
-    TColStd_Array1OfReal weights(1, static_cast<Standard_Integer>(weights_.size()));
-    for (size_t i = 0; i < weights_.size(); ++i) {
-        weights.SetValue(static_cast<Standard_Integer>(i + 1), weights_[i]);
-    }
-    auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
-    TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
-    TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
-    for (size_t i = 0; i < knots.size(); ++i) {
-        occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
-        occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
-    }
-    return new Geom_BSplineCurve(poles, weights, occt_knots, occt_mults, crv.degree());
-}
-
+#endif
+                
 // Forward declaration
 void bind_geom_curves_conics(py::module_ &m);
 void bind_geom_curves_splines(py::module_ &m);
@@ -77,18 +78,20 @@ void bind_geom_curves_splines(py::module_ &m);
 void bind_geom_curves(py::module_ &m)
 {
 
-
+    
     py::class_<Geom_Curve, opencascade::handle<Geom_Curve>, Geom_Geometry>(m, "Curve")
+#if HAS_GBS
         // Constructors from gbs types (for implicit conversion support)
         .def(py::init([](const gbs::BSCurve<double,3>& crv) {
             return opencascade::handle<Geom_Curve>(gbs_bscurve_to_occt(crv));
         }), py::arg("bscurve"),
-            "Create a Geom_Curve from a gbs::BSCurve object (implicit conversion).")
+        "Create a Geom_Curve from a gbs::BSCurve object (implicit conversion).")
         .def(py::init([](const gbs::BSCurveRational<double,3>& crv) {
             return opencascade::handle<Geom_Curve>(gbs_bscurve_rational_to_occt(crv));
         }), py::arg("bscurve_rational"),
-            "Create a Geom_Curve from a gbs::BSCurveRational object (implicit conversion).")
-        
+        "Create a Geom_Curve from a gbs::BSCurveRational object (implicit conversion).")
+#endif
+    
         // Parametrization
         .def("reverse", &Geom_Curve::Reverse)
         .def("reversed", &Geom_Curve::Reversed)
@@ -174,11 +177,11 @@ void bind_geom_curves(py::module_ &m)
             return tangent;
         }, py::arg("u"), "Returns the tangent vector at parameter U")
     ;
-
+#if HAS_GBS
     // Register implicit conversions from gbs types to Geom_Curve
     py::implicitly_convertible<gbs::BSCurve<double, 3>, Geom_Curve>();
     py::implicitly_convertible<gbs::BSCurveRational<double, 3>, Geom_Curve>();
-
+#endif
     // py::class_<Geom_Line, opencascade::handle<Geom_Line>, Geom_Curve>(m, "Line")
     py::class_<Geom_Line, opencascade::handle<Geom_Line>, Geom_Curve>(m, "Line")
         // Constructors

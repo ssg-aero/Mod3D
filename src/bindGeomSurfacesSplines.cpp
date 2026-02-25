@@ -16,8 +16,6 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array2OfInteger.hxx>
 
-#include <gbs/bssurf.h>
-
 #include "array_utils.hpp"
 
 namespace py = pybind11;
@@ -27,9 +25,12 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 // Forward declarations
 extern void bind_geom_surfaces_splines(py::module_ &m);
 extern void bind_geom_surfaces_elementary(py::module_ &m);
-extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs::BSSurface<double,3>& surf);
-extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(const gbs::BSSurfaceRational<double,3>& surf);
-
+#if HAS_GBS
+    #include <gbs/bssurf.h>
+    // Helper functions to convert gbs surfaces to OCCT
+    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs::BSSurface<double,3>& surf);
+    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(const gbs::BSSurfaceRational<double,3>& surf);
+#endif
 void bind_geom_surfaces_splines(py::module_ &m)
 {
     // ========== Geom_BezierSurface ==========
@@ -264,7 +265,7 @@ void bind_geom_surfaces_splines(py::module_ &m)
                 u_degree, v_degree: Degrees in U and V directions.
                 u_periodic, v_periodic: Whether the surface is periodic in U/V.
             )doc")
-
+#if HAS_GBS
         .def(py::init([](const gbs::BSSurface<double,3>& surf) {
             return gbs_bssurface_to_occt(surf);
         }), py::arg("bssurface"),
@@ -274,7 +275,7 @@ void bind_geom_surfaces_splines(py::module_ &m)
             return gbs_bssurface_rational_to_occt(surf);
         }), py::arg("bssurface_rational"),
             "Create a rational B-spline surface from a gbs::BSSurfaceRational object.")
-
+#endif
         // --- Properties ---
         .def_property_readonly("u_degree", &Geom_BSplineSurface::UDegree,
             "The degree in the U parametric direction.")
@@ -449,9 +450,11 @@ void bind_geom_surfaces_splines(py::module_ &m)
         }, py::arg("v"), py::arg("tolerance"),
             "Locate V in the knot sequence. Returns (i1, i2) where VKnot(i1) <= V <= VKnot(i2).")
         ;
+#if HAS_GBS
     // Register implicit conversions from gbs types to Geom_BSplineSurface
     py::implicitly_convertible<gbs::BSSurface<double,3>, Geom_BSplineSurface>();
     py::implicitly_convertible<gbs::BSSurfaceRational<double,3>, Geom_BSplineSurface>();
+#endif
     // ========== Geom_RectangularTrimmedSurface ==========
     py::class_<Geom_RectangularTrimmedSurface, opencascade::handle<Geom_RectangularTrimmedSurface>, Geom_BoundedSurface>(
         m, "RectangularTrimmedSurface",
@@ -519,7 +522,4 @@ void bind_geom_surfaces_splines(py::module_ &m)
             "Modify the trim values in one direction only.")
         ;
 
-    // Register implicit conversions from gbs surfaces to Geom_BSplineSurface
-    py::implicitly_convertible<gbs::BSSurface<double, 3>, Geom_BSplineSurface>();
-    py::implicitly_convertible<gbs::BSSurfaceRational<double, 3>, Geom_BSplineSurface>();
 }

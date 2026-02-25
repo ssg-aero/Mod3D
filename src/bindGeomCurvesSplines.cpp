@@ -14,17 +14,56 @@
 #include <Geom_BezierCurve.hxx>
 
 #include "array_utils.hpp"
-
-#include <gbs/bscurve.h>
+#if HAS_GBS
+    #include <gbs/bscurve.h>
+#endif
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 // Forward declarations of helper functions from bindGeomCurves.cpp
-extern opencascade::handle<Geom_BSplineCurve> gbs_bscurve_to_occt(const gbs::BSCurve<double,3>& crv);
-extern opencascade::handle<Geom_BSplineCurve> gbs_bscurve_rational_to_occt(const gbs::BSCurveRational<double,3>& crv);
+#if HAS_GBS
+    // Helper functions to convert gbs curves to OCCT
+    inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_to_occt(const gbs::BSCurve<double,3>& crv) {
+        auto poles_ = crv.poles();
+        TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
+        for (size_t i = 0; i < poles_.size(); ++i) {
+            poles.SetValue(static_cast<Standard_Integer>(i + 1), 
+                        gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+        }
+        auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
+        TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
+        TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
+        for (size_t i = 0; i < knots.size(); ++i) {
+            occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
+            occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
+        }
+        return new Geom_BSplineCurve(poles, occt_knots, occt_mults, crv.degree());
+    }
 
+    inline opencascade::handle<Geom_BSplineCurve> gbs_bscurve_rational_to_occt(const gbs::BSCurveRational<double,3>& crv) {
+        auto poles_ = crv.polesProjected();
+        TColgp_Array1OfPnt poles(1, static_cast<Standard_Integer>(poles_.size()));
+        for (size_t i = 0; i < poles_.size(); ++i) {
+            poles.SetValue(static_cast<Standard_Integer>(i + 1), 
+                        gp_Pnt(poles_[i][0], poles_[i][1], poles_[i][2]));
+        }
+        auto weights_ = crv.weights();
+        TColStd_Array1OfReal weights(1, static_cast<Standard_Integer>(weights_.size()));
+        for (size_t i = 0; i < weights_.size(); ++i) {
+            weights.SetValue(static_cast<Standard_Integer>(i + 1), weights_[i]);
+        }
+        auto [knots, mults] = gbs::knots_and_mults(crv.knotsFlats());
+        TColStd_Array1OfReal occt_knots(1, static_cast<Standard_Integer>(knots.size()));
+        TColStd_Array1OfInteger occt_mults(1, static_cast<Standard_Integer>(mults.size()));
+        for (size_t i = 0; i < knots.size(); ++i) {
+            occt_knots.SetValue(static_cast<Standard_Integer>(i + 1), knots[i]);
+            occt_mults.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults[i]));
+        }
+        return new Geom_BSplineCurve(poles, weights, occt_knots, occt_mults, crv.degree());
+    }
+#endif
 void bind_geom_curves_splines(py::module_ &m)
 {
     py::class_<Geom_BSplineCurve, opencascade::handle<Geom_BSplineCurve>, Geom_BoundedCurve>(m, "BSplineCurve")
@@ -67,6 +106,7 @@ void bind_geom_curves_splines(py::module_ &m)
         }), py::arg("poles"), py::arg("weights"), py::arg("knots"), py::arg("multiplicities"), 
             py::arg("degree"), py::arg("periodic") = false, py::arg("check_rational") = true,
             "Create a rational B-spline curve. All arrays can be lists or numpy arrays.")
+#if HAS_GBS
         .def(py::init([](const gbs::BSCurve<double,3>& crv) {
             return gbs_bscurve_to_occt(crv);
         }), py::arg("bscurve"),
@@ -76,7 +116,7 @@ void bind_geom_curves_splines(py::module_ &m)
             return gbs_bscurve_rational_to_occt(crv);
         }), py::arg("bscurve_rational"),
             "Create a rational B-spline curve from a gbs::BSCurveRational object.")
-
+#endif
 
         // Modification methods
         .def("increase_degree", &Geom_BSplineCurve::IncreaseDegree, py::arg("degree"),
@@ -227,10 +267,10 @@ void bind_geom_curves_splines(py::module_ &m)
         // Comparison
         .def("is_equal", &Geom_BSplineCurve::IsEqual, py::arg("other"), py::arg("precision"))
     ;
-
+#if HAS_GBS
     py::implicitly_convertible<gbs::BSCurve<double, 3>, Geom_BSplineCurve>();
     py::implicitly_convertible<gbs::BSCurveRational<double, 3>, Geom_BSplineCurve>();
-
+#endif
 
     py::class_<Geom_BezierCurve, opencascade::handle<Geom_BezierCurve>, Geom_BoundedCurve>(m, "BezierCurve")
         // Constructors

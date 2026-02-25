@@ -28,7 +28,17 @@ message("OpenCASCADE :${OpenCASCADE_INCLUDE_DIR}")
 
 find_package(pybind11 REQUIRED)
 
-find_package(Gbs REQUIRED)
+option(MOD3D_USE_GBS "Add convenience targets for development" ON)
+if(MOD3D_USE_GBS)
+    find_package(Gbs OPTIONAL)
+
+    if(Gbs_FOUND)
+        message("Found GBS: ${GBS_INCLUDE_DIR} $<BOOL:${Gbs_FOUND}>")
+    else()
+        message(WARNING "GBS library not found. Some features may be unavailable.")
+    endif()
+endif()
+
 find_package (Eigen3 REQUIRED NO_MODULE) # ToDo prperly add dep to GBS
 
 if(WIN32)
@@ -60,8 +70,6 @@ if(MOD3D_BUILD_OCCTEXT)
         ${CMAKE_CURRENT_SOURCE_DIR}/src 
         ${CMAKE_CURRENT_SOURCE_DIR}/inc 
         ${OpenCASCADE_INCLUDE_DIR}
-        ${GBS_INCLUDE_DIR}
-        ${EIGEN3_INCLUDE_DIR}
     )
     cmake_policy(SET CMP0177 NEW)
     install(TARGETS occt-extend
@@ -122,6 +130,7 @@ if(MOD3D_BUILD_PYTHON)
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 
         _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS # For Eigen
+        HAS_GBS=$<BOOL:${Gbs_FOUND}>
     )
     target_link_directories(
         mod3d PRIVATE
