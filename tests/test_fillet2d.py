@@ -72,11 +72,12 @@ def test_fillet2d_multiple_fillets():
     fillet2d = BRepFillet.MakeFillet2d(face)
     
     # Get all vertices
-    explorer = TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX)
-    vertices = []
-    while explorer.more():
-        vertices.append(explorer.current())
-        explorer.next()
+    # explorer = TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX)
+    # vertices = []
+    # while explorer.more():
+    #     vertices.append(explorer.current())
+    #     explorer.next()
+    vertices = TopExp.getvetices(wire)
     
     # Add fillets at all corners
     radius = 0.5

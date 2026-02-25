@@ -426,3 +426,77 @@ def test_shell_error_enum():
     assert BRepBuilderAPI.EmptyShell is not None
     assert BRepBuilderAPI.DisconnectedShell is not None
     assert BRepBuilderAPI.ShellParametersOutOfRange is not None
+
+
+# ==================== Shape Hash and Equality Tests ====================
+
+def test_shape_hash():
+    """Test that shapes have a hash value."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge = BRepBuilderAPI.make_edge(p1, p2)
+    
+    h = hash(edge)
+    assert isinstance(h, int)
+
+
+def test_shape_hash_consistency():
+    """Test that the same shape returns the same hash."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge = BRepBuilderAPI.make_edge(p1, p2)
+    
+    h1 = hash(edge)
+    h2 = hash(edge)
+    assert h1 == h2
+
+
+def test_shape_as_dict_key():
+    """Test that shapes can be used as dictionary keys."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge = BRepBuilderAPI.make_edge(p1, p2)
+    
+    d = {edge: "my_edge"}
+    assert d[edge] == "my_edge"
+
+
+def test_shape_in_set():
+    """Test that shapes can be used in sets."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge1 = BRepBuilderAPI.make_edge(p1, p2)
+    edge2 = BRepBuilderAPI.make_edge(p1, gp.Pnt(0.0, 10.0, 0.0))
+    
+    s = {edge1, edge2}
+    assert len(s) == 2
+    assert edge1 in s
+    assert edge2 in s
+
+
+def test_shape_equality():
+    """Test shape equality operator."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge1 = BRepBuilderAPI.make_edge(p1, p2)
+    edge2 = BRepBuilderAPI.make_edge(p1, p2)  # Different edge object
+    
+    # Same reference
+    edge_ref = edge1
+    assert edge1 == edge_ref
+    
+    # Different objects with same geometry are not equal (different TShape)
+    assert edge1 != edge2
+
+
+def test_shape_is_same_vs_is_equal():
+    """Test difference between is_same and is_equal."""
+    p1 = gp.Pnt(0.0, 0.0, 0.0)
+    p2 = gp.Pnt(10.0, 0.0, 0.0)
+    edge = BRepBuilderAPI.make_edge(p1, p2)
+    
+    # Same TShape and location - should be same and equal 
+    edge_copy = edge
+    assert edge.is_same(edge_copy)
+    assert edge.is_equal(edge_copy)
+    assert edge == edge_copy

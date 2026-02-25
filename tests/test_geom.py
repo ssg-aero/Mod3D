@@ -1736,3 +1736,78 @@ def test_swept_surface_bounds():
     u1, u2, v1, v2 = surf_extr.bounds()
     assert u1 is not None
     assert u2 is not None
+
+
+# ==================== Geometry Hash and Equality Tests ====================
+
+def test_geometry_hash():
+    """Test that geometry objects have a hash value."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    
+    h = hash(line)
+    assert isinstance(h, int)
+
+
+def test_geometry_hash_consistency():
+    """Test that the same geometry returns the same hash."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    
+    h1 = hash(line)
+    h2 = hash(line)
+    assert h1 == h2
+
+
+def test_geometry_as_dict_key():
+    """Test that geometry objects can be used as dictionary keys."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 5.0)
+    
+    d = {line: "my_line", circle: "my_circle"}
+    assert d[line] == "my_line"
+    assert d[circle] == "my_circle"
+
+
+def test_geometry_in_set():
+    """Test that geometry objects can be used in sets."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    circle = Geom.Circle(gp.Ax2(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 5.0)
+    
+    s = {line, circle}
+    assert len(s) == 2
+    assert line in s
+    assert circle in s
+
+
+def test_geometry_equality_same_reference():
+    """Test geometry equality with same reference."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    line_ref = line
+    
+    assert line == line_ref
+
+
+def test_geometry_equality_copy():
+    """Test that copied geometry is not equal (identity-based)."""
+    line = Geom.Line(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(1, 0, 0)))
+    line_copy = line.copy()
+    
+    # Different objects are not equal (identity-based equality)
+    assert line != line_copy
+
+
+def test_surface_hash():
+    """Test that surface objects have a hash value."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    
+    h = hash(plane)
+    assert isinstance(h, int)
+
+
+def test_surface_as_dict_key():
+    """Test that surface objects can be used as dictionary keys."""
+    plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+    cylinder = Geom.CylindricalSurface(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 5.0)
+    
+    d = {plane: "my_plane", cylinder: "my_cylinder"}
+    assert d[plane] == "my_plane"
+    assert d[cylinder] == "my_cylinder"

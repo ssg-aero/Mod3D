@@ -930,3 +930,58 @@ class TestCurve2dTransformations:
         # Reversed copy should have opposite direction
         # Note: reversed() returns a Curve2d, not Line2d specifically
         assert reversed_line is not None
+
+
+# ==================== Geometry2d Hash and Equality Tests ====================
+
+class TestGeometry2dHashEquality:
+    """Tests for __hash__ and __eq__ on Geom2d objects."""
+
+    def test_geometry2d_hash(self):
+        """Test that 2D geometry objects have a hash value."""
+        line = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        
+        h = hash(line)
+        assert isinstance(h, int)
+
+    def test_geometry2d_hash_consistency(self):
+        """Test that the same 2D geometry returns the same hash."""
+        line = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        
+        h1 = hash(line)
+        h2 = hash(line)
+        assert h1 == h2
+
+    def test_geometry2d_as_dict_key(self):
+        """Test that 2D geometry objects can be used as dictionary keys."""
+        line = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        circle = Geom2d.Circle2d(gp.Ax2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0)), 5.0)
+        
+        d = {line: "my_line", circle: "my_circle"}
+        assert d[line] == "my_line"
+        assert d[circle] == "my_circle"
+
+    def test_geometry2d_in_set(self):
+        """Test that 2D geometry objects can be used in sets."""
+        line = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        circle = Geom2d.Circle2d(gp.Ax2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0)), 5.0)
+        
+        s = {line, circle}
+        assert len(s) == 2
+        assert line in s
+        assert circle in s
+
+    def test_geometry2d_equality_same_reference(self):
+        """Test 2D geometry equality with same reference."""
+        line = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        line_ref = line
+        
+        assert line == line_ref
+
+    def test_geometry2d_equality_different_objects(self):
+        """Test that different 2D geometry objects are not equal (identity-based)."""
+        line1 = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))
+        line2 = Geom2d.Line2d(gp.Pnt2d(0.0, 0.0), gp.Dir2d(1.0, 0.0))  # Same params, different object
+        
+        # Different objects are not equal (identity-based equality)
+        assert line1 != line2
