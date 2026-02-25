@@ -3,8 +3,6 @@
 #include <gp_Pnt.hxx>
 #include <gp_Trsf.hxx>
 #include <gp_Ax1.hxx>
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h> // for py::self * py::self etc.
 
 #include <TopLoc_Location.hxx>
 
@@ -22,7 +20,11 @@
 #include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
 #include <TopExp_Explorer.hxx>
+
+#include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
+#include <pybind11/operators.h> // for py::self * py::self etc.
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -450,8 +452,16 @@ void bind_shapes(py::module_ &m) {
         .def(py::init([](const TopoDS_Shape& shape) {
             return TopoDS::Compound(shape);
         }),
-            py::arg("shape"),
-            "Creates a compound from a shape (casts to compound type)")
+        py::arg("shape"),
+        "Creates a compound from a shape (casts to compound type)")
+        .def(py::init([](const std::list<TopoDS_Shape>& shapes) { 
+            TopoDS_Compound compound; BRep_Builder builder;
+            builder.MakeCompound(compound);
+            for (const auto& shape : shapes) { 
+                builder.Add(compound, shape); 
+            } 
+            return compound; }
+        ),py::arg("shapes"), "Creates a compound from a list of shapes")
     ;
 
     py::class_<TopoDS_CompSolid, std::shared_ptr<TopoDS_CompSolid>, TopoDS_Shape>(m, "CompSolid",
