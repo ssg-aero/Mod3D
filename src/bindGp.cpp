@@ -1372,7 +1372,7 @@ void bind_gp(py::module_ &m)
             "Returns the homogeneous vectorial part (3x3 matrix without scale factor)")
 
         // Query methods
-        .def("get_rotation", [](const gp_Trsf& self) {
+        .def("get_rotation", [](const gp_Trsf& self) -> py::tuple {
             gp_XYZ axis;
             Standard_Real angle;
             Standard_Boolean has_rotation = self.GetRotation(axis, angle);

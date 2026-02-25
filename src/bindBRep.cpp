@@ -130,13 +130,13 @@ void bind_brep(py::module_ &m)
             "Returns True if the edge is degenerated")
         
         .def_static("range",
-            py::overload_cast<const TopoDS_Edge&, Standard_Real&, Standard_Real&>(&BRep_Tool::Range),
+            py::overload_cast<const TopoDS_Edge&, double&, double&>(&BRep_Tool::Range),
             py::arg("edge"), py::arg("first"), py::arg("last"),
             "Gets the range of the 3D curve (outputs first and last parameters)")
         
         .def_static("range_on_face",
             [](const TopoDS_Edge& e, const TopoDS_Face& f) {
-                Standard_Real first, last;
+                double first, last;
                 BRep_Tool::Range(e, f, first, last);
                 return py::make_tuple(first, last);
             },
@@ -194,12 +194,12 @@ void bind_brep(py::module_ &m)
         
         .def_static("parameter",
             [](const TopoDS_Vertex& v, const TopoDS_Edge& e) {
-                Standard_Real param;
-                Standard_Boolean found = BRep_Tool::Parameter(v, e, param);
+                double param{0.0};
+                bool found = BRep_Tool::Parameter(v, e, param);
                 if (found) {
                     return py::make_tuple(true, param);
                 }
-                return py::make_tuple(false, 0.0);
+                return py::make_tuple(false, param);
             },
             py::arg("vertex"), py::arg("edge"),
             "Returns tuple (found, parameter) for the vertex on the edge")

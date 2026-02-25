@@ -454,7 +454,7 @@ void bind_geom_api(py::module_ &m)
             "Raises:\n"
             "  StdFail_NotDone if algorithm fails")
         
-        .def_property_readonly("total_nearest_points", [](GeomAPI_ExtremaCurveCurve& self) {
+        .def_property_readonly("total_nearest_points", [](GeomAPI_ExtremaCurveCurve& self) -> py::tuple {
             gp_Pnt P1, P2;
             bool found = self.TotalNearestPoints(P1, P2);
             if (found) {
@@ -468,7 +468,7 @@ void bind_geom_api(py::module_ &m)
             "Returns:\n"
             "  Tuple of (found, P1, P2) where found is True if successful")
         
-        .def_property_readonly("total_lower_distance_parameters", [](GeomAPI_ExtremaCurveCurve& self) {
+        .def_property_readonly("total_lower_distance_parameters", [](GeomAPI_ExtremaCurveCurve& self) -> py::tuple {
             Standard_Real U1, U2;
             bool found = self.TotalLowerDistanceParameters(U1, U2);
             if (found) {
@@ -484,7 +484,7 @@ void bind_geom_api(py::module_ &m)
             "Returns the distance of the true nearest points.\n\n"
             "This accounts for curve endpoints and may be smaller than lower_distance.")
 
-        .def_property_readonly("result",[](GeomAPI_ExtremaCurveCurve& self) {
+        .def_property_readonly("result",[](GeomAPI_ExtremaCurveCurve& self) -> py::tuple {
             bool found = true;
             gp_Pnt P1, P2;
             found = found && self.TotalNearestPoints(P1, P2);
@@ -621,7 +621,7 @@ void bind_geom_api(py::module_ &m)
             "Returns True if the curve lies on a surface parallel to the given surface.")
 
 
-        .def_property_readonly("result",[](GeomAPI_ExtremaCurveSurface& self) {
+        .def_property_readonly("result",[](GeomAPI_ExtremaCurveSurface& self) -> py::tuple {
             bool found = self.NbExtrema() > 0;
             if (found) {
                 gp_Pnt PC, PS;
@@ -742,7 +742,7 @@ void bind_geom_api(py::module_ &m)
         .def_property_readonly("lower_distance", &GeomAPI_ExtremaSurfaceSurface::LowerDistance,
             "Returns the distance of the shortest extremum.")
 
-        .def_property_readonly("result",[](GeomAPI_ExtremaSurfaceSurface& self) {
+        .def_property_readonly("result",[](GeomAPI_ExtremaSurfaceSurface& self) -> py::tuple {
             bool found = self.NbExtrema() > 0;
             if (found) {
                 gp_Pnt P1, P2;
@@ -842,7 +842,7 @@ void bind_geom_api(py::module_ &m)
             "Returns True if the two curves are parallel."
         ) // TODO fix occt
 
-        .def_property_readonly("result",[](Geom2dAPI_ExtremaCurveCurve& self) {
+        .def_property_readonly("result",[](Geom2dAPI_ExtremaCurveCurve& self) -> py::tuple {
             bool found = self.NbExtrema() > 0;
             if (found) {
                 gp_Pnt2d P1, P2;
