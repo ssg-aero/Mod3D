@@ -30,8 +30,12 @@ void bind_brep_fillet(py::module_ &m);
 // void bind_brep_fillet2d(py::module_ &m);
 void bind_brep_extrema(py::module_ &m);
 void bind_brep_boolean_op(py::module_ &m);
+void bind_brep_tools(py::module_ &m);
 void bind_brep_grpop(py::module_ &m);
+void bind_brep_lib(py::module_ &m);
 void bind_shape_analysis(py::module_ &m);
+void bind_shape_fix(py::module_ &m);
+void bind_shape_upgrade(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
 void bind_render(py::module_ &m);
@@ -87,10 +91,15 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ BRepExtrema = m.def_submodule("BRepExtrema", "BRep extrema computations");
     py::module_ BRepFillet = m.def_submodule("BRepFillet", "BRep fillet module");
     py::module_ BooleanOp = m.def_submodule("BooleanOp", "BRep boolean operations module");
+    py::module_ BRepTools = m.def_submodule("BRepTools", "BRep tools module");
+
     // py::module_ BRepFillet2d = m.def_submodule("BRepFillet2d", "BRep 2D fillet module");
     py::module_ BRepGProp = m.def_submodule("BRepGProp", "BRep geometric properties module");
+    py::module_ BRepLib = m.def_submodule("BRepLib", "BRep library module");
 
     py::module_ ShapeAnalysis = m.def_submodule("ShapeAnalysis", "Shape analysis module");
+    py::module_ ShapeFix = m.def_submodule("ShapeFix", "Shape fixing module");
+    py::module_ ShapeUpgrade = m.def_submodule("ShapeUpgrade", "Shape upgrading module");
 
     py::module_ StepControl = m.def_submodule("StepControl", "STEP control module");
     py::module_ StepData = m.def_submodule("StepData", "STEP data module");
@@ -118,10 +127,14 @@ PYBIND11_MODULE(mod3d, m)
     bind_brep_extrema(BRepExtrema);
     bind_brep_fillet(BRepFillet);
     bind_brep_boolean_op(BooleanOp);
+    bind_brep_tools(BRepTools);
     // bind_brep_fillet2d(BRepFillet2d);
     bind_brep_grpop(BRepGProp);
+    bind_brep_lib(BRepLib);
 
     bind_shape_analysis(ShapeAnalysis);
+    bind_shape_fix(ShapeFix);
+    bind_shape_upgrade(ShapeUpgrade);
 
     bind_step_control(StepControl);
     bind_step_data(StepData);

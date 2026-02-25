@@ -20,8 +20,12 @@ from .mod3d import BRepPrim
 from .mod3d import BRepExtrema
 from .mod3d import BRepFillet
 from .mod3d import BooleanOp
+from .mod3d import BRepTools
 from .mod3d import BRepGProp
+from .mod3d import BRepLib
 from .mod3d import ShapeAnalysis
+from .mod3d import ShapeFix
+from .mod3d import ShapeUpgrade
 from .mod3d import StepControl
 from .mod3d import StepData
 from .mod3d import Render
@@ -46,10 +50,15 @@ __all__ = [
     "BRepExtrema",
     "BRepFillet",
     "BooleanOp",
-    "BRepGProp"
+    "BRepTools",
+    "BRepGProp",
+    "BRepLib",
     "ShapeAnalysis",
+    "ShapeFix",
+    "ShapeUpgrade",
     "StepControl",
     "StepData",
     "Render",
     "ShapeRenderer",
 ]
+

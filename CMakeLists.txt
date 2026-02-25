@@ -66,9 +66,13 @@ pybind11_add_module(mod3d
     src/bindBRepExtrema.cpp
     src/bindBRepFillet.cpp
     src/bindBRepBooleanOp.cpp
-    # src/bindBRepFillet2d.cpp
-    src/bindBRepGProp.cpp
-    src/bindShapeAnalysis.cpp
+        src/bindBRepTools.cpp
+        # src/bindBRepFillet2d.cpp
+        src/bindBRepGProp.cpp
+        src/bindBRepLib.cpp
+        src/bindShapeAnalysis.cpp
+        src/bindShapeFix.cpp
+        src/bindShapeUpgrade.cpp
     src/bindStepControl.cpp
     src/bindStepData.cpp
     src/bindRender.cpp
