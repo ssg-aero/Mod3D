@@ -58,7 +58,8 @@ add_library(occt-extend SHARED
 #     $<$<PLATFORM_ID:Windows>:WINDOWS_EXPORT_ALL_SYMBOLS> ON
 # )
 option(MOD3D_BUILD_OCCTEXT "Add convenience targets for development" ON)
-if(MOD3D_BUILD_OCCTEXT)
+option(MOD3D_BUILD_PYTHON "Add convenience targets for development" ON)
+if(MOD3D_BUILD_OCCTEXT OR MOD3D_BUILD_PYTHON)
     target_link_libraries(occt-extend PRIVATE
         ${OpenCASCADE_FoundationClasses_LIBRARIES}
         ${OpenCASCADE_ModelingData_LIBRARIES}
@@ -77,9 +78,8 @@ if(MOD3D_BUILD_OCCTEXT)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
     )
-endif(MOD3D_BUILD_OCCTEXT)
+endif()
 
-option(MOD3D_BUILD_PYTHON "Add convenience targets for development" ON)
 if(MOD3D_BUILD_PYTHON)
     
     # Build the Python extension module with OCCT linkage
@@ -157,8 +157,27 @@ endif(MOD3D_BUILD_PYTHON)
 
 option(MOD3D_BUILD_TESTING "Add convenience targets for development" ON)
 if (MOD3D_BUILD_TESTING AND BUILD_TESTING)
+    find_package(doctest REQUIRED)
+    
     add_custom_target(check COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target mod3d)
+    
+    # Test executable for debugging union_faces
+    add_executable(test_union_faces tests/cpp/test_union_faces.cpp)
+    target_link_libraries(test_union_faces PRIVATE
+        doctest::doctest
+        occt-extend
+        ${OpenCASCADE_FoundationClasses_LIBRARIES}
+        ${OpenCASCADE_ModelingData_LIBRARIES}
+        ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+        ${OpenCASCADE_DataExchange_LIBRARIES}
+    )
+    target_include_directories(test_union_faces PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc
+        ${OpenCASCADE_INCLUDE_DIR}
+    )
 endif()
+
 
 # add installation target
 cmake_policy(SET CMP0177 NEW)
