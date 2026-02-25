@@ -47,26 +47,67 @@ add_library(occt-extend SHARED
 # set_target_properties(occt-extend PROPERTIES
 #     $<$<PLATFORM_ID:Windows>:WINDOWS_EXPORT_ALL_SYMBOLS> ON
 # )
-target_link_libraries(occt-extend PRIVATE
-    ${OpenCASCADE_FoundationClasses_LIBRARIES}
-    ${OpenCASCADE_ModelingData_LIBRARIES}
-    ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
-    ${OpenCASCADE_DataExchange_LIBRARIES}
-)
+option(MOD3D_BUILD_OCCTEXT "Add convenience targets for development" ON)
+if(MOD3D_BUILD_OCCTEXT)
+    target_link_libraries(occt-extend PRIVATE
+        ${OpenCASCADE_FoundationClasses_LIBRARIES}
+        ${OpenCASCADE_ModelingData_LIBRARIES}
+        ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+        ${OpenCASCADE_DataExchange_LIBRARIES}
+    )
 
-target_include_directories(occt-extend PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src 
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc 
-    ${OpenCASCADE_INCLUDE_DIR}
-    ${GBS_INCLUDE_DIR}
-    ${EIGEN3_INCLUDE_DIR}
-)
-cmake_policy(SET CMP0177 NEW)
-install(TARGETS occt-extend
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
-)
+    target_include_directories(occt-extend PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/src 
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc 
+        ${OpenCASCADE_INCLUDE_DIR}
+        ${GBS_INCLUDE_DIR}
+        ${EIGEN3_INCLUDE_DIR}
+    )
+    cmake_policy(SET CMP0177 NEW)
+    install(TARGETS occt-extend
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}
+    )
+endif(MOD3D_BUILD_OCCTEXT)
+
+option(MOD3D_BUILD_PYTHON "Add convenience targets for development" ON)
+if(MOD3D_BUILD_PYTHON)
+    
+    # Build the Python extension module with OCCT linkage
+    pybind11_add_module(mod3d 
+        src/mod3d.cpp
+        src/bindGp.cpp
+        src/bindGeomFill.cpp
+        src/bindGeomAbs.cpp
+        src/bindGeomCurvesSplines.cpp
+        src/bindGeomCurvesConics.cpp
+        src/bindGeomCurves.cpp
+        src/bindGeomSurfaces.cpp
+        src/bindGeomSurfacesSplines.cpp
+        src/bindGeomSurfacesElementary.cpp
+        src/bindGeomSweptSurfaces.cpp
+        src/bindGeom.cpp
+        src/bindGeomAPI.cpp
+        src/bindGeom2d.cpp
+        src/bindGeom2dCurvesConics.cpp
+        src/bindGeom2dCurvesSplines.cpp
+        src/bindGeom2dCurves.cpp
+        src/bindTopoDS.cpp
+        src/bindTopAbs.cpp
+        src/bindTopExp.cpp
+        src/bindShapes.cpp
+        src/bindAdaptor.cpp
+        src/bindBRep.cpp
+        src/bindBRepPrim.cpp
+        src/bindBRepPrimAPI.cpp
+        src/bindBRepPrimAPIOneAxis.cpp
+        src/bindBRepPrimAPISweep.cpp
+        src/bindBRepBuilderAPI.cpp
+        src/bindBRepOffsetAPI.cpp
+        src/bindBRepExtrema.cpp
+        src/bindBRepFillet.cpp
+        src/bindBRepBooleanOp.cpp
         src/bindBRepTools.cpp
         # src/bindBRepFillet2d.cpp
         src/bindBRepGProp.cpp
@@ -74,32 +115,36 @@ install(TARGETS occt-extend
         src/bindShapeAnalysis.cpp
         src/bindShapeFix.cpp
         src/bindShapeUpgrade.cpp
-    src/bindStepControl.cpp
-    src/bindStepData.cpp
-    src/bindRender.cpp
-)
-target_compile_definitions(mod3d PRIVATE 
-    VERSION_INFO=\"${PROJECT_VERSION}\" 
-    _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS # For Eigen
-)
-target_link_directories(
-    mod3d PRIVATE
-    ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-)
-target_link_libraries(mod3d PRIVATE
-    pybind11::module
-    ${OpenCASCADE_FoundationClasses_LIBRARIES}
-    ${OpenCASCADE_ModelingData_LIBRARIES}
-    ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
-    ${OpenCASCADE_DataExchange_LIBRARIES}
-)
+        src/bindStepControl.cpp
+        src/bindStepData.cpp
+        src/bindRender.cpp
+    )
+    target_compile_definitions(mod3d PRIVATE 
+        VERSION_INFO=\"${PROJECT_VERSION}\" 
+        _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS # For Eigen
+    )
+    target_link_directories(
+        mod3d PRIVATE
+        ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
+    )
+    target_link_libraries(mod3d PRIVATE
+        occt-extend 
+        pybind11::module
+        ${OpenCASCADE_FoundationClasses_LIBRARIES}
+        ${OpenCASCADE_ModelingData_LIBRARIES}
+        ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+        ${OpenCASCADE_DataExchange_LIBRARIES}
+    )
 
-target_include_directories(mod3d PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src 
-    ${OpenCASCADE_INCLUDE_DIR}
-    ${GBS_INCLUDE_DIR}
-    ${EIGEN3_INCLUDE_DIR}
-)
+    target_include_directories(mod3d PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}/src 
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc 
+        ${OpenCASCADE_INCLUDE_DIR}
+        ${GBS_INCLUDE_DIR}
+        ${EIGEN3_INCLUDE_DIR}
+    )
+endif(MOD3D_BUILD_PYTHON)
+
 
 option(MOD3D_BUILD_TESTING "Add convenience targets for development" ON)
 if (MOD3D_BUILD_TESTING AND BUILD_TESTING)
@@ -120,3 +165,47 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/__init__.py
         ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/visualyse3js.py
     DESTINATION ${Python3_SITEARCH}/mod3d)
+
+option(MO3D_BUILD_STUBS "Automatically build python hints" ON)
+if(MO3D_BUILD_STUBS)
+
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+    # Où se trouve ton package python "mod3d"
+    set(MOD3D_PYTHON_SRC_DIR "${PROJECT_SOURCE_DIR}/python")
+
+    # Où écrire les stubs (dans le build tree)
+    set(MOD3D_STUB_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/stubs")
+
+    # Fichier "sentinelle" attendu en sortie (ajuste selon ton module)
+    set(MOD3D_STUB_SENTINEL "${MOD3D_STUB_OUT_DIR}/mod3d/__init__.pyi")
+
+    add_custom_command(
+        OUTPUT "${MOD3D_STUB_SENTINEL}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${MOD3D_STUB_OUT_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E env
+            # Important: permettre à Python de trouver le package + l'extension
+            # PYTHONPATH=${MOD3D_PYTHON_SRC_DIR}$<SEMICOLON>$<TARGET_FILE_DIR:mod3d>
+            "${Python3_EXECUTABLE}" -m pybind11_stubgen
+                mod3d
+                # pybind11-stubgen mod3d
+                -o "${MOD3D_STUB_OUT_DIR}"
+                --ignore-all-errors
+        DEPENDS mod3d
+        COMMENT "Generating .pyi stubs for mod3d (pybind11-stubgen)"
+        VERBATIM
+    )
+
+    add_custom_target(mod3d_stubs
+        DEPENDS "${MOD3D_STUB_SENTINEL}"
+    )
+    install(
+    # DIRECTORY "${MOD3D_STUB_OUT_DIR}"
+    DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/stubs/mod3d"
+    DESTINATION "${Python3_SITEARCH}"
+    FILES_MATCHING
+        PATTERN "*.py"
+        PATTERN "*.pyi"
+        PATTERN "py.typed"
+    )
+endif()
