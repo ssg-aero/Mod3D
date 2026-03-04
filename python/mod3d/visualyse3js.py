@@ -448,7 +448,7 @@ class ShapeRenderer:
             meshes.append((mesh_face, mesh_edges))
         return meshes
 
-    def render(self, background=None, lights=None, camera_position=None, light_position=None):
+    def render(self, background=None, lights=None, camera_position=None, light_position=None, camera = None):
         """Return a renderer showing everything that has been queued via `add_shape`."""
         if not self._models:
             raise RuntimeError("No shapes have been queued for rendering")
@@ -457,7 +457,8 @@ class ShapeRenderer:
             camera_position = [0, 20, 40]
 
         self.trihedron_scale = hypot(camera_position[0], camera_position[1], camera_position[2]) / hypot(0, 20, 40) * self.trihedron_scale
-        camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height, fov=45, near=self.near, far=self.far)
+        if camera is None:
+            camera = PerspectiveCamera(position=camera_position, aspect=self.width / self.height, fov=45, near=self.near, far=self.far)
         default_lights = [
             AmbientLight(intensity=0.5),
             DirectionalLight(position=light_position or [10, 10, 10], intensity=0.5),
