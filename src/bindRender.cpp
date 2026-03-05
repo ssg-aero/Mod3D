@@ -33,6 +33,9 @@ namespace py = pybind11;
 #include <GeomAdaptor_Curve.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_CompCurve.hxx>
+#include <IMeshTools_Parameters.hxx>
+#include <IMeshTools_MeshAlgoType.hxx>
+#include <BRepTools.hxx>
 
 using edge_tess_info = std::tuple<
     py::array_t<int>, 
@@ -46,17 +49,8 @@ using face_tess_info = std::tuple<
     std::optional<py::array_t<double>>
 >;
 
-auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
-                           bool is_relative = false,
-                           double angle_deflection = 30.0,
-                           bool parallel = true,
-                           bool compute_normals = true)
+auto extract_tessellation(const TopoDS_Shape& shape, bool compute_normals)
 {
-    // Convert angle deflection from degrees to radians
-    angle_deflection *= std::numbers::pi / 180.0;
-
-    BRepMesh_IncrementalMesh mesher(shape, linear_deflection, is_relative, angle_deflection, parallel);
-    
     std::vector<TopoDS_Face> faces;
     for (TopExp_Explorer exp(shape, TopAbs_FACE); exp.More(); exp.Next())
     {
@@ -256,6 +250,34 @@ auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
     return std::make_pair(result_faces, result_edges);
 }
 
+auto build_mesh(const TopoDS_Shape& shape, double linear_deflection,
+                           bool is_relative = false,
+                           double angle_deflection = 30.0,
+                           bool parallel = true,
+                           bool compute_normals = true)
+{
+    angle_deflection *= std::numbers::pi / 180.0;
+    BRepTools::Clean(shape);
+    BRepMesh_IncrementalMesh mesher(shape, linear_deflection, is_relative, angle_deflection, parallel);
+}
+
+auto extract_tessellation( const TopoDS_Shape& shape, double linear_deflection,
+                           bool is_relative = false,
+                           double angle_deflection = 30.0,
+                           bool parallel = true,
+                           bool compute_normals = true)
+{
+    build_mesh(shape, linear_deflection, is_relative, angle_deflection, parallel, compute_normals);
+    return extract_tessellation(shape, compute_normals);
+}
+
+auto extract_tessellation( const TopoDS_Shape& shape, const IMeshTools_Parameters& params, bool compute_normals = true)
+{
+    BRepTools::Clean(shape);
+    BRepMesh_IncrementalMesh mesher(shape, params);
+    return extract_tessellation(shape, compute_normals);
+}
+
 auto extract_curve_tessellation( const Adaptor3d_Curve& curve, double linear_deflection)
 {
     
@@ -312,21 +334,84 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 void bind_render(py::module_ &m)
 {
+    // Bind IMeshTools_MeshAlgoType enum
+    py::enum_<IMeshTools_MeshAlgoType>(m, "MeshAlgoType")
+        .value("DEFAULT", IMeshTools_MeshAlgoType_DEFAULT, "Use global default (Watson or CSF_MeshAlgo)")
+        .value("Watson", IMeshTools_MeshAlgoType_Watson, "2D Delaunay triangulation based on Watson algorithm")
+        .value("Delabella", IMeshTools_MeshAlgoType_Delabella, "2D Delaunay triangulation based on Delabella algorithm")
+        .export_values();
 
-    m.def("extract_tessellation", &extract_tessellation,
+    // Bind IMeshTools_Parameters struct with all properties
+    py::class_<IMeshTools_Parameters>(m, "MeshParameters", "Structure storing meshing parameters")
+        .def(py::init<>())
+        .def_readwrite("MeshAlgo", &IMeshTools_Parameters::MeshAlgo,
+            "2D Delaunay triangulation algorithm factory to use")
+        .def_readwrite("Angle", &IMeshTools_Parameters::Angle,
+            "Angular deflection used to tessellate the boundary edges")
+        .def_readwrite("Deflection", &IMeshTools_Parameters::Deflection,
+            "Linear deflection used to tessellate the boundary edges")
+        .def_readwrite("AngleInterior", &IMeshTools_Parameters::AngleInterior,
+            "Angular deflection used to tessellate the face interior")
+        .def_readwrite("DeflectionInterior", &IMeshTools_Parameters::DeflectionInterior,
+            "Linear deflection used to tessellate the face interior")
+        .def_readwrite("MinSize", &IMeshTools_Parameters::MinSize,
+            "Minimum size parameter limiting size of triangle's edges")
+        .def_readwrite("InParallel", &IMeshTools_Parameters::InParallel,
+            "Switches on/off multi-thread computation")
+        .def_readwrite("Relative", &IMeshTools_Parameters::Relative,
+            "Switches on/off relative computation of edge tolerance")
+        .def_readwrite("InternalVerticesMode", &IMeshTools_Parameters::InternalVerticesMode,
+            "Mode to take or not to take internal face vertices into account")
+        .def_readwrite("ControlSurfaceDeflection", &IMeshTools_Parameters::ControlSurfaceDeflection,
+            "Parameter to check the deviation of triangulation and interior of the face")
+        .def_readwrite("EnableControlSurfaceDeflectionAllSurfaces", &IMeshTools_Parameters::EnableControlSurfaceDeflectionAllSurfaces,
+            "Enables/disables check triggered by ControlSurfaceDeflection for all surface types")
+        .def_readwrite("CleanModel", &IMeshTools_Parameters::CleanModel,
+            "Cleans temporary data model when algorithm is finished")
+        .def_readwrite("AdjustMinSize", &IMeshTools_Parameters::AdjustMinSize,
+            "Enables/disables local adjustment of min size depending on edge size")
+        .def_readwrite("ForceFaceDeflection", &IMeshTools_Parameters::ForceFaceDeflection,
+            "Enables/disables usage of shape tolerances for computing face deflection")
+        .def_readwrite("AllowQualityDecrease", &IMeshTools_Parameters::AllowQualityDecrease,
+            "Allows/forbids the decrease of the quality of the generated mesh over existing one")
+        .def_static("RelMinSize", &IMeshTools_Parameters::RelMinSize,
+            "Returns factor used to compute default value of MinSize from deflection");
+
+    m.def("extract_tessellation", py::overload_cast<
+            const TopoDS_Shape&, double, bool, double, bool, bool
+        >(&extract_tessellation),
         py::arg("shape"),
         py::arg("linear_deflection"),
         py::arg("is_relative") = false,
         py::arg("angle_deflection") = 30.,
         py::arg("parallel") = true,
         py::arg("compute_normals") = true,
-        "Extracts tessellation data from the given shape.\n\n"
+        "Extracts tessellation data from the given shape. Previous tessellation data will be cleared.\n\n"
         "Parameters:\n"
         "  shape: The TopoDS_Shape to tessellate\n"
         "  linear_deflection: The linear deflection value for meshing\n"
         "  is_relative: If True, linear deflection is relative to shape size (default: False)\n"
-        "  angle_deflection: The angular deflection in degrees (default: 0.5)\n"
+        "  angle_deflection: The angular deflection in degrees (default: 30.0)\n"
         "  parallel: If True, use parallel processing (default: True)\n"
+        "  compute_normals: If True, compute vertex normals (default: True)\n\n"
+        "Returns:\n"
+        "  A list of tuples for each face, each containing:\n"
+        "    - triangle indices (numpy array of int, shape (n_triangles, 3))\n"
+        "    - vertex positions (numpy array of float, shape (n_vertices, 3))\n"
+        "    - vertex normals (numpy array of float, shape (n_vertices, 3))\n"
+        "    - vertex UV coordinates (numpy array of float, shape (n_vertices, 2))"
+    );
+
+    m.def("extract_tessellation", py::overload_cast<
+            const TopoDS_Shape&, const IMeshTools_Parameters&, bool
+        >(&extract_tessellation),
+        py::arg("shape"),
+        py::arg("params"),
+        py::arg("compute_normals") = true,
+        "Extracts tessellation data from the given shape using specified meshing parameters.\n\n"
+        "Parameters:\n"
+        "  shape: The TopoDS_Shape to tessellate\n"
+        "  params: An instance of MeshParameters containing meshing settings\n"
         "  compute_normals: If True, compute vertex normals (default: True)\n\n"
         "Returns:\n"
         "  A list of tuples for each face, each containing:\n"
@@ -339,7 +424,7 @@ void bind_render(py::module_ &m)
     m.def("extract_curve_tessellation", py::overload_cast<const opencascade::handle<Geom_Curve>&, double>(&extract_curve_tessellation),
         py::arg("curve"),
         py::arg("linear_deflection"),
-        "Extracts tessellation data from the given curve.\n\n"
+        "Extracts tessellation data from the given curve. Previous tessellation data will be cleared.\n\n"
         "Parameters:\n"
         "  curve: The Geom_Curve to tessellate\n"
         "  linear_deflection: The linear deflection value for meshing\n\n"
