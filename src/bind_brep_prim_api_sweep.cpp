@@ -13,6 +13,7 @@
 #include <Law_Function.hxx>
 #include <BRepSweep_Prism.hxx>
 #include <BRepSweep_Revol.hxx>
+#include <BRepFill_Pipe.hxx>
 
 #include "array_utils.hpp"
 
@@ -20,7 +21,16 @@ namespace py = pybind11;
 
 void bind_brep_prim_api_sweep(py::module_ &m)
 {
-    
+    // Register types returned by sweep methods
+    py::class_<BRepFill_Pipe>(m, "BRepFill_Pipe",
+        "Internal pipe filling algorithm used by MakePipe");
+
+    py::class_<BRepSweep_Prism>(m, "BRepSweep_Prism",
+        "Internal prism sweep algorithm used by MakePrism");
+
+    py::class_<BRepSweep_Revol>(m, "BRepSweep_Revol",
+        "Internal revolution sweep algorithm used by MakeRevol");
+
     py::class_<BRepPrimAPI_MakeSweep, BRepBuilderAPI_MakeShape>(m, "MakeSweep")
     // Note: This is an abstract base class for swept primitives
         // Concrete classes like MakeRevolution inherit from this

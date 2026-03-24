@@ -27,18 +27,22 @@ namespace {
     // Utility functions for container conversion
     template <typename T, typename ArrayType>
     ArrayType py_container_to_occt_array(const py::handle &container) {
-    // Check if it's a numpy array
-    if (py::isinstance<py::array_t<T>>(container)) {
-        auto arr = container.cast<py::array_t<T>>();
+    // Check if it's a numpy array (any numeric dtype)
+    if (py::isinstance<py::array>(container)) {
+        // Cast to the target dtype to handle int64->int32, float32->float64, etc.
+        auto arr = py::array_t<T>::ensure(container);
+        if (!arr) {
+            throw py::type_error("Cannot convert numpy array to the required numeric type");
+        }
         if (arr.ndim() != 1) {
-        throw py::value_error("Only 1D numpy arrays are supported");
+            throw py::value_error("Only 1D numpy arrays are supported");
         }
 
         ArrayType result(1, static_cast<int>(arr.size()));
         auto ptr = arr.data();
         for (int i = 0; i < static_cast<int>(arr.size()); i++) {
-        result.SetValue(i + 1,
-                        static_cast<typename ArrayType::value_type>(ptr[i]));
+            result.SetValue(i + 1,
+                            static_cast<typename ArrayType::value_type>(ptr[i]));
         }
         return result;
     }
@@ -48,7 +52,7 @@ namespace {
         int size = static_cast<int>(py_list.size());
         ArrayType array(1, size);
         for (int i = 0; i < size; i++) {
-        array.SetValue(i + 1, py_list[i].cast<T>());
+            array.SetValue(i + 1, py_list[i].cast<T>());
         }
         return array;
     } else {

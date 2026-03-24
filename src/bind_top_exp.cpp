@@ -83,20 +83,22 @@ void bind_top_exp(py::module_ &m)
             "Raises:\n"
             "  Standard_NoMoreObject if there are no more shapes to explore")
         
-        .def("current", &TopExp_Explorer::Current,
-            py::return_value_policy::reference_internal,
+        .def("current", [](TopExp_Explorer& self) -> py::object {
+            return downcast_shape(self.Current());
+        },
             "Returns the current shape in the exploration.\n\n"
             "Returns:\n"
-            "  The current shape being visited\n\n"
+            "  The current shape being visited, downcast to its proper type\n\n"
             "Raises:\n"
             "  Standard_NoSuchObject if there are no more shapes to explore")
-        
-        .def("value", &TopExp_Explorer::Value,
-            py::return_value_policy::reference_internal,
+
+        .def("value", [](TopExp_Explorer& self) -> py::object {
+            return downcast_shape(self.Value());
+        },
             "Returns the current shape in the exploration.\n\n"
             "This is an alias for current().\n\n"
             "Returns:\n"
-            "  The current shape being visited\n\n"
+            "  The current shape being visited, downcast to its proper type\n\n"
             "Raises:\n"
             "  Standard_NoSuchObject if there are no more shapes to explore")
         
@@ -120,13 +122,13 @@ void bind_top_exp(py::module_ &m)
         }, py::return_value_policy::reference_internal,
             "Returns the iterator itself (enables Python 'for' loops)")
         
-        .def("__next__", [](TopExp_Explorer& self) -> TopoDS_Shape {
+        .def("__next__", [](TopExp_Explorer& self) -> py::object {
             if (!self.More()) {
                 throw py::stop_iteration();
             }
             TopoDS_Shape current = self.Current();
             self.Next();
-            return current;
+            return downcast_shape(current);
         },
             "Returns the next shape in iteration (enables Python 'for' loops).\n\n"
             "Example:\n"
@@ -136,7 +138,7 @@ void bind_top_exp(py::module_ &m)
             py::list shapes;
             for(TopExp_Explorer exp = self; exp.More(); exp.Next()) {
                 TopoDS_Shape current = exp.Current();
-                
+
                 if(unique) {
                     // Check if shape already exists using IsSame
                     bool found = false;
@@ -149,8 +151,8 @@ void bind_top_exp(py::module_ &m)
                     }
                     if(found) continue;
                 }
-                
-                shapes.append(current);
+
+                shapes.append(downcast_shape(current));
             }
             return shapes;
         }, py::arg("unique") = false,

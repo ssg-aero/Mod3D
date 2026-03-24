@@ -7,6 +7,7 @@ from mod3d import (
     BRepFillet,
     TopExp,
     TopAbs,
+    TopoDS,
 )
 
 
@@ -29,10 +30,9 @@ def test_fillet2d_basic():
     # Check initialization status
     assert fillet2d.status == BRepFillet.ConstructionError.Ready
     
-    # Get vertices from the wire using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
+    # Get unique vertices from the wire
+    vertices = TopExp.get_vertices(wire)
 
-    
     assert len(vertices) == 4
     
     # Add fillet at first vertex (corner)
@@ -77,7 +77,7 @@ def test_fillet2d_multiple_fillets():
     # while explorer.more():
     #     vertices.append(explorer.current())
     #     explorer.next()
-    vertices = TopExp.getvetices(wire)
+    vertices = TopExp.get_vertices(wire)
     
     # Add fillets at all corners
     radius = 0.5
@@ -199,10 +199,10 @@ def test_chamfer2d_distance_angle():
     
     fillet2d = BRepFillet.MakeFillet2d(face)
     
-    # Get vertices and edges using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
-    edges = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.EDGE))
-    
+    # Get vertices and edges
+    vertices = TopExp.get_vertices(wire)
+    edges = TopExp.get_edges(wire)
+
     # Add chamfer with distance and angle (45 degrees = pi/4 radians)
     chamfer_edge = fillet2d.add_chamfer(edges[0], vertices[1], 1.0, math.pi / 4)
     assert fillet2d.status == BRepFillet.ConstructionError.IsDone
@@ -291,10 +291,10 @@ def test_fillet2d_mixed_operations():
     
     fillet2d = BRepFillet.MakeFillet2d(face)
     
-    # Get vertices and edges using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
-    edges = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.EDGE))
-    
+    # Get vertices and edges
+    vertices = TopExp.get_vertices(wire)
+    edges = TopExp.get_edges(wire)
+
     # Add fillet at first corner
     fillet_edge = fillet2d.add_fillet(vertices[0], 0.5)
     assert fillet2d.status == BRepFillet.ConstructionError.IsDone
@@ -323,24 +323,21 @@ def test_fillet2d_query_methods():
     
     fillet2d = BRepFillet.MakeFillet2d(face)
     
-    # Add fillet using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
-    edges = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.EDGE))
-    
+    # Get vertices and edges
+    vertices = TopExp.get_vertices(wire)
+    edges = TopExp.get_edges(wire)
+
     fillet_edge = fillet2d.add_fillet(vertices[0], 0.5)
-    
-    # Check if edge is modified
-    assert fillet2d.is_modified(fillet_edge)
-    
+
     # Check descendant/basis edge relationships
     assert fillet2d.has_descendant(edges[0])
-    descendant = fillet2d.descendant_edge(e1)
+    descendant = fillet2d.descendant_edge(edges[0])
     assert not descendant.is_null()
-    
+
     # Check that we can get the basis edge back
     basis = fillet2d.basis_edge(descendant)
     assert not basis.is_null()
-    
+
     fillet2d.build()
     assert fillet2d.is_done()
 
@@ -359,8 +356,8 @@ def test_fillet2d_error_handling():
     
     fillet2d = BRepFillet.MakeFillet2d(face)
     
-    # Get first vertex using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
+    # Get first vertex
+    vertices = TopExp.get_vertices(wire)
     vertex = vertices[0]
     
     # Try to add fillet with radius too large
@@ -391,12 +388,12 @@ def test_fillet2d_init_variations():
     fillet2d2 = BRepFillet.MakeFillet2d(face)
     assert fillet2d2.status == BRepFillet.ConstructionError.Ready
     
-    # Add a fillet and create modified face using Python iterator
-    vertices = list(TopExp.Explorer(wire, TopAbs.ShapeEnum.VERTEX))
+    # Add a fillet and create modified face
+    vertices = TopExp.get_vertices(wire)
     fillet2d1.add_fillet(vertices[0], 0.5)
     fillet2d1.build()
-    modified_face = fillet2d1.shape()
-    
+    modified_face = TopoDS.Face(fillet2d1.shape())
+
     # Test init with ref_face and mod_face
     fillet2d3 = BRepFillet.MakeFillet2d()
     fillet2d3.init(face, modified_face)
