@@ -1,6 +1,6 @@
 # Mod3D Python Bindings
 
-Python bindings for Open Cascade Technology (OCCT) via `pybind11`, providing a Pythonic API for 3D CAD modeling, Boolean operations, geometry creation, tessellation, and STEP I/O.
+Mod3D brings Open Cascade Technology (OCCT) to Python through `pybind11`, with a Python-first API for 3D CAD modeling, topology construction, Boolean operations, geometry creation, tessellation, and STEP exchange. It preserves OCCT's modeling capabilities while replacing much of its boilerplate with plain Python objects, lists, and NumPy arrays.
 
 ## Design Philosophy
 
