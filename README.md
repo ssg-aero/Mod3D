@@ -2,6 +2,38 @@
 
 Python bindings for Open Cascade Technology (OCCT) via `pybind11`, providing a Pythonic API for 3D CAD modeling, Boolean operations, geometry creation, tessellation, and STEP I/O.
 
+## Design Philosophy
+
+This binding layer focuses on **simplifying the OCCT interfaces** and leveraging **standard Python containers** (`list`, `numpy` arrays) instead of OCCT-specific collection types (`TColgp_Array1OfPnt`, `TColStd_Array1OfReal`, …). The goal is to offer a natural, Pythonic experience while retaining full access to the underlying geometry kernel.
+
+Key design choices:
+
+- **Simplified interfaces** – verbose OCCT patterns are wrapped behind concise constructors and properties. For example, `BSplineCurve` accepts plain Python lists of `gp.Pnt` or NumPy arrays directly.
+- **Standard containers everywhere** – where OCCT expects `TColgp_*` or `TColStd_*` arrays, the bindings accept and return regular Python lists and NumPy arrays.
+- **Direct transformation methods on shapes and geometry** – instead of creating a `gp.Trsf` manually, you can call convenience methods such as `.translated()`, `.rotated()`, `.scaled()`, and `.mirrored()` directly on geometric objects:
+
+```python
+from mod3d import gp
+
+ax = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
+
+# Translate a point without creating a Trsf
+p2 = gp.Pnt(1, 2, 3).translated(gp.Vec(10, 0, 0))
+
+# Rotate an axis system in place
+ax2 = ax.rotated(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.57)
+
+# Scale a circle
+circ = gp.Circ(gp.Ax2(), 5.0)
+circ_big = circ.scaled(gp.Pnt(0, 0, 0), 2.0)
+
+# Mirror a plane
+pln2 = gp.Pln(gp.Ax3()).mirrored(gp.Pnt(10, 0, 0))
+```
+
+These methods return a new, transformed copy — the original object is never mutated.
+
+
 ## Prerequisites
 
 - **CMake 3.30+** with a C++23-capable toolchain.
@@ -262,37 +294,6 @@ renderer.render(background='lightgray')
 ```bash
 pytest tests/
 ```
-
-## Design Philosophy
-
-This binding layer focuses on **simplifying the OCCT interfaces** and leveraging **standard Python containers** (`list`, `numpy` arrays) instead of OCCT-specific collection types (`TColgp_Array1OfPnt`, `TColStd_Array1OfReal`, …). The goal is to offer a natural, Pythonic experience while retaining full access to the underlying geometry kernel.
-
-Key design choices:
-
-- **Simplified interfaces** – verbose OCCT patterns are wrapped behind concise constructors and properties. For example, `BSplineCurve` accepts plain Python lists of `gp.Pnt` or NumPy arrays directly.
-- **Standard containers everywhere** – where OCCT expects `TColgp_*` or `TColStd_*` arrays, the bindings accept and return regular Python lists and NumPy arrays.
-- **Direct transformation methods on shapes and geometry** – instead of creating a `gp.Trsf` manually, you can call convenience methods such as `.translated()`, `.rotated()`, `.scaled()`, and `.mirrored()` directly on geometric objects:
-
-```python
-from mod3d import gp
-
-ax = gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1))
-
-# Translate a point without creating a Trsf
-p2 = gp.Pnt(1, 2, 3).translated(gp.Vec(10, 0, 0))
-
-# Rotate an axis system in place
-ax2 = ax.rotated(gp.Ax1(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)), 1.57)
-
-# Scale a circle
-circ = gp.Circ(gp.Ax2(), 5.0)
-circ_big = circ.scaled(gp.Pnt(0, 0, 0), 2.0)
-
-# Mirror a plane
-pln2 = gp.Pln(gp.Ax3()).mirrored(gp.Pnt(10, 0, 0))
-```
-
-These methods return a new, transformed copy — the original object is never mutated.
 
 ## Notes
 
