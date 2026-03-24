@@ -6,7 +6,7 @@ namespace py = pybind11;
 void bind_shapes(py::module &m);
 
 
-void bind_topods(py::module_ &m)
+void bind_topo_ds(py::module_ &m)
 {
 
     bind_shapes(m);

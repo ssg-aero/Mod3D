@@ -22,7 +22,7 @@ namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
-void bind_brepprim(py::module_ &m)
+void bind_brep_prim(py::module_ &m)
 {
     py::class_<BRepPrim_Builder>(m, "Builder")
         // Constructors

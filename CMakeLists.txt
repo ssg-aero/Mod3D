@@ -51,7 +51,7 @@ if(WIN32)
 endif(WIN32)
 add_library(occt-extend SHARED
     src/extend/UnionFaces.cpp
-    src/extend/geomSurfaceCompare.cpp
+    src/extend/GeomSurfaceCompare.cpp
     src/extend/shapes.cpp
 )
 # if(WIN32)
@@ -90,47 +90,47 @@ if(MOD3D_BUILD_PYTHON)
     # Build the Python extension module with OCCT linkage
     pybind11_add_module(mod3d 
         src/mod3d.cpp
-        src/bindGp.cpp
-        src/bindGeomFill.cpp
-        src/bindGeomAbs.cpp
-        src/bindGeomCurvesSplines.cpp
-        src/bindGeomCurvesConics.cpp
-        src/bindGeomCurves.cpp
-        src/bindGeomSurfaces.cpp
-        src/bindGeomSurfacesSplines.cpp
-        src/bindGeomSurfacesElementary.cpp
-        src/bindGeomSweptSurfaces.cpp
-        src/bindGeom.cpp
-        src/bindGeomAPI.cpp
-        src/bindGeom2d.cpp
-        src/bindGeom2dCurvesConics.cpp
-        src/bindGeom2dCurvesSplines.cpp
-        src/bindGeom2dCurves.cpp
-        src/bindTopoDS.cpp
-        src/bindTopAbs.cpp
-        src/bindTopExp.cpp
-        src/bindShapes.cpp
-        src/bindAdaptor.cpp
-        src/bindBRep.cpp
-        src/bindBRepPrim.cpp
-        src/bindBRepPrimAPI.cpp
-        src/bindBRepPrimAPIOneAxis.cpp
-        src/bindBRepPrimAPISweep.cpp
-        src/bindBRepBuilderAPI.cpp
-        src/bindBRepOffsetAPI.cpp
-        src/bindBRepExtrema.cpp
-        src/bindBRepFillet.cpp
-        src/bindBRepBooleanOp.cpp
-        src/bindBRepTools.cpp
-        # src/bindBRepFillet2d.cpp
-        src/bindBRepGProp.cpp
-        src/bindBRepLib.cpp
-        src/bindShapeAnalysis.cpp
-        src/bindShapeFix.cpp
-        src/bindShapeUpgrade.cpp
-        src/bindStepControl.cpp
-        src/bindStepData.cpp
-        src/bindRender.cpp
+        src/bind_gp.cpp
+        src/bind_geom_fill.cpp
+        src/bind_geom_abs.cpp
+        src/bind_geom_curves_splines.cpp
+        src/bind_geom_curves_conics.cpp
+        src/bind_geom_curves.cpp
+        src/bind_geom_surfaces.cpp
+        src/bind_geom_surfaces_splines.cpp
+        src/bind_geom_surfaces_elementary.cpp
+        src/bind_geom_swept_surfaces.cpp
+        src/bind_geom.cpp
+        src/bind_geom_api.cpp
+        src/bind_geom2d.cpp
+        src/bind_geom2d_curves_conics.cpp
+        src/bind_geom2d_curves_splines.cpp
+        src/bind_geom2d_curves.cpp
+        src/bind_topo_ds.cpp
+        src/bind_top_abs.cpp
+        src/bind_top_exp.cpp
+        src/bind_shapes.cpp
+        src/bind_adaptor.cpp
+        src/bind_brep.cpp
+        src/bind_brep_prim.cpp
+        src/bind_brep_prim_api.cpp
+        src/bind_brep_prim_api_one_axis.cpp
+        src/bind_brep_prim_api_sweep.cpp
+        src/bind_brep_builder_api.cpp
+        src/bind_brep_offset_api.cpp
+        src/bind_brep_extrema.cpp
+        src/bind_brep_fillet.cpp
+        src/bind_brep_boolean_op.cpp
+        src/bind_brep_tools.cpp
+        # src/bind_brep_fillet2d.cpp
+        src/bind_brep_gprop.cpp
+        src/bind_brep_lib.cpp
+        src/bind_shape_analysis.cpp
+        src/bind_shape_fix.cpp
+        src/bind_shape_upgrade.cpp
+        src/bind_step_control.cpp
+        src/bind_step_data.cpp
+        src/bind_render.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 
