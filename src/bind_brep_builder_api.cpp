@@ -49,7 +49,7 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 void bind_brep_prim_api(py::module_ &m);
 
-void bind_brepbuilder_api(py::module_ &m)
+void bind_brep_builder_api(py::module_ &m)
 {
 
     py::class_<BRepBuilderAPI_Command>(m, "Command")

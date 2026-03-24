@@ -10,7 +10,7 @@
 
 namespace py = pybind11;
 
-void bind_brep_grpop(py::module_ &m)
+void bind_brep_gprop(py::module_ &m)
 {
     // ---------------------------------------------------------------------------
     // GProp_GProps - Global properties of a geometric system
