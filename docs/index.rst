@@ -7,4 +7,5 @@ Python bindings for OpenCASCADE geometry and topology operations.
    :maxdepth: 1
    :caption: Contents
 
-   api
+   api/index
+   tutorials/index
