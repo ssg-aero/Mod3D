@@ -78,7 +78,7 @@ latex_elements = {
 }
 
 # -- nbsphinx configuration --------------------------------------------------
-nbsphinx_execute = 'auto'
+nbsphinx_execute = 'always'
 nbsphinx_allow_errors = True
 
 # -- API documentation settings -----------------------------------------------

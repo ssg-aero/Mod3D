@@ -448,7 +448,7 @@ class ShapeRenderer:
             meshes.append((mesh_face, mesh_edges))
         return meshes
 
-    def render(self, background=None, lights=None, camera_position=None, light_position=None, camera = None):
+    def render(self, background=None, lights=None, camera_position=None, light_position=None, camera = None, has_border=False):
         """Return a renderer showing everything that has been queued via `add_shape`."""
         if not self._models:
             raise RuntimeError("No shapes have been queued for rendering")
@@ -547,11 +547,12 @@ class ShapeRenderer:
 
             camera.observe(update_camera_dependent, names=['position'])
             update_camera_dependent(None)
-
-        bordered = Box([renderer], layout=Layout(
-            border="2px solid #444",
-            padding="4px",
-            width="100%",
-            height="100%"
-        ))
-        return bordered
+        if has_border:
+            bordered = Box([renderer], layout=Layout(
+                border="2px solid #444",
+                padding="4px",
+                width="100%",
+                height="100%"
+            ))
+            return bordered
+        return renderer
