@@ -233,6 +233,19 @@ if(MO3D_BUILD_STUBS)
     add_custom_target(mod3d_stubs
         DEPENDS "${MOD3D_STUB_SENTINEL}"
     )
+
+    # Always sync stubs to the source tree when mod3d_stubs is built.
+    # A separate target ensures the copy runs even when the sentinel is up-to-date.
+    add_custom_target(mod3d_sync_stubs ALL
+        COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/stubs/mod3d"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_BINARY_DIR}/stubs/mod3d"
+            "${CMAKE_CURRENT_SOURCE_DIR}/stubs/mod3d"
+        DEPENDS mod3d_stubs
+        COMMENT "Syncing .pyi stubs to stubs/mod3d/"
+        VERBATIM
+    )
     install(
     # DIRECTORY "${MOD3D_STUB_OUT_DIR}"
     DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/stubs/mod3d"

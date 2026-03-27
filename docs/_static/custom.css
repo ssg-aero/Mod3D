@@ -1,0 +1,28 @@
+/* Expand central content area to use the available width. */
+div.document {
+  margin-right: 1.5rem;
+}
+
+div.document div.documentwrapper {
+  max-width: none;
+  width: 100%;
+}
+
+/* Keep next/previous navigation aligned with wider content. */
+div.button_nav_wrapper {
+  margin-right: 1.5rem;
+}
+
+div.button_nav_wrapper div.button_nav {
+  max-width: none;
+}
+
+@media (max-width: 50rem) {
+  div.document {
+    margin-right: 0;
+  }
+
+  div.button_nav_wrapper {
+    margin-right: 0;
+  }
+}
