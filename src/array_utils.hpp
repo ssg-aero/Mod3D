@@ -63,8 +63,11 @@ namespace {
     // Special handling for gp_Pnt arrays (can't use simple template)
     inline TColgp_Array1OfPnt
     py_container_to_pnt_array(const py::handle &container) {
-        if (py::isinstance<py::array_t<double>>(container)) {
-            auto arr = container.cast<py::array_t<double>>();
+        if (py::isinstance<py::array>(container)) {
+            auto arr = py::array_t<double>::ensure(container);
+            if (!arr) {
+                throw py::type_error("Cannot convert numpy array to double");
+            }
             if (arr.ndim() != 2 || arr.shape(1) != 3) {
             throw py::value_error("For points, expected numpy array of shape (n, 3)");
             }
@@ -107,14 +110,16 @@ namespace {
             }
             return arr;
         } else if (py::isinstance<py::array>(container)) {
-            py::array_t<double> np_arr = container.cast<py::array_t<double>>();
-            auto buf = np_arr.request();
-            if (buf.ndim != 2 || buf.shape[1] != 2) {
+            auto np_arr = py::array_t<double>::ensure(container);
+            if (!np_arr) {
+                throw py::type_error("Cannot convert numpy array to double");
+            }
+            if (np_arr.ndim() != 2 || np_arr.shape(1) != 2) {
                 throw py::value_error("NumPy array must have shape (n, 2)");
             }
-            int n = static_cast<int>(buf.shape[0]);
+            int n = static_cast<int>(np_arr.shape(0));
             TColgp_Array1OfPnt2d arr(1, n);
-            double* ptr = static_cast<double*>(buf.ptr);
+            auto ptr = np_arr.data();
             for (int i = 0; i < n; ++i) {
                 arr.SetValue(i + 1, gp_Pnt2d(ptr[i * 2], ptr[i * 2 + 1]));
             }
