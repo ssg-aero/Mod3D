@@ -148,6 +148,7 @@ if(MOD3D_BUILD_PYTHON)
         ${OpenCASCADE_ModelingData_LIBRARIES}
         ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
         ${OpenCASCADE_DataExchange_LIBRARIES}
+        GBS::gbs
     )
 
     target_include_directories(mod3d PRIVATE 
