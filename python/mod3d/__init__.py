@@ -30,6 +30,21 @@ from .mod3d import StepControl
 from .mod3d import StepData
 from .mod3d import Render
 from .visualyse3js import ShapeRenderer
+
+import sys as _sys
+
+_submodules = [
+    gp, Geom2d, Geom, GeomAPI, GeomFill, GeomAbs, TopoDS, Adaptor,
+    TopAbs, TopExp, BRep, BRepBuilderAPI, BRepOffsetAPI, BRepPrim,
+    BRepExtrema, BRepFillet, BooleanOp, BRepTools, BRepGProp, BRepLib,
+    ShapeAnalysis, ShapeFix, ShapeUpgrade, StepControl, StepData, Render,
+]
+for _m in _submodules:
+    _short_name = 'mod3d.' + _m.__name__.split('.')[-1]
+    _m.__name__ = _short_name
+    _sys.modules.setdefault(_short_name, _m)
+del _sys, _submodules, _m, _short_name
+
 __all__ = [
     "create_box_summary",
     "create_box",
