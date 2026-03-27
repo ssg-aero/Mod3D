@@ -3,4 +3,3 @@ piccolo-theme
 nbsphinx
 myst-parser
 sphinx-copybutton
-sphinx-autodoc-pyi

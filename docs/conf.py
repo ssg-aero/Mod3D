@@ -3,12 +3,18 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
 import pathlib
+import shutil
 import sys
 
 # stubs/mod3d/*.pyi are kept in sync by the CMake mod3d_stubs target.
-# Adding stubs/ to sys.path lets sphinx-autodoc-pyi find them locally and on RTD.
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "stubs"))
+# On RTD: copy .pyi → .py so autodoc can import them (valid Python syntax).
+_stubs = pathlib.Path(__file__).parent.parent / "stubs"
+if os.environ.get("READTHEDOCS"):
+    for _pyi in (_stubs / "mod3d").glob("*.pyi"):
+        shutil.copy(_pyi, _pyi.with_suffix(".py"))
+sys.path.insert(0, str(_stubs))
 
 from importlib.util import find_spec
 
@@ -20,8 +26,6 @@ version = "0.1"
 release = "0.1"
 
 # -- General configuration ----------------------------------------------------
-import os
-
 # On RTD the binary is not available — mock it; stubs/ provides the API surface.
 if os.environ.get("READTHEDOCS"):
     autodoc_mock_imports = ["mod3d.mod3d"]
@@ -42,8 +46,6 @@ if find_spec("sphinx_copybutton") is not None:
     extensions.append("sphinx_copybutton")
 if find_spec("sphinxcontrib.mermaid") is not None:
     extensions.append("sphinxcontrib.mermaid")
-if find_spec("sphinx_autodoc_pyi") is not None:
-    extensions.append("sphinx_autodoc_pyi")
 
 # Autosummary settings
 autosummary_generate = True
