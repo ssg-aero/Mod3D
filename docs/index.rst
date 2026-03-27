@@ -4,7 +4,7 @@ Mod3D
 Python bindings for OpenCASCADE geometry and topology operations.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents
 
    api
