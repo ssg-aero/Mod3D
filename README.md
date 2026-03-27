@@ -128,7 +128,9 @@ curve = Geom.BSplineCurve(
     multiplicities=[3, 1, 3],
     degree=2,
 )
-
+```
+![B-spline curve from gp.Pnt list](docs/images/bspline-curve.png)
+```python
 # Using numpy arrays
 curve = Geom.BSplineCurve(
     poles=np.array([[0, 0, 0], [10, 0, 0], [10, 10, 0], [10, 10, 10]]),
@@ -138,7 +140,7 @@ curve = Geom.BSplineCurve(
     degree=3,
 )
 ```
-
+![B-spline curve from numpy array](docs/images/bspline-curve-numpy.png)
 ### Boolean Operations
 
 ```python
@@ -153,20 +155,17 @@ trsf.set_translation(mod3d.gp.Vec(-10.0, -10.0, -10.0))
 box = box.moved(trsf)
 
 # Intersection, subtraction, union, section
-common = mod3d.BooleanOp.Common(sphere, box)
-cut    = mod3d.BooleanOp.Cut(box, sphere)
-fuse   = mod3d.BooleanOp.Fuse(box, sphere)
-section = mod3d.BooleanOp.Section(box, sphere)
-
-result = fuse.shape()
-
-# History tracking
-edges = fuse.section_edges()
-fuse.has_modified()
-fuse.has_generated()
-fuse.has_deleted()
+common = mod3d.BooleanOp.Common(sphere, box).shape()
+cut    = mod3d.BooleanOp.Cut(box, sphere).shape()
+fuse   = mod3d.BooleanOp.Fuse(box, sphere).shape()
+section = mod3d.BooleanOp.Section(box, sphere).shape()
 ```
-
+fuse:
+![Boolean fuse](docs/images/boolean-fuse.png)
+common:
+![Boolean common](docs/images/boolean-common.png)
+cut:
+![Boolean cut](docs/images/boolean-cut.png)
 ### Filleting
 
 ```python
@@ -196,7 +195,7 @@ fill_op.add(gp.Pnt(10, 5, 0))  # optional interior constraint
 fill_op.build()
 face = fill_op.shape()
 ```
-
+![Surface filling](docs/images/surface-filling.png)
 ### Sweeps (Pipe and PipeShell)
 
 ```python
@@ -280,15 +279,24 @@ for triangles, vertices, normals, uvs in faces:
 ### Interactive Rendering
 
 ```python
-from mod3d import ShapeRenderer
+from mod3d import ShapeRenderer, BRepBuilderAPI, gp
+
+# Build a scene with multiple primitives
+box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+sphere = BRepBuilderAPI.MakeSphere(gp.Pnt(15, 5, 5), 4.0).shape()
+cyl = BRepBuilderAPI.MakeCylinder(2.0, 12.0).shape()
 
 renderer = ShapeRenderer()
 renderer.angle_deflection = 5
 renderer.linear_deflection = 0.01
-renderer.add_shape(shape)
+renderer.width =800
+renderer.height=600
+renderer.add_shape(box, {'surface_color': '#ff6600'})
+renderer.add_shape(sphere, {'surface_color': '#0066ff'})
+renderer.add_shape(cyl, {'surface_color': '#00cc44'})
 renderer.render(background='lightgray')
 ```
-
+![Interactive renderer](docs/images/interactive-renderer.png)
 ## Running Tests
 
 ```bash
