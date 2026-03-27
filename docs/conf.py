@@ -22,8 +22,10 @@ from importlib.util import find_spec
 project = "Mod3D"
 copyright = "2026, SSG AERO"
 author = "Sebastien RAYMOND"
-version = "0.1"
-release = "0.1"
+import re
+_cmake = pathlib.Path(__file__).parent.parent / "CMakeLists.txt"
+_match = re.search(r"project\s*\([^)]*VERSION\s+([\d.]+)", _cmake.read_text())
+version = release = _match.group(1) if _match else "0.1"
 
 # -- General configuration ----------------------------------------------------
 # On RTD the binary is not available — mock it; stubs/ provides the API surface.
