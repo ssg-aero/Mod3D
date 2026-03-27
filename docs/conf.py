@@ -3,22 +3,15 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import pathlib
-import shutil
 import sys
 
-# stubs/mod3d/*.pyi are kept in sync by the CMake mod3d_stubs target.
-# On RTD: copy .pyi → .py so autodoc can import them (valid Python syntax).
 _stubs = pathlib.Path(__file__).parent.parent / "stubs"
-if os.environ.get("READTHEDOCS"):
-    for _pyi in (_stubs / "mod3d").glob("*.pyi"):
-        shutil.copy(_pyi, _pyi.with_suffix(".py"))
 sys.path.insert(0, str(_stubs))
 
 from importlib.util import find_spec
 
-# -- Project information ------------------------------------------------------
+# -- Project information -----------------------------------------------------
 project = "Mod3D"
 copyright = "2026, SSG AERO"
 author = "Sebastien RAYMOND"
@@ -28,10 +21,6 @@ _match = re.search(r"project\s*\([^)]*VERSION\s+([\d.]+)", _cmake.read_text())
 version = release = _match.group(1) if _match else "0.1"
 
 # -- General configuration ----------------------------------------------------
-# On RTD the binary is not available — mock it; stubs/ provides the API surface.
-if os.environ.get("READTHEDOCS"):
-    autodoc_mock_imports = ["mod3d.mod3d"]
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
