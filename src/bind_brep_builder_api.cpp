@@ -46,6 +46,28 @@ namespace py = pybind11;
 // Required to process opencascade::handle<T> as arguments/return types
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
+template<typename Maker, typename... Args>
+auto make_or_throw(const char* error_msg, Args&&... args) {
+    Maker maker(std::forward<Args>(args)...);
+    if (!maker.IsDone()) throw std::runtime_error(error_msg);
+    if constexpr (std::is_same_v<Maker, BRepBuilderAPI_MakeEdge>)
+        return maker.Edge();
+    else if constexpr (std::is_same_v<Maker, BRepBuilderAPI_MakeWire>)
+        return maker.Wire();
+    else if constexpr (std::is_same_v<Maker, BRepBuilderAPI_MakeFace>)
+        return maker.Face();
+}
+
+template<typename Geom, typename... Args>
+auto make_wire_from_geom(const char* geom_name, Args&&... args) {
+    auto edge = make_or_throw<BRepBuilderAPI_MakeEdge>(
+        (std::string("make_wire: failed to create edge from ") + geom_name).c_str(),
+        std::forward<Args>(args)...);
+    return make_or_throw<BRepBuilderAPI_MakeWire>(
+        (std::string("make_wire: failed to create wire from ") + geom_name).c_str(),
+        edge);
+}
+
 
 void bind_brep_prim_api(py::module_ &m);
 
@@ -229,20 +251,63 @@ void bind_brep_builder_api(py::module_ &m)
              "Returns the construction status")
     ;
 
+    // --- make_edge convenience functions ---
     m.def("make_edge", [](const gp_Pnt& Pnt1, const gp_Pnt& Pnt2) {
-        BRepBuilderAPI_MakeEdge edge_maker(Pnt1, Pnt2);
-        if (!edge_maker.IsDone()) {
-            throw std::runtime_error("Failed to create edge between points");
-        }
-        return edge_maker.Edge();
-    }, py::arg("Pnt1"), py::arg("Pnt2"));
+        return make_or_throw<BRepBuilderAPI_MakeEdge>("make_edge: failed to create edge between points", Pnt1, Pnt2);
+    }, py::arg("Pnt1"), py::arg("Pnt2"),
+       "Creates a straight edge between two points");
     m.def("make_edge", [](const opencascade::handle<Geom_Curve>& C) {
-        BRepBuilderAPI_MakeEdge edge_maker(C);
-        if (!edge_maker.IsDone()) {
-            throw std::runtime_error("Failed to create edge from curve");
-        }
-        return edge_maker.Edge();
-    }, py::arg("C"));
+        return make_or_throw<BRepBuilderAPI_MakeEdge>("make_edge: failed to create edge from curve", C);
+    }, py::arg("C"),
+       "Creates an edge from a Geom_Curve");
+    m.def("make_edge", [](const gp_Circ& C) {
+        return make_or_throw<BRepBuilderAPI_MakeEdge>("make_edge: failed to create edge from circle", C);
+    }, py::arg("C"),
+       "Creates a closed edge from a gp_Circ");
+    m.def("make_edge", [](const gp_Elips& C) {
+        return make_or_throw<BRepBuilderAPI_MakeEdge>("make_edge: failed to create edge from ellipse", C);
+    }, py::arg("C"),
+       "Creates a closed edge from a gp_Elips");
+    m.def("make_edge", [](const gp_Lin& L, double p1, double p2) {
+        return make_or_throw<BRepBuilderAPI_MakeEdge>("make_edge: failed to create edge from line", L, p1, p2);
+    }, py::arg("L"), py::arg("p1"), py::arg("p2"),
+       "Creates an edge on a line between parameters p1 and p2");
+
+    // --- make_wire convenience functions ---
+    m.def("make_wire", [](const TopoDS_Edge& E) {
+        return make_or_throw<BRepBuilderAPI_MakeWire>("make_wire: failed to create wire from edge", E);
+    }, py::arg("E"),
+       "Creates a wire from a single edge");
+    m.def("make_wire", [](const TopoDS_Edge& E1, const TopoDS_Edge& E2) {
+        return make_or_throw<BRepBuilderAPI_MakeWire>("make_wire: failed to create wire from edges", E1, E2);
+    }, py::arg("E1"), py::arg("E2"),
+       "Creates a wire from two edges");
+    m.def("make_wire", [](const opencascade::handle<Geom_Curve>& C) {
+        return make_wire_from_geom<Geom_Curve>("curve", C);
+    }, py::arg("C"),
+       "Creates a wire directly from a Geom_Curve (edge is created internally)");
+    m.def("make_wire", [](const gp_Circ& C) {
+        return make_wire_from_geom<gp_Circ>("circle", C);
+    }, py::arg("C"),
+       "Creates a wire directly from a gp_Circ");
+    m.def("make_wire", [](const gp_Elips& C) {
+        return make_wire_from_geom<gp_Elips>("ellipse", C);
+    }, py::arg("C"),
+       "Creates a wire directly from a gp_Elips");
+
+    // --- make_face convenience functions ---
+    m.def("make_face", [](const opencascade::handle<Geom_Surface>& S, double TolDegen) {
+        return make_or_throw<BRepBuilderAPI_MakeFace>("make_face: failed to create face from surface", S, TolDegen);
+    }, py::arg("S"), py::arg("TolDegen") = 1e-6,
+       "Creates a face from a Geom_Surface");
+    m.def("make_face", [](const TopoDS_Wire& W) {
+        return make_or_throw<BRepBuilderAPI_MakeFace>("make_face: failed to create face from wire", W);
+    }, py::arg("W"),
+       "Creates a face from a planar wire");
+    m.def("make_face", [](const opencascade::handle<Geom_Surface>& S, const TopoDS_Wire& W) {
+        return make_or_throw<BRepBuilderAPI_MakeFace>("make_face: failed to create face from surface and wire", S, W);
+    }, py::arg("S"), py::arg("W"),
+       "Creates a face from a surface trimmed by a wire");
 
     py::enum_<BRepBuilderAPI_WireError>(m, "WireError")
         .value("WireDone", BRepBuilderAPI_WireDone)

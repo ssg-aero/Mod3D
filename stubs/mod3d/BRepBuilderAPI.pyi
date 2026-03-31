@@ -8,7 +8,7 @@ import mod3d.GeomFill
 import mod3d.TopoDS
 import mod3d.gp
 import typing
-__all__: list[str] = ['BRepFill_Pipe', 'BRepSweep_Prism', 'BRepSweep_Revol', 'Command', 'Contact', 'ContactOnBorder', 'CurveProjectionFailed', 'DifferentPointsOnClosedCurve', 'DifferentsPointAndParameter', 'DisconnectedShell', 'DisconnectedWire', 'EdgeDone', 'EdgeError', 'EmptyShell', 'EmptyWire', 'FaceDone', 'FaceError', 'ImpossibleContact', 'LineThroughIdenticPoints', 'MakeBox', 'MakeCone', 'MakeCylinder', 'MakeEdge', 'MakeFace', 'MakeOneAxis', 'MakePipe', 'MakePipeShell', 'MakePolygon', 'MakePrism', 'MakeRevol', 'MakeRevolution', 'MakeShape', 'MakeShell', 'MakeSolid', 'MakeSphere', 'MakeSweep', 'MakeVertex', 'MakeWire', 'NoContact', 'NoFace', 'NonManifoldWire', 'NotPlanar', 'ParameterOutOfRange', 'ParametersOutOfRange', 'PipeDone', 'PipeError', 'PipeNotDone', 'PlaneNotIntersectGuide', 'PointProjectionFailed', 'PointWithInfiniteParameter', 'RightCorner', 'RoundCorner', 'Sewing', 'ShellDone', 'ShellError', 'ShellParametersOutOfRange', 'Transformed', 'TransitionMode', 'TypeOfContact', 'WireDone', 'WireError', 'make_edge']
+__all__: list[str] = ['BRepFill_Pipe', 'BRepSweep_Prism', 'BRepSweep_Revol', 'Command', 'Contact', 'ContactOnBorder', 'CurveProjectionFailed', 'DifferentPointsOnClosedCurve', 'DifferentsPointAndParameter', 'DisconnectedShell', 'DisconnectedWire', 'EdgeDone', 'EdgeError', 'EmptyShell', 'EmptyWire', 'FaceDone', 'FaceError', 'ImpossibleContact', 'LineThroughIdenticPoints', 'MakeBox', 'MakeCone', 'MakeCylinder', 'MakeEdge', 'MakeFace', 'MakeOneAxis', 'MakePipe', 'MakePipeShell', 'MakePolygon', 'MakePrism', 'MakeRevol', 'MakeRevolution', 'MakeShape', 'MakeShell', 'MakeSolid', 'MakeSphere', 'MakeSweep', 'MakeVertex', 'MakeWire', 'NoContact', 'NoFace', 'NonManifoldWire', 'NotPlanar', 'ParameterOutOfRange', 'ParametersOutOfRange', 'PipeDone', 'PipeError', 'PipeNotDone', 'PlaneNotIntersectGuide', 'PointProjectionFailed', 'PointWithInfiniteParameter', 'RightCorner', 'RoundCorner', 'Sewing', 'ShellDone', 'ShellError', 'ShellParametersOutOfRange', 'Transformed', 'TransitionMode', 'TypeOfContact', 'WireDone', 'WireError', 'make_edge', 'make_face', 'make_wire']
 class BRepFill_Pipe:
     """
     Internal pipe filling algorithm used by MakePipe
@@ -1627,10 +1627,69 @@ class WireError:
         ...
 @typing.overload
 def make_edge(Pnt1: mod3d.gp.Pnt, Pnt2: mod3d.gp.Pnt) -> mod3d.TopoDS.Edge:
-    ...
+    """
+    Creates a straight edge between two points
+    """
 @typing.overload
 def make_edge(C: mod3d.Geom.Curve) -> mod3d.TopoDS.Edge:
-    ...
+    """
+    Creates an edge from a Geom_Curve
+    """
+@typing.overload
+def make_edge(C: mod3d.gp.Circ) -> mod3d.TopoDS.Edge:
+    """
+    Creates a closed edge from a gp_Circ
+    """
+@typing.overload
+def make_edge(C: mod3d.gp.Elips) -> mod3d.TopoDS.Edge:
+    """
+    Creates a closed edge from a gp_Elips
+    """
+@typing.overload
+def make_edge(L: mod3d.gp.Lin, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    """
+    Creates an edge on a line between parameters p1 and p2
+    """
+@typing.overload
+def make_face(S: mod3d.Geom.Surface, TolDegen: typing.SupportsFloat = 1e-06) -> mod3d.TopoDS.Face:
+    """
+    Creates a face from a Geom_Surface
+    """
+@typing.overload
+def make_face(W: mod3d.TopoDS.Wire) -> mod3d.TopoDS.Face:
+    """
+    Creates a face from a planar wire
+    """
+@typing.overload
+def make_face(S: mod3d.Geom.Surface, W: mod3d.TopoDS.Wire) -> mod3d.TopoDS.Face:
+    """
+    Creates a face from a surface trimmed by a wire
+    """
+@typing.overload
+def make_wire(E: mod3d.TopoDS.Edge) -> mod3d.TopoDS.Wire:
+    """
+    Creates a wire from a single edge
+    """
+@typing.overload
+def make_wire(E1: mod3d.TopoDS.Edge, E2: mod3d.TopoDS.Edge) -> mod3d.TopoDS.Wire:
+    """
+    Creates a wire from two edges
+    """
+@typing.overload
+def make_wire(C: mod3d.Geom.Curve) -> mod3d.TopoDS.Wire:
+    """
+    Creates a wire directly from a Geom_Curve (edge is created internally)
+    """
+@typing.overload
+def make_wire(C: mod3d.gp.Circ) -> mod3d.TopoDS.Wire:
+    """
+    Creates a wire directly from a gp_Circ
+    """
+@typing.overload
+def make_wire(C: mod3d.gp.Elips) -> mod3d.TopoDS.Wire:
+    """
+    Creates a wire directly from a gp_Elips
+    """
 Contact: TypeOfContact  # value = <TypeOfContact.Contact: 1>
 ContactOnBorder: TypeOfContact  # value = <TypeOfContact.ContactOnBorder: 2>
 CurveProjectionFailed: FaceError  # value = <FaceError.CurveProjectionFailed: 3>
