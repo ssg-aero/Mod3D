@@ -1,0 +1,90 @@
+# ============================================================
+# CI — Build & Test
+# ============================================================
+# Ce workflow s'execute automatiquement a chaque push sur main
+# ou a chaque Pull Request. Il verifie que le projet compile
+# et que tous les tests passent.
+
+# --- QUAND le workflow se declenche ---
+on:
+  push:
+    branches: [main]        # chaque commit pousse sur main
+  pull_request:
+    branches: [main]        # chaque PR qui cible main
+
+name: CI
+
+jobs:
+  build-and-test:
+    # --- OU ca tourne ---
+    # GitHub fournit des machines virtuelles gratuites (runners).
+    # ubuntu-latest = derniere version Ubuntu LTS disponible.
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Recuperer le code source du repo
+      # Sans ca, le runner a un disque vide.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Installer micromamba (gestionnaire conda ultra-rapide)
+      # C'est l'equivalent de ton "micromamba activate dev-3.13" local.
+      # On lui donne la liste des packages a installer directement ici
+      # plutot qu'un fichier environment.yaml, pour controler exactement
+      # ce qui est necessaire en CI (pas besoin d'ipykernel, pythreejs, etc.)
+      - name: Setup micromamba environment
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          micromamba-version: latest
+          environment-name: ci
+          # condarc-file definit les channels (d'ou telecharger les packages)
+          condarc: |
+            channels:
+              - ssg-aero
+              - conda-forge
+          # Les packages necessaires pour compiler et tester
+          create-args: >-
+            python=3.13
+            clangxx
+            clang-tools
+            llvm-tools
+            lld
+            cmake>=4.0
+            ninja
+            pybind11
+            occt
+            eigen
+            gbs>=0.4.4
+            numpy
+            pytest
+          # Cache les packages telecharges pour accelerer les runs suivants.
+          # Sans cache: ~2-3 min de telechargement. Avec cache: ~10-20 sec.
+          cache-environment: true
+
+      # 3. Configurer CMake
+      # -G Ninja          : utilise Ninja (plus rapide que Make)
+      # -DCMAKE_BUILD_TYPE=Release : optimisations activees
+      # Le "shell: micromamba-shell {0}" active l'environnement conda
+      # avant d'executer la commande (comme "micromamba activate ci").
+      - name: Configure
+        shell: micromamba-shell {0}
+        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      # 4. Compiler le projet
+      # --parallel = utilise tous les coeurs disponibles (2 sur les runners GitHub)
+      - name: Build
+        shell: micromamba-shell {0}
+        run: cmake --build build --parallel
+
+      # 5. Installer le module dans l'environnement Python
+      # pour que "import mod3d" fonctionne dans les tests
+      - name: Install
+        shell: micromamba-shell {0}
+        run: cmake --install build --prefix $CONDA_PREFIX
+
+      # 6. Lancer les tests avec pytest
+      # -v = verbose (affiche le nom de chaque test)
+      # pytest decouvre automatiquement tous les fichiers tests/test_*.py
+      - name: Test
+        shell: micromamba-shell {0}
+        run: pytest tests/ -v
