@@ -1,55 +1,74 @@
 # ============================================================
-# CI — Build & Test
+# CI — Build & Test (multi-plateforme)
 # ============================================================
-# Ce workflow s'execute automatiquement a chaque push sur main
-# ou a chaque Pull Request. Il verifie que le projet compile
-# et que tous les tests passent.
+# Ce workflow s'execute a chaque push sur main ou PR.
+# Il compile et teste sur Linux ET Windows en parallele.
+#
+# La section "strategy.matrix" definit les variantes :
+# chaque combinaison {os, packages, cmake_args} genere un job
+# independant qui tourne en parallele sur un runner different.
 
-# --- QUAND le workflow se declenche ---
 on:
   push:
-    branches: [main]        # chaque commit pousse sur main
+    branches: [main]
   pull_request:
-    branches: [main]        # chaque PR qui cible main
+    branches: [main]
 
 name: CI
 
 jobs:
   build-and-test:
-    # --- OU ca tourne ---
-    # GitHub fournit des machines virtuelles gratuites (runners).
-    # ubuntu-latest = derniere version Ubuntu LTS disponible.
-    runs-on: ubuntu-latest
+    # "matrix" = on lance le MEME job plusieurs fois avec des
+    # parametres differents. Ici : une fois Linux, une fois Windows.
+    strategy:
+      fail-fast: false    # ne pas arreter l'autre OS si l'un echoue
+      matrix:
+        include:
+          # --- Linux : compilateur clang ---
+          - os: ubuntu-latest
+            packages: >-
+              clangxx
+              clang-tools
+              llvm-tools
+              lld
+            cmake-extra: ""
+            prefix-var: CONDA_PREFIX
+
+          # --- Windows : compilateur MSVC (fourni par le runner) ---
+          # Pas besoin d'installer clang, le runner GitHub Windows
+          # a deja Visual Studio installe.
+          - os: windows-latest
+            packages: ""
+            cmake-extra: ""
+            prefix-var: CONDA_PREFIX
+
+          # --- macOS : compilateur clang (pre-installe par Apple) ---
+          # Le runner macOS a Xcode/clang, pas besoin d'installer
+          # de compilateur depuis conda.
+          - os: macos-latest
+            packages: ""
+            cmake-extra: ""
+            prefix-var: CONDA_PREFIX
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      # 1. Recuperer le code source du repo
-      # Sans ca, le runner a un disque vide.
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installer micromamba (gestionnaire conda ultra-rapide)
-      # C'est l'equivalent de ton "micromamba activate dev-3.13" local.
-      # On lui donne la liste des packages a installer directement ici
-      # plutot qu'un fichier environment.yaml, pour controler exactement
-      # ce qui est necessaire en CI (pas besoin d'ipykernel, pythreejs, etc.)
       - name: Setup micromamba environment
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: latest
           environment-name: ci
-          # condarc-file definit les channels (d'ou telecharger les packages)
           condarc: |
             channels:
               - conda-forge
-          # Les packages necessaires pour compiler et tester
-          # Note: gbs est exclu pour l'instant (pas disponible en CI),
-          # on desactive via -DMOD3D_USE_GBS=OFF au configure.
+          # Les packages de base sont communs aux deux OS.
+          # matrix.packages ajoute les packages specifiques a l'OS
+          # (clang sur Linux, rien sur Windows car MSVC est pre-installe).
           create-args: >-
             python=3.13
-            clangxx
-            clang-tools
-            llvm-tools
-            lld
             cmake
             ninja
             pybind11
@@ -59,34 +78,26 @@ jobs:
             pythreejs
             pybind11-stubgen
             pytest
-          # Cache les packages telecharges pour accelerer les runs suivants.
-          # Sans cache: ~2-3 min de telechargement. Avec cache: ~10-20 sec.
+            ${{ matrix.packages }}
           cache-environment: true
 
-      # 3. Configurer CMake
-      # -G Ninja          : utilise Ninja (plus rapide que Make)
-      # -DCMAKE_BUILD_TYPE=Release : optimisations activees
-      # Le "shell: micromamba-shell {0}" active l'environnement conda
-      # avant d'executer la commande (comme "micromamba activate ci").
       - name: Configure
         shell: micromamba-shell {0}
-        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DMOD3D_USE_GBS=OFF -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+        run: >-
+          cmake -B build -S . -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DMOD3D_USE_GBS=OFF
+          -DCMAKE_INSTALL_PREFIX=${{ env[matrix.prefix-var] }}
+          ${{ matrix.cmake-extra }}
 
-      # 4. Compiler le projet
-      # --parallel = utilise tous les coeurs disponibles (2 sur les runners GitHub)
       - name: Build
         shell: micromamba-shell {0}
         run: cmake --build build --parallel
 
-      # 5. Installer le module dans l'environnement Python
-      # pour que "import mod3d" fonctionne dans les tests
       - name: Install
         shell: micromamba-shell {0}
-        run: cmake --install build --prefix $CONDA_PREFIX
+        run: cmake --install build
 
-      # 6. Lancer les tests avec pytest
-      # -v = verbose (affiche le nom de chaque test)
-      # pytest decouvre automatiquement tous les fichiers tests/test_*.py
       - name: Test
         shell: micromamba-shell {0}
         run: pytest tests/ -v
