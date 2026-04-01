@@ -103,5 +103,14 @@ jobs:
       - name: Install
         run: cmake --install build
 
-      - name: Test
+      # Sur Windows, les DLLs OCCT sont dans CONDA_PREFIX/Library/bin
+      # et doivent etre dans le PATH pour que mod3d.pyd les trouve.
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          set "PATH=%CONDA_PREFIX%\Library\bin;%PATH%"
+          pytest tests/ -v
+
+      - name: Test (Unix)
+        if: runner.os != 'Windows'
         run: pytest tests/ -v
