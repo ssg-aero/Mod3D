@@ -1,4 +1,4 @@
-# import pytest
+import pytest
 import numpy as np
 from mod3d import (
     gp,
@@ -6,7 +6,12 @@ from mod3d import (
     BRepBuilderAPI,
 )
 
-import pygbs.gbs as gbs
+try:
+    import pygbs.gbs as gbs
+except ImportError:
+    gbs = None
+
+requires_gbs = pytest.mark.skipif(gbs is None, reason="pygbs not available")
 
 def test_geom_line_creation():
     # Create a Geom_Line using a point and direction
@@ -824,6 +829,7 @@ def test_offset_curve_from_bspline():
     point = offset_curve.value(1.0)
     assert point is not None
 
+@requires_gbs
 def test_gbs_bspline_creation():
     """Test creating a GBSpline curve."""
     # Simple quadratic GBSpline with 4 control points
@@ -1190,6 +1196,7 @@ def test_surface_point_evaluation():
     assert abs(p.z - 3.0) < 1e-10
 
 
+@requires_gbs
 def test_gbs_surface_conversion():
     """Test converting gbs surface to OCCT BSplineSurface."""
 
@@ -1226,6 +1233,7 @@ def test_gbs_surface_conversion():
     print(f"✓ Surface evaluation at ({u}, {v}): {point}")
 
 
+@requires_gbs
 def test_implicit_conversion():
     """Test implicit conversion from gbs surface."""
     
