@@ -28,16 +28,30 @@ jobs:
               clang-tools
               llvm-tools
               lld
+            cmake-extra: >-
+              -DCMAKE_C_COMPILER=clang
+              -DCMAKE_CXX_COMPILER=clang++
             shell: micromamba-shell {0}
 
-          # --- Windows : compilateur MSVC (pre-installe sur le runner) ---
+          # --- Windows : compilateur clang depuis conda ---
+          # Le runner a MinGW pre-installe qui entre en conflit avec
+          # les libs OCCT. On utilise clang comme en local.
           - os: windows-latest
-            extra-packages: ""
+            extra-packages: >-
+              clangxx
+              clang-tools
+              llvm-tools
+              lld
+            cmake-extra: >-
+              -DCMAKE_C_COMPILER=clang
+              -DCMAKE_CXX_COMPILER=clang++
             shell: cmd /C call {0}
 
-          # --- macOS : compilateur Apple clang (pre-installe) ---
+          # --- macOS : compilateur Apple clang (pre-installe via Xcode) ---
+          # Pas besoin de forcer le compilateur, CMake trouve Apple clang.
           - os: macos-latest
             extra-packages: ""
+            cmake-extra: ""
             shell: micromamba-shell {0}
 
     runs-on: ${{ matrix.os }}
@@ -75,14 +89,13 @@ jobs:
             bash
             ${{ matrix.os == 'windows-latest' && 'cmd.exe' || '' }}
 
-      # Sur Windows avec cmd, CONDA_PREFIX est deja defini par micromamba init.
-      # Sur Linux/macOS avec micromamba-shell, $CONDA_PREFIX est dans le shell.
       - name: Configure
         run: >-
           cmake -B build -S . -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DMOD3D_USE_GBS=OFF
           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+          ${{ matrix.cmake-extra }}
 
       - name: Build
         run: cmake --build build --parallel
