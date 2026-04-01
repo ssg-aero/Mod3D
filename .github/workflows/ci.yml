@@ -56,6 +56,7 @@ jobs:
             occt
             eigen
             numpy
+            pybind11-stubgen
             pytest
           # Cache les packages telecharges pour accelerer les runs suivants.
           # Sans cache: ~2-3 min de telechargement. Avec cache: ~10-20 sec.
