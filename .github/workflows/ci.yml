@@ -56,6 +56,7 @@ jobs:
             occt
             eigen
             numpy
+            pythreejs
             pybind11-stubgen
             pytest
           # Cache les packages telecharges pour accelerer les runs suivants.
