@@ -142,20 +142,20 @@ if(MOD3D_BUILD_PYTHON)
         ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
     )
     target_link_libraries(mod3d PRIVATE
-        occt-extend 
+        occt-extend
         pybind11::module
         ${OpenCASCADE_FoundationClasses_LIBRARIES}
         ${OpenCASCADE_ModelingData_LIBRARIES}
         ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
         ${OpenCASCADE_DataExchange_LIBRARIES}
-        GBS::gbs
+        $<$<BOOL:${Gbs_FOUND}>:GBS::gbs>
     )
 
-    target_include_directories(mod3d PRIVATE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/src 
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc 
+    target_include_directories(mod3d PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc
         ${OpenCASCADE_INCLUDE_DIR}
-        ${GBS_INCLUDE_DIR}
+        $<$<BOOL:${Gbs_FOUND}>:${GBS_INCLUDE_DIR}>
         ${EIGEN3_INCLUDE_DIR}
     )
 endif(MOD3D_BUILD_PYTHON)
