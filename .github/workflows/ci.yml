@@ -40,21 +40,21 @@ jobs:
           # condarc-file definit les channels (d'ou telecharger les packages)
           condarc: |
             channels:
-              - ssg-aero
               - conda-forge
           # Les packages necessaires pour compiler et tester
+          # Note: gbs est exclu pour l'instant (pas disponible en CI),
+          # on desactive via -DMOD3D_USE_GBS=OFF au configure.
           create-args: >-
             python=3.13
             clangxx
             clang-tools
             llvm-tools
             lld
-            cmake>=4.0
+            cmake
             ninja
             pybind11
             occt
             eigen
-            gbs>=0.4.4
             numpy
             pytest
           # Cache les packages telecharges pour accelerer les runs suivants.
@@ -68,7 +68,7 @@ jobs:
       # avant d'executer la commande (comme "micromamba activate ci").
       - name: Configure
         shell: micromamba-shell {0}
-        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DMOD3D_USE_GBS=OFF
 
       # 4. Compiler le projet
       # --parallel = utilise tous les coeurs disponibles (2 sur les runners GitHub)
