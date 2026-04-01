@@ -89,7 +89,19 @@ jobs:
             bash
             ${{ matrix.os == 'windows-latest' && 'cmd.exe' || '' }}
 
-      - name: Configure
+      # Sur Windows conda, les libs sont dans CONDA_PREFIX/Library
+      # (pas directement dans CONDA_PREFIX comme sur Unix).
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: >-
+          cmake -B build -S . -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DMOD3D_USE_GBS=OFF
+          -DCMAKE_INSTALL_PREFIX=%CONDA_PREFIX%\Library
+          ${{ matrix.cmake-extra }}
+
+      - name: Configure (Unix)
+        if: runner.os != 'Windows'
         run: >-
           cmake -B build -S . -G Ninja
           -DCMAKE_BUILD_TYPE=Release
