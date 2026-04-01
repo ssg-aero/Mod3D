@@ -69,7 +69,7 @@ jobs:
       # avant d'executer la commande (comme "micromamba activate ci").
       - name: Configure
         shell: micromamba-shell {0}
-        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DMOD3D_USE_GBS=OFF
+        run: cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DMOD3D_USE_GBS=OFF -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
 
       # 4. Compiler le projet
       # --parallel = utilise tous les coeurs disponibles (2 sur les runners GitHub)
