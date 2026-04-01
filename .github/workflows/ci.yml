@@ -2,11 +2,10 @@
 # CI — Build & Test (multi-plateforme)
 # ============================================================
 # Ce workflow s'execute a chaque push sur main ou PR.
-# Il compile et teste sur Linux ET Windows en parallele.
+# Il compile et teste sur Linux, Windows et macOS en parallele.
 #
 # La section "strategy.matrix" definit les variantes :
-# chaque combinaison {os, packages, cmake_args} genere un job
-# independant qui tourne en parallele sur un runner different.
+# chaque combinaison genere un job independant.
 
 on:
   push:
@@ -18,39 +17,33 @@ name: CI
 
 jobs:
   build-and-test:
-    # "matrix" = on lance le MEME job plusieurs fois avec des
-    # parametres differents. Ici : une fois Linux, une fois Windows.
     strategy:
-      fail-fast: false    # ne pas arreter l'autre OS si l'un echoue
+      fail-fast: false    # ne pas arreter les autres OS si l'un echoue
       matrix:
         include:
-          # --- Linux : compilateur clang ---
+          # --- Linux : compilateur clang depuis conda ---
           - os: ubuntu-latest
-            packages: >-
+            extra-packages: >-
               clangxx
               clang-tools
               llvm-tools
               lld
-            cmake-extra: ""
-            prefix-var: CONDA_PREFIX
+            shell: micromamba-shell {0}
 
-          # --- Windows : compilateur MSVC (fourni par le runner) ---
-          # Pas besoin d'installer clang, le runner GitHub Windows
-          # a deja Visual Studio installe.
+          # --- Windows : compilateur MSVC (pre-installe sur le runner) ---
           - os: windows-latest
-            packages: ""
-            cmake-extra: ""
-            prefix-var: CONDA_PREFIX
+            extra-packages: ""
+            shell: cmd /C call {0}
 
-          # --- macOS : compilateur clang (pre-installe par Apple) ---
-          # Le runner macOS a Xcode/clang, pas besoin d'installer
-          # de compilateur depuis conda.
+          # --- macOS : compilateur Apple clang (pre-installe) ---
           - os: macos-latest
-            packages: ""
-            cmake-extra: ""
-            prefix-var: CONDA_PREFIX
+            extra-packages: ""
+            shell: micromamba-shell {0}
 
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
 
     steps:
       - name: Checkout repository
@@ -64,9 +57,6 @@ jobs:
           condarc: |
             channels:
               - conda-forge
-          # Les packages de base sont communs aux deux OS.
-          # matrix.packages ajoute les packages specifiques a l'OS
-          # (clang sur Linux, rien sur Windows car MSVC est pre-installe).
           create-args: >-
             python=3.13
             cmake
@@ -78,26 +68,27 @@ jobs:
             pythreejs
             pybind11-stubgen
             pytest
-            ${{ matrix.packages }}
+            ${{ matrix.extra-packages }}
           cache-environment: true
+          # Sur Windows, init cmd en plus de bash
+          init-shell: >-
+            bash
+            ${{ matrix.os == 'windows-latest' && 'cmd.exe' || '' }}
 
+      # Sur Windows avec cmd, CONDA_PREFIX est deja defini par micromamba init.
+      # Sur Linux/macOS avec micromamba-shell, $CONDA_PREFIX est dans le shell.
       - name: Configure
-        shell: micromamba-shell {0}
         run: >-
           cmake -B build -S . -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DMOD3D_USE_GBS=OFF
-          -DCMAKE_INSTALL_PREFIX=${{ env[matrix.prefix-var] }}
-          ${{ matrix.cmake-extra }}
+          -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
 
       - name: Build
-        shell: micromamba-shell {0}
         run: cmake --build build --parallel
 
       - name: Install
-        shell: micromamba-shell {0}
         run: cmake --install build
 
       - name: Test
-        shell: micromamba-shell {0}
         run: pytest tests/ -v
