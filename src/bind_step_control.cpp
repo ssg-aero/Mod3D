@@ -11,7 +11,7 @@
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <Message_ProgressRange.hxx>
 
-#include "extend/OcctContainers.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 namespace py = pybind11;
 

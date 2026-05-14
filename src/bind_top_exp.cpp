@@ -13,8 +13,8 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 
-#include "extend/explorer_utils.hpp"
-#include "extend/TopologyUtils.hpp"
+#include "extend/topology/explorer_utils.hpp"
+#include "extend/topology/TopologyUtils.hpp"
 
 namespace py = pybind11;
 

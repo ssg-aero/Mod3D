@@ -1,6 +1,6 @@
-#include "extend/TopologyUtils.hpp"
+#include "extend/topology/TopologyUtils.hpp"
 
-#include "extend/OcctContainers.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 #include <TopExp.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>

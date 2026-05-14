@@ -50,15 +50,15 @@ if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif(WIN32)
 add_library(occt-extend SHARED
-    src/extend/UnionFaces.cpp
-    src/extend/ExtrudeCut.cpp
-    src/extend/ExtremaUtils.cpp
-    src/extend/GeomSurfaceCompare.cpp
-    src/extend/GbsConverters.cpp
-    src/extend/RevolveCut.cpp
-    src/extend/shapes.cpp
-    src/extend/TessellationUtils.cpp
-    src/extend/TopologyUtils.cpp
+    src/extend/brep/ExtrudeCut.cpp
+    src/extend/brep/RevolveCut.cpp
+    src/extend/brep/UnionFaces.cpp
+    src/extend/extrema/ExtremaUtils.cpp
+    src/extend/gbs/GbsConverters.cpp
+    src/extend/geometry/GeomSurfaceCompare.cpp
+    src/extend/render/TessellationUtils.cpp
+    src/extend/topology/shapes.cpp
+    src/extend/topology/TopologyUtils.cpp
 )
 # if(WIN32)
 #     set_target_properties(occt-extend PROPERTIES

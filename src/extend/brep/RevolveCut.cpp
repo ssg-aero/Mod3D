@@ -1,4 +1,4 @@
-#include "extend/RevolveCut.hpp"
+#include "extend/brep/RevolveCut.hpp"
 
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>

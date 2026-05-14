@@ -22,7 +22,7 @@
 #include <BRep_Builder.hxx>
 #include <TopExp_Explorer.hxx>
 
-#include "extend/Shapes.hpp"
+#include "extend/topology/Shapes.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>

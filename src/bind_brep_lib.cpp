@@ -12,7 +12,7 @@
 #include <gp_Pnt.hxx>
 #include <GeomAbs_Shape.hxx>
 
-#include "extend/OcctContainers.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 namespace py = pybind11;
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);

@@ -1,4 +1,4 @@
-#include "extend/Shapes.hpp"
+#include "extend/topology/Shapes.hpp"
 
 #include <gp_Trsf.hxx>
 #include <TopLoc_Location.hxx>

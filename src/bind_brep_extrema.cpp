@@ -16,7 +16,7 @@
 #include <BRepExtrema_ExtPC.hxx>
 #include <BRepExtrema_ExtPF.hxx>
 
-#include "extend/ExtremaUtils.hpp"
+#include "extend/extrema/ExtremaUtils.hpp"
 
 namespace py = pybind11;
 

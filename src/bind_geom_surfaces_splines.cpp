@@ -16,7 +16,7 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array2OfInteger.hxx>
 
-#include "extend/array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
@@ -27,7 +27,7 @@ extern void bind_geom_surfaces_splines(py::module_ &m);
 extern void bind_geom_surfaces_elementary(py::module_ &m);
 #if HAS_GBS
     #include <gbs/bssurf.h>
-    #include "extend/GbsConverters.hpp"
+    #include "extend/gbs/GbsConverters.hpp"
 #endif
 void bind_geom_surfaces_splines(py::module_ &m)
 {

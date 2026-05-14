@@ -28,7 +28,7 @@
 #include <gp_Ax2.hxx>
 #include <gp_Dir.hxx>
 
-#include "extend/OcctContainers.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 namespace py = pybind11;
 

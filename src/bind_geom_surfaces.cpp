@@ -20,7 +20,7 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 #if HAS_GBS
     #include <gbs/bssurf.h>
-    #include "extend/GbsConverters.hpp"
+    #include "extend/gbs/GbsConverters.hpp"
 #endif
 
 // Forward declaration

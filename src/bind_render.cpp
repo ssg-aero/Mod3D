@@ -16,7 +16,7 @@
 #include <IMeshTools_MeshAlgoType.hxx>
 #include <IMeshTools_Parameters.hxx>
 
-#include "extend/TessellationUtils.hpp"
+#include "extend/render/TessellationUtils.hpp"
 
 namespace py = pybind11;
 namespace render = occt::extended::render;

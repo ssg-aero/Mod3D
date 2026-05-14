@@ -17,9 +17,9 @@
 #include <Precision.hxx>
 #include <gp_Pln.hxx>
 
-#include "extend/ExtrudeCut.hpp"
-#include "extend/OcctContainers.hpp"
-#include "extend/RevolveCut.hpp"
+#include "extend/brep/ExtrudeCut.hpp"
+#include "extend/brep/RevolveCut.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 namespace py = pybind11;
 

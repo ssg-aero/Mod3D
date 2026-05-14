@@ -1,4 +1,4 @@
-#include "extend/ExtrudeCut.hpp"
+#include "extend/brep/ExtrudeCut.hpp"
 
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAlgoAPI_Common.hxx>

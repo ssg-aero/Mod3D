@@ -1,4 +1,4 @@
-#include "extend/GbsConverters.hpp"
+#include "extend/gbs/GbsConverters.hpp"
 
 #if HAS_GBS
 

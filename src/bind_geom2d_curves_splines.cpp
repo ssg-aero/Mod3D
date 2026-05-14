@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include "extend/array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 #include <Standard_Handle.hxx>
 #include <Geom2d_BSplineCurve.hxx>

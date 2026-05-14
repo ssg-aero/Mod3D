@@ -1,4 +1,4 @@
-#include "extend/ExtremaUtils.hpp"
+#include "extend/extrema/ExtremaUtils.hpp"
 
 namespace occt::extended::extrema {
 
