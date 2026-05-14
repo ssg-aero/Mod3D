@@ -86,6 +86,9 @@ class TestBooleanCommon:
 class TestBooleanCut:
     """Tests for BRepAlgoAPI_Cut (subtraction) operation."""
 
+    def _volume(self, shape):
+        return mod3d.BRepGProp.BRepGProp.volume_properties(shape).mass
+
     def _make_square_wire(self, z=-1.0):
         points = [
             mod3d.gp.Pnt(4.0, 4.0, z),
@@ -177,6 +180,51 @@ class TestBooleanCut:
         result = mod3d.BooleanOp.extrude_cut(box, wire, mod3d.gp.Vec(0.0, 0.0, 12.0))
 
         assert not result.is_null()
+
+    def test_extrude_cut_face_profile_until_plane(self):
+        """Test extrude cut with a face profile stopped by a plane."""
+        box = mod3d.BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+        wire = self._make_square_wire()
+        face = mod3d.BRepBuilderAPI.MakeFace(wire).face()
+        limiting_plane = mod3d.gp.Pln(
+            mod3d.gp.Pnt(0.0, 0.0, 5.0),
+            mod3d.gp.Dir(0.0, 0.0, 1.0),
+        )
+
+        result = mod3d.BooleanOp.extrude_cut(
+            box,
+            face,
+            mod3d.gp.Vec(0.0, 0.0, 12.0),
+            limiting_plane,
+        )
+
+        assert not result.is_null()
+        assert self._volume(result) == pytest.approx(980.0, abs=1e-5)
+
+    def test_extrude_cut_wire_profile_until_face(self):
+        """Test extrude cut with a wire profile stopped by a face."""
+        box = mod3d.BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+        wire = self._make_square_wire()
+        limiting_face = mod3d.BRepBuilderAPI.MakeFace(
+            mod3d.gp.Pln(
+                mod3d.gp.Pnt(0.0, 0.0, 7.0),
+                mod3d.gp.Dir(0.0, 0.0, 1.0),
+            ),
+            0.0,
+            10.0,
+            0.0,
+            10.0,
+        ).face()
+
+        result = mod3d.BooleanOp.extrude_cut(
+            box,
+            wire,
+            mod3d.gp.Vec(0.0, 0.0, 12.0),
+            limiting_face,
+        )
+
+        assert not result.is_null()
+        assert self._volume(result) == pytest.approx(972.0, abs=1e-5)
 
 
 class TestBooleanFuse:

@@ -15,6 +15,7 @@
 #include <TopoDS.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <Precision.hxx>
+#include <gp_Pln.hxx>
 
 #include "extend/ExtrudeCut.hpp"
 #include "extend/OcctContainers.hpp"
@@ -506,6 +507,16 @@ void bind_brep_boolean_op(py::module_ &m)
     vector : gp_Vec
         Extrusion vector)");
 
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector, const gp_Pln& limiting_plane) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_plane);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_plane"),
+    R"(Performs an extrude cut operation stopped by a plane.)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector, const TopoDS_Face& limiting_face) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_face);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_face"),
+    R"(Performs an extrude cut operation stopped by a face.)");
+
     m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector) {
         return occt::extended::brep::extrude_cut(shape, profile, vector);
     }, py::arg("shape"), py::arg("profile"), py::arg("vector"),
@@ -518,6 +529,16 @@ void bind_brep_boolean_op(py::module_ &m)
         Wire profile to extrude
     vector : gp_Vec
         Extrusion vector)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector, const gp_Pln& limiting_plane) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_plane);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_plane"),
+    R"(Performs an extrude cut operation stopped by a plane.)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector, const TopoDS_Face& limiting_face) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_face);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_face"),
+    R"(Performs an extrude cut operation stopped by a face.)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis)  {
         return occt::extended::brep::revolve_cut(shape, profile, axis);
