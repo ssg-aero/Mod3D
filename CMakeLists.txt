@@ -57,6 +57,7 @@ add_library(occt-extend SHARED
     src/extend/GbsConverters.cpp
     src/extend/RevolveCut.cpp
     src/extend/shapes.cpp
+    src/extend/TessellationUtils.cpp
     src/extend/TopologyUtils.cpp
 )
 # if(WIN32)

@@ -17,6 +17,7 @@
 #include <Precision.hxx>
 
 #include "extend/ExtrudeCut.hpp"
+#include "extend/OcctContainers.hpp"
 #include "extend/RevolveCut.hpp"
 
 namespace py = pybind11;
@@ -277,8 +278,7 @@ void bind_brep_boolean_op(py::module_ &m)
         // History queries
         .def("modified", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
                 py::list modified;
-                for(const auto& modified_sub_shape : self.Modified(shape))
-                {
+                for (const auto& modified_sub_shape : occt::extended::containers::to_vector(self.Modified(shape))) {
                     modified.append(modified_sub_shape);
                 }
                 return modified;
@@ -298,8 +298,7 @@ void bind_brep_boolean_op(py::module_ &m)
         
         .def("generated", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
                 py::list generated;
-                for(const auto& generated_item : self.Generated(shape))
-                {
+                for (const auto& generated_item : occt::extended::containers::to_vector(self.Generated(shape))) {
                     generated.append(generated_item);
                 }
                 return generated;
@@ -347,9 +346,8 @@ void bind_brep_boolean_op(py::module_ &m)
         // Section edges
         .def("section_edges", [](BRepAlgoAPI_BuilderAlgo& self){
                 py::list sections;
-                for( auto& shape : self.SectionEdges())
-                {
-                    sections.append(TopoDS::Edge(shape));
+                for (const auto& edge : occt::extended::containers::to_edge_vector(self.SectionEdges())) {
+                    sections.append(edge);
                 }
                 return sections;
             },

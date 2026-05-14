@@ -12,6 +12,8 @@
 #include <gp_Pnt.hxx>
 #include <GeomAbs_Shape.hxx>
 
+#include "extend/OcctContainers.hpp"
+
 namespace py = pybind11;
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
@@ -156,11 +158,7 @@ void bind_brep_lib(py::module_ &m)
     m.def("sort_faces", [](const TopoDS_Shape& S) {
               TopTools_ListOfShape LF;
               BRepLib::SortFaces(S, LF);
-              std::vector<TopoDS_Face> result;
-              for (TopTools_ListIteratorOfListOfShape it(LF); it.More(); it.Next()) {
-                  result.push_back(TopoDS::Face(it.Value()));
-              }
-              return result;
+                    return occt::extended::containers::to_face_vector(LF);
           },
           py::arg("shape"),
           "Sorts faces by surface complexity (Plane, Cylinder, Cone, Sphere, Torus, other).");
@@ -169,11 +167,7 @@ void bind_brep_lib(py::module_ &m)
     m.def("reverse_sort_faces", [](const TopoDS_Shape& S) {
               TopTools_ListOfShape LF;
               BRepLib::ReverseSortFaces(S, LF);
-              std::vector<TopoDS_Face> result;
-              for (TopTools_ListIteratorOfListOfShape it(LF); it.More(); it.Next()) {
-                  result.push_back(TopoDS::Face(it.Value()));
-              }
-              return result;
+                    return occt::extended::containers::to_face_vector(LF);
           },
           py::arg("shape"),
           "Sorts faces by reverse surface complexity.");
