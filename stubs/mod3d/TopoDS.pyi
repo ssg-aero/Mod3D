@@ -6,7 +6,7 @@ import collections.abc
 import mod3d.Geom
 import mod3d.gp
 import typing
-__all__: list[str] = ['CompSolid', 'Compound', 'Edge', 'Face', 'Shape', 'Shell', 'Solid', 'TopLoc_Location', 'Vertex', 'Wire']
+__all__: list[str] = ['CompSolid', 'Compound', 'Edge', 'ExtendedShape', 'Face', 'Shape', 'Shell', 'Solid', 'TopLoc_Location', 'Vertex', 'Wire']
 class CompSolid(Shape):
     """
     A composite solid
@@ -56,6 +56,64 @@ class Edge(Shape):
         """
     def curve(self) -> typing.Any:
         ...
+class ExtendedShape(Shape):
+    """
+    OpenCascade extended shape with convenience transformations
+    """
+    @typing.overload
+    def __init__(self) -> None:
+        """
+        Creates a null extended shape
+        """
+    @typing.overload
+    def __init__(self, shape: Shape) -> None:
+        """
+        Creates an extended shape from any TopoDS shape
+        """
+    @typing.overload
+    def __init__(self, face: TopoDS_Face) -> None:
+        """
+        Creates an extended shape from a face
+        """
+    @typing.overload
+    def __init__(self, wire: TopoDS_Wire) -> None:
+        """
+        Creates an extended shape from a wire
+        """
+    @typing.overload
+    def __init__(self, edge: TopoDS_Edge) -> None:
+        """
+        Creates an extended shape from an edge
+        """
+    @typing.overload
+    def __init__(self, vertex: TopoDS_Vertex) -> None:
+        """
+        Creates an extended shape from a vertex
+        """
+    def rotate(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> None:
+        """
+        Rotates the shape around an axis
+        """
+    def rotated(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> ExtendedShape:
+        """
+        Returns a rotated extended shape
+        """
+    def scale(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> None:
+        """
+        Scales the shape in place
+        """
+    def scaled(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> ExtendedShape:
+        """
+        Returns a scaled extended shape
+        """
+    def translate(self, vector: mod3d.gp.Vec) -> None:
+        """
+        Translates the shape by the given vector
+        """
+    def translated(self, vector: mod3d.gp.Vec) -> ExtendedShape:
+        """
+        Returns a translated extended shape
+        """
 class Face(Shape):
     """
     A face (surface bounded by wires)

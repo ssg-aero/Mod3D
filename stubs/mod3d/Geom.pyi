@@ -108,6 +108,10 @@ class BSplineCurve(BoundedCurve):
         ...
     def set_weight(self, Index: typing.SupportsInt, Weight: typing.SupportsFloat) -> None:
         ...
+    def to_gbs(self) -> typing.Any:
+        """
+        Convert this OCCT B-spline curve to a gbs B-spline curve.
+        """
     def weight(self, Index: typing.SupportsInt) -> float:
         ...
     @property
@@ -275,6 +279,10 @@ class BSplineSurface(BoundedSurface):
     def set_weight(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, weight: typing.SupportsFloat) -> None:
         """
         Set the weight at (u_index, v_index).
+        """
+    def to_gbs(self) -> typing.Any:
+        """
+        Convert this OCCT B-spline surface to a gbs B-spline surface.
         """
     def u_knot(self, index: typing.SupportsInt) -> float:
         """

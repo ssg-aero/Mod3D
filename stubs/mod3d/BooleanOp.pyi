@@ -6,7 +6,7 @@ import mod3d.BRepBuilderAPI
 import mod3d.TopoDS
 import mod3d.gp
 import typing
-__all__: list[str] = ['Algo', 'BuilderAlgo', 'Common', 'Cut', 'Full', 'Fuse', 'GlueEnum', 'Off', 'Section', 'Shift', 'revolve_cut']
+__all__: list[str] = ['Algo', 'BuilderAlgo', 'Common', 'Cut', 'Full', 'Fuse', 'GlueEnum', 'Off', 'Section', 'Shift', 'extrude_cut', 'revolve_cut']
 class Algo(mod3d.BRepBuilderAPI.MakeShape):
     """
     Root interface for Boolean operation algorithms.
@@ -425,6 +425,52 @@ class Section(BuilderAlgo):
                     flag : bool
                         True to compute parametric curves
         """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, vector: mod3d.gp.Vec) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation.
+        Parameters:
+        -----------
+        shape : TopoDS_Shape
+            Object shape to cut from
+        profile : TopoDS_Face
+            Face profile to extrude
+        vector : gp_Vec
+            Extrusion vector
+    """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, vector: mod3d.gp.Vec, limiting_plane: mod3d.gp.Pln) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation stopped by a plane.
+    """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, vector: mod3d.gp.Vec, limiting_face: mod3d.TopoDS.Face) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation stopped by a face.
+    """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, vector: mod3d.gp.Vec) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation.
+        Parameters:
+        -----------
+        shape : TopoDS_Shape
+            Object shape to cut from
+        profile : TopoDS_Wire
+            Wire profile to extrude
+        vector : gp_Vec
+            Extrusion vector
+    """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, vector: mod3d.gp.Vec, limiting_plane: mod3d.gp.Pln) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation stopped by a plane.
+    """
+@typing.overload
+def extrude_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, vector: mod3d.gp.Vec, limiting_face: mod3d.TopoDS.Face) -> mod3d.TopoDS.Shape:
+    """
+    Performs an extrude cut operation stopped by a face.
+    """
 @typing.overload
 def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, axis: mod3d.gp.Ax1) -> mod3d.TopoDS.Shape:
     """
