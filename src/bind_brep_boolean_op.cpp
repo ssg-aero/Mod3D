@@ -15,8 +15,8 @@
 #include <TopoDS.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <Precision.hxx>
-#include <BRepPrimAPI_MakeRevol.hxx>
-#include <BRepBuilderAPI_MakeFace.hxx>
+
+#include "extend/RevolveCut.hpp"
 
 namespace py = pybind11;
 
@@ -495,12 +495,7 @@ void bind_brep_boolean_op(py::module_ &m)
     ;
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis)  {
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(profile, axis).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"),
     R"(Performs a revolve cut operation.
     Parameters:
@@ -513,12 +508,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Axis of revolutio)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis, double angle) {
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(profile, axis, angle).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis, angle);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"), py::arg("angle"),
     R"(Performs a revolve cut operation.
     Parameters:
@@ -533,13 +523,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Angle of revolution in radians)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Ax1& axis){
-        auto face = BRepBuilderAPI_MakeFace(profile).Face();
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(face, axis).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"),
     R"(Performs a revolve cut operation.
 
@@ -553,13 +537,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Axis of revolution in radians)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Ax1& axis, double angle) {
-        auto face = BRepBuilderAPI_MakeFace(profile).Face();
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(face, axis, angle).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis, angle);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"), py::arg("angle"),
     R"(Performs a revolve cut operation.
     
