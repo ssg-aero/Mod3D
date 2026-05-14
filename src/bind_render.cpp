@@ -8,6 +8,8 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <utility>
+#include <optional>
+#include <stdexcept>
 
 namespace py = pybind11;
 
@@ -182,27 +184,26 @@ auto extract_tessellation(const TopoDS_Shape& shape, bool compute_normals)
         if (!poly_3d.IsNull()) {
             if (!location.IsIdentity()) {
                 transform = location.Transformation();
+            }
 
-                const auto& nodes = poly_3d->Nodes();
-                const auto nb_nodes = poly_3d->NbNodes();
+            const auto& nodes = poly_3d->Nodes();
+            const auto nb_nodes = poly_3d->NbNodes();
 
-                // Pre-allocate exact size
-                vert_array.resize({nb_nodes, 3});
-                auto vert_ptr = vert_array.mutable_data();
-                index_array.resize({nb_nodes});
-                auto index_ptr = index_array.mutable_data();
-                
-                for (int i = 0; i < nb_nodes; ++i) {
-                    auto vertex = nodes(i+1);
-                    vertex.Transform(transform);
+            // Pre-allocate exact size
+            vert_array.resize({nb_nodes, 3});
+            auto vert_ptr = vert_array.mutable_data();
+            index_array.resize({nb_nodes});
+            auto index_ptr = index_array.mutable_data();
 
-                    const auto idx = i * 3;
-                    vert_ptr[idx]     = vertex.X();
-                    vert_ptr[idx + 1] = vertex.Y();
-                    vert_ptr[idx + 2] = vertex.Z();
-                    index_ptr[i] = i;
-                }
-                
+            for (int i = 0; i < nb_nodes; ++i) {
+                auto vertex = nodes(i+1);
+                vertex.Transform(transform);
+
+                const auto idx = i * 3;
+                vert_ptr[idx]     = vertex.X();
+                vert_ptr[idx + 1] = vertex.Y();
+                vert_ptr[idx + 2] = vertex.Z();
+                index_ptr[i] = i;
             }
         }
 
@@ -276,6 +277,63 @@ auto extract_tessellation( const TopoDS_Shape& shape, const IMeshTools_Parameter
     BRepTools::Clean(shape);
     BRepMesh_IncrementalMesh mesher(shape, params);
     return extract_tessellation(shape, compute_normals);
+}
+
+auto make_delaunay_parameters(std::optional<double> element_size,
+                              std::optional<double> surface_deflection,
+                              IMeshTools_MeshAlgoType mesh_algo,
+                              bool is_relative,
+                              double angle_deflection,
+                              bool parallel,
+                              bool control_surface_deflection)
+{
+    const auto deflection = element_size.value_or(surface_deflection.value_or(0.0));
+    if (deflection <= 0.0) {
+        throw std::invalid_argument("element_size or surface_deflection must be positive");
+    }
+
+    const auto interior_deflection = surface_deflection.value_or(deflection);
+    if (interior_deflection <= 0.0) {
+        throw std::invalid_argument("surface_deflection must be positive");
+    }
+
+    angle_deflection *= std::numbers::pi / 180.0;
+
+    IMeshTools_Parameters params;
+    params.MeshAlgo = mesh_algo;
+    params.Deflection = deflection;
+    params.DeflectionInterior = interior_deflection;
+    params.Angle = angle_deflection;
+    params.AngleInterior = angle_deflection;
+    params.InParallel = parallel;
+    params.Relative = is_relative;
+    params.ControlSurfaceDeflection = control_surface_deflection || surface_deflection.has_value();
+    params.EnableControlSurfaceDeflectionAllSurfaces = params.ControlSurfaceDeflection;
+
+    return params;
+}
+
+auto extract_delaunay_tessellation(const TopoDS_Shape& shape,
+                                   std::optional<double> element_size,
+                                   std::optional<double> surface_deflection,
+                                   IMeshTools_MeshAlgoType mesh_algo = IMeshTools_MeshAlgoType_DEFAULT,
+                                   bool is_relative = false,
+                                   double angle_deflection = 30.0,
+                                   bool parallel = true,
+                                   bool compute_normals = true,
+                                   bool control_surface_deflection = true)
+{
+    auto params = make_delaunay_parameters(
+        element_size,
+        surface_deflection,
+        mesh_algo,
+        is_relative,
+        angle_deflection,
+        parallel,
+        control_surface_deflection
+    );
+
+    return extract_tessellation(shape, params, compute_normals);
 }
 
 auto extract_curve_tessellation( const Adaptor3d_Curve& curve, double linear_deflection)
@@ -419,6 +477,31 @@ void bind_render(py::module_ &m)
         "    - vertex positions (numpy array of float, shape (n_vertices, 3))\n"
         "    - vertex normals (numpy array of float, shape (n_vertices, 3))\n"
         "    - vertex UV coordinates (numpy array of float, shape (n_vertices, 2))"
+    );
+
+    m.def("extract_delaunay_tessellation", &extract_delaunay_tessellation,
+        py::arg("shape"),
+        py::arg("element_size") = std::nullopt,
+        py::arg("surface_deflection") = std::nullopt,
+        py::arg("mesh_algo") = IMeshTools_MeshAlgoType_DEFAULT,
+        py::arg("is_relative") = false,
+        py::arg("angle_deflection") = 30.,
+        py::arg("parallel") = true,
+        py::arg("compute_normals") = true,
+        py::arg("control_surface_deflection") = true,
+        "Extracts Delaunay tessellation data from the given shape while preserving the same output format as extract_tessellation.\n\n"
+        "Parameters:\n"
+        "  shape: The TopoDS_Shape to tessellate\n"
+        "  element_size: Target element deflection for boundary edges and face interiors\n"
+        "  surface_deflection: Optional face interior deflection; if omitted, element_size is used\n"
+        "  mesh_algo: Delaunay triangulation algorithm to use (default: MeshAlgoType.DEFAULT)\n"
+        "  is_relative: If True, deflection is relative to shape size (default: False)\n"
+        "  angle_deflection: The angular deflection in degrees (default: 30.0)\n"
+        "  parallel: If True, use parallel processing (default: True)\n"
+        "  compute_normals: If True, compute vertex normals (default: True)\n"
+        "  control_surface_deflection: If True, check triangulation deviation from surfaces (default: True)\n\n"
+        "Returns:\n"
+        "  A pair (faces, edges) using the same tuple and numpy array layout as extract_tessellation"
     );
 
     m.def("extract_curve_tessellation", py::overload_cast<const opencascade::handle<Geom_Curve>&, double>(&extract_curve_tessellation),

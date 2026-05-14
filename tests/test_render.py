@@ -78,6 +78,65 @@ def test_extract_tessellation_box():
         msg = f"Face {i}: should have vertices"
         assert vertices.shape[0] > 0, msg
 
+    assert len(result_edges) == 12, "Box should have 12 tessellated edges"
+    for i, (indices, vertices) in enumerate(result_edges):
+        msg = f"Edge {i}: indices should be numpy array"
+        assert isinstance(indices, np.ndarray), msg
+        msg = f"Edge {i}: vertices should be numpy array"
+        assert isinstance(vertices, np.ndarray), msg
+        msg = f"Edge {i}: indices should be int32"
+        assert indices.dtype == np.int32, msg
+        msg = f"Edge {i}: vertices should be float64"
+        assert vertices.dtype == np.float64, msg
+        msg = f"Edge {i}: vertices should be 2D xyz coordinates"
+        assert vertices.ndim == 2 and vertices.shape[1] == 3, msg
+        msg = f"Edge {i}: indices should match vertices"
+        assert indices.shape[0] == vertices.shape[0], msg
+        msg = f"Edge {i}: should have vertices"
+        assert vertices.shape[0] > 0, msg
+
+
+def test_extract_delaunay_tessellation_preserves_output_shape():
+    """Delaunay tessellation returns the same faces/edges contract."""
+    box = BRepBuilderAPI.MakeBox(10.0, 20.0, 30.0).shape()
+
+    result_faces, result_edges = Render.extract_delaunay_tessellation(
+        box,
+        element_size=0.1,
+        mesh_algo=Render.MeshAlgoType.Watson,
+    )
+
+    assert len(result_faces) == 6, "Box should have 6 faces"
+    assert len(result_edges) == 12, "Box should have 12 edges"
+
+    for triangles, vertices, normals, uvs in result_faces:
+        assert triangles.ndim == 2
+        assert triangles.shape[1] == 3
+        assert vertices.ndim == 2
+        assert vertices.shape[1] == 3
+        assert normals is None or normals.shape == vertices.shape
+        assert uvs is None or (uvs.ndim == 2 and uvs.shape[1] == 2)
+
+    for indices, vertices in result_edges:
+        assert indices.ndim == 1
+        assert vertices.ndim == 2
+        assert vertices.shape[1] == 3
+        assert indices.shape[0] == vertices.shape[0]
+
+
+def test_extract_delaunay_tessellation_accepts_surface_deflection():
+    """Delaunay tessellation can be driven by surface deflection only."""
+    box = BRepBuilderAPI.MakeBox(10.0, 20.0, 30.0).shape()
+
+    result_faces, result_edges = Render.extract_delaunay_tessellation(
+        box,
+        surface_deflection=0.1,
+        mesh_algo=Render.MeshAlgoType.Delabella,
+    )
+
+    assert len(result_faces) == 6
+    assert len(result_edges) == 12
+
 
 # def test_extract_tessellation_cylinder():
 #     """Test extract_tessellation with a cylinder."""

@@ -274,6 +274,13 @@ faces, edges = Render.extract_tessellation(box, linear_deflection=0.1)
 # Each face: (triangles, vertices, normals, uvs) as numpy arrays
 for triangles, vertices, normals, uvs in faces:
     print(f"{vertices.shape[0]} vertices, {triangles.shape[0]} triangles")
+
+# Delaunay meshing keeps the same (faces, edges) output contract
+faces, edges = Render.extract_delaunay_tessellation(
+    box,
+    element_size=0.1,
+    mesh_algo=Render.MeshAlgoType.Watson,
+)
 ```
 
 ### Interactive Rendering
