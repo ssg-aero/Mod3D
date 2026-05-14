@@ -4,7 +4,51 @@ import numpy as np
 from mod3d import (
     BRepBuilderAPI,
     Render,
+    gp,
 )
+
+
+def test_extract_tessellation_square_face():
+    points = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 0.0, 0.0),
+        gp.Pnt(1.0, 1.0, 0.0),
+        gp.Pnt(0.0, 1.0, 0.0),
+        gp.Pnt(0.0, 0.0, 0.0),
+    ]
+
+    wire_maker = BRepBuilderAPI.MakePolygon()
+    for point in points:
+        wire_maker.add(point)
+    square = BRepBuilderAPI.MakeFace(wire_maker.wire()).face()
+
+    result_faces, result_edges = Render.extract_tessellation(square, linear_deflection=0.01)
+
+    assert len(result_faces) == 1
+    assert len(result_edges) == 4
+
+    triangles, vertices, normals, uvs = result_faces[0]
+    assert triangles.shape == (2, 3)
+    assert vertices.shape == (4, 3)
+    assert normals.shape == (4, 3)
+    assert uvs.shape == (4, 2)
+    assert triangles.min() >= 0
+    assert triangles.max() < len(vertices)
+
+    np.testing.assert_allclose(vertices[:, 2], 0.0)
+    np.testing.assert_allclose(np.linalg.norm(normals, axis=1), 1.0)
+
+    expected_xy = np.array([
+        [0.0, 0.0],
+        [0.0, 1.0],
+        [1.0, 0.0],
+        [1.0, 1.0],
+    ])
+    np.testing.assert_allclose(np.array(sorted(vertices[:, :2].tolist())), expected_xy)
+
+    for indices, edge_vertices in result_edges:
+        assert indices.shape == (2,)
+        assert edge_vertices.shape == (2, 3)
 
 
 def test_extract_tessellation_box():
