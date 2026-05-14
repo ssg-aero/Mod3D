@@ -28,6 +28,8 @@
 #include <gp_Ax2.hxx>
 #include <gp_Dir.hxx>
 
+#include "extend/containers/OcctContainers.hpp"
+
 namespace py = pybind11;
 
 void bind_brep_offset_api(py::module_ &m)
@@ -487,10 +489,9 @@ void bind_brep_offset_api(py::module_ &m)
         
         // Generated shapes
         .def("generated", [](BRepOffsetAPI_MakeOffset& self, const TopoDS_Shape& shape) {
-                TopTools_ListOfShape result = self.Generated(shape);
                 py::list py_result;
-                for (TopTools_ListIteratorOfListOfShape it(result); it.More(); it.Next()) {
-                    py_result.append(it.Value());
+                for (const auto& generated_shape : occt::extended::containers::to_vector(self.Generated(shape))) {
+                    py_result.append(generated_shape);
                 }
                 return py_result;
             },
@@ -849,8 +850,8 @@ void bind_brep_offset_api(py::module_ &m)
                 TopTools_ListOfShape liste;
                 Standard_Boolean result = self.BuildWire(liste);
                 py::list py_result;
-                for (TopTools_ListIteratorOfListOfShape it(liste); it.More(); it.Next()) {
-                    py_result.append(it.Value());
+                for (const auto& wire : occt::extended::containers::to_vector(liste)) {
+                    py_result.append(wire);
                 }
                 return py::make_tuple(result, py_result);
             },
@@ -1107,8 +1108,8 @@ void bind_brep_offset_api(py::module_ &m)
         .def("wires", [](BRepOffsetAPI_ThruSections& self) {
                 const TopTools_ListOfShape& wires = self.Wires();
                 py::list result;
-                for (TopTools_ListIteratorOfListOfShape it(wires); it.More(); it.Next()) {
-                    result.append(it.Value());
+                for (const auto& wire : occt::extended::containers::to_vector(wires)) {
+                    result.append(wire);
                 }
                 return result;
             },

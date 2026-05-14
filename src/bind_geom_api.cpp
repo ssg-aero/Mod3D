@@ -30,7 +30,7 @@
 #include <GeomAbs_Shape.hxx>
 #include <Approx_ParametrizationType.hxx>
 
-#include "array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 
 namespace py = pybind11;

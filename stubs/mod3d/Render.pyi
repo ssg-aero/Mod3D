@@ -7,7 +7,7 @@ import mod3d.TopoDS
 import numpy
 import numpy.typing
 import typing
-__all__: list[str] = ['DEFAULT', 'Delabella', 'MeshAlgoType', 'MeshParameters', 'Watson', 'extract_curve_tessellation', 'extract_tessellation']
+__all__: list[str] = ['DEFAULT', 'Delabella', 'MeshAlgoType', 'MeshParameters', 'Watson', 'extract_curve_tessellation', 'extract_delaunay_tessellation', 'extract_tessellation']
 class MeshAlgoType:
     """
     Members:
@@ -220,6 +220,24 @@ def extract_curve_tessellation(wire: mod3d.TopoDS.Wire, linear_deflection: typin
       A tuple containing:
         - vertex indices (numpy array of int, shape (n_points,))
         - vertex positions (numpy array of float, shape (n_points, 3))
+    """
+def extract_delaunay_tessellation(shape: mod3d.TopoDS.Shape, element_size: typing.SupportsFloat | None = None, surface_deflection: typing.SupportsFloat | None = None, mesh_algo: MeshAlgoType = ..., is_relative: bool = False, angle_deflection: typing.SupportsFloat = 30.0, parallel: bool = True, compute_normals: bool = True, control_surface_deflection: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:
+    """
+    Extracts Delaunay tessellation data from the given shape while preserving the same output format as extract_tessellation.
+    
+    Parameters:
+      shape: The TopoDS_Shape to tessellate
+      element_size: Target element deflection for boundary edges and face interiors
+      surface_deflection: Optional face interior deflection; if omitted, element_size is used
+      mesh_algo: Delaunay triangulation algorithm to use (default: MeshAlgoType.DEFAULT)
+      is_relative: If True, deflection is relative to shape size (default: False)
+      angle_deflection: The angular deflection in degrees (default: 30.0)
+      parallel: If True, use parallel processing (default: True)
+      compute_normals: If True, compute vertex normals (default: True)
+      control_surface_deflection: If True, check triangulation deviation from surfaces (default: True)
+    
+    Returns:
+      A pair (faces, edges) using the same tuple and numpy array layout as extract_tessellation
     """
 @typing.overload
 def extract_tessellation(shape: mod3d.TopoDS.Shape, linear_deflection: typing.SupportsFloat, is_relative: bool = False, angle_deflection: typing.SupportsFloat = 30.0, parallel: bool = True, compute_normals: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:

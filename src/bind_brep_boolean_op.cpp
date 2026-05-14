@@ -15,8 +15,11 @@
 #include <TopoDS.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <Precision.hxx>
-#include <BRepPrimAPI_MakeRevol.hxx>
-#include <BRepBuilderAPI_MakeFace.hxx>
+#include <gp_Pln.hxx>
+
+#include "extend/brep/ExtrudeCut.hpp"
+#include "extend/brep/RevolveCut.hpp"
+#include "extend/containers/OcctContainers.hpp"
 
 namespace py = pybind11;
 
@@ -276,8 +279,7 @@ void bind_brep_boolean_op(py::module_ &m)
         // History queries
         .def("modified", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
                 py::list modified;
-                for(const auto& modified_sub_shape : self.Modified(shape))
-                {
+                for (const auto& modified_sub_shape : occt::extended::containers::to_vector(self.Modified(shape))) {
                     modified.append(modified_sub_shape);
                 }
                 return modified;
@@ -297,8 +299,7 @@ void bind_brep_boolean_op(py::module_ &m)
         
         .def("generated", [](BRepAlgoAPI_BuilderAlgo& self, const TopoDS_Shape& shape){
                 py::list generated;
-                for(const auto& generated_item : self.Generated(shape))
-                {
+                for (const auto& generated_item : occt::extended::containers::to_vector(self.Generated(shape))) {
                     generated.append(generated_item);
                 }
                 return generated;
@@ -346,9 +347,8 @@ void bind_brep_boolean_op(py::module_ &m)
         // Section edges
         .def("section_edges", [](BRepAlgoAPI_BuilderAlgo& self){
                 py::list sections;
-                for( auto& shape : self.SectionEdges())
-                {
-                    sections.append(TopoDS::Edge(shape));
+                for (const auto& edge : occt::extended::containers::to_edge_vector(self.SectionEdges())) {
+                    sections.append(edge);
                 }
                 return sections;
             },
@@ -494,13 +494,54 @@ void bind_brep_boolean_op(py::module_ &m)
                 True to compute parametric curves)")
     ;
 
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"),
+    R"(Performs an extrude cut operation.
+    Parameters:
+    -----------
+    shape : TopoDS_Shape
+        Object shape to cut from
+    profile : TopoDS_Face
+        Face profile to extrude
+    vector : gp_Vec
+        Extrusion vector)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector, const gp_Pln& limiting_plane) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_plane);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_plane"),
+    R"(Performs an extrude cut operation stopped by a plane.)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector, const TopoDS_Face& limiting_face) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_face);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_face"),
+    R"(Performs an extrude cut operation stopped by a face.)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"),
+    R"(Performs an extrude cut operation.
+    Parameters:
+    -----------
+    shape : TopoDS_Shape
+        Object shape to cut from
+    profile : TopoDS_Wire
+        Wire profile to extrude
+    vector : gp_Vec
+        Extrusion vector)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector, const gp_Pln& limiting_plane) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_plane);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_plane"),
+    R"(Performs an extrude cut operation stopped by a plane.)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector, const TopoDS_Face& limiting_face) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector, limiting_face);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"), py::arg("limiting_face"),
+    R"(Performs an extrude cut operation stopped by a face.)");
+
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis)  {
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(profile, axis).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"),
     R"(Performs a revolve cut operation.
     Parameters:
@@ -513,12 +554,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Axis of revolutio)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis, double angle) {
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(profile, axis, angle).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis, angle);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"), py::arg("angle"),
     R"(Performs a revolve cut operation.
     Parameters:
@@ -533,13 +569,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Angle of revolution in radians)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Ax1& axis){
-        auto face = BRepBuilderAPI_MakeFace(profile).Face();
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(face, axis).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"),
     R"(Performs a revolve cut operation.
 
@@ -553,13 +583,7 @@ void bind_brep_boolean_op(py::module_ &m)
         Axis of revolution in radians)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Ax1& axis, double angle) {
-        auto face = BRepBuilderAPI_MakeFace(profile).Face();
-        BRepAlgoAPI_Cut cut_algo(shape, BRepPrimAPI_MakeRevol(face, axis, angle).Shape());
-        cut_algo.Build();
-        if (!cut_algo.IsDone()) {
-            throw std::runtime_error("Revolve cut operation failed");
-        }
-        return cut_algo.Shape();
+        return occt::extended::brep::revolve_cut(shape, profile, axis, angle);
     }, py::arg("shape"), py::arg("profile"), py::arg("axis"), py::arg("angle"),
     R"(Performs a revolve cut operation.
     

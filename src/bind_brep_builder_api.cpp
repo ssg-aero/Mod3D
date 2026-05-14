@@ -38,7 +38,7 @@
 #include <TopoDS_Wire.hxx>
 #include <TopoDS_Edge.hxx>
 
-#include "array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 namespace py = pybind11;
 

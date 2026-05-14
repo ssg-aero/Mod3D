@@ -16,6 +16,7 @@
 #include <BRepBuilderAPI_Sewing.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <TopExp.hxx>
 #include <TopTools_HSequenceOfShape.hxx>
 #include <ShapeAnalysis_FreeBounds.hxx>
@@ -80,8 +81,8 @@ TopoDS_Shape union_faces(const TopoDS_Shape& shape)
         
         // Convert to vector for easier iteration
         std::vector<TopoDS_Face> face_vec;
-        for (TopTools_ListIteratorOfListOfShape it(face_list); it.More(); it.Next()) {
-            face_vec.push_back(TopoDS::Face(it.Value()));
+        for (const TopoDS_Shape& s : face_list) {
+            face_vec.push_back(TopoDS::Face(s));
         }
         
         for (size_t j = 0; j < face_vec.size(); ++j) {

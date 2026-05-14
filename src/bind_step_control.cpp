@@ -11,6 +11,8 @@
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <Message_ProgressRange.hxx>
 
+#include "extend/containers/OcctContainers.hpp"
+
 namespace py = pybind11;
 
 // Declare opencascade::handle as a holder type
@@ -261,18 +263,10 @@ void bind_step_control(py::module_ &m)
                 TColStd_SequenceOfAsciiString lengthNames, angleNames, solidAngleNames;
                 self.FileUnits(lengthNames, angleNames, solidAngleNames);
 
-                auto to_list = [](const TColStd_SequenceOfAsciiString& seq) {
-                    std::vector<std::string> result;
-                    result.reserve(seq.Size());
-                    for (int i = 1; i <= seq.Size(); ++i)
-                        result.push_back(seq.Value(i).ToCString());
-                    return result;
-                };
-
                 return py::make_tuple(
-                    to_list(lengthNames),
-                    to_list(angleNames),
-                    to_list(solidAngleNames)
+                    occt::extended::containers::to_vector(lengthNames),
+                    occt::extended::containers::to_vector(angleNames),
+                    occt::extended::containers::to_vector(solidAngleNames)
                 );
             },
             "Returns the unit names found in the STEP file.\n\n"

@@ -302,3 +302,78 @@ def test_dist_shape_shape_multiple_solutions():
         pt2 = dist.point_on_shape2(i)
         assert isinstance(pt1, gp.Pnt)
         assert isinstance(pt2, gp.Pnt)
+
+
+def test_dist_shape_shape_points_and_distances():
+    """Test helper returning all distance solution points."""
+    box1 = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+    box2 = BRepBuilderAPI.MakeBox(gp.Pnt(20.0, 0.0, 0.0), 10.0, 10.0, 10.0).shape()
+
+    dist = BRepExtrema.DistShapeShape(box1, box2)
+    values = dist.points_and_distances()
+
+    assert len(values) == dist.nb_solution
+    point1, point2, distance = values[0]
+    assert isinstance(point1, gp.Pnt)
+    assert isinstance(point2, gp.Pnt)
+    assert distance == pytest.approx(dist.value, abs=1e-6)
+
+
+def test_extpc_points_and_trimmed_square_distances():
+    """Test vertex-edge extrema aggregate helpers."""
+    vertex = BRepBuilderAPI.MakeVertex(gp.Pnt(5.0, 5.0, 0.0)).vertex()
+    edge = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 0.0, 0.0), gp.Pnt(10.0, 0.0, 0.0)).edge()
+
+    extrema = BRepExtrema.ExtPC(vertex, edge)
+
+    assert extrema.is_done
+    points = extrema.points()
+    assert len(points) == extrema.nb_ext
+    assert all(isinstance(point, gp.Pnt) for point in points)
+
+    dist1, dist2, pnt1, pnt2 = extrema.trimmed_square_distances()
+    assert isinstance(dist1, float)
+    assert isinstance(dist2, float)
+    assert isinstance(pnt1, gp.Pnt)
+    assert isinstance(pnt2, gp.Pnt)
+
+
+def test_extcc_aggregate_helpers():
+    """Test edge-edge extrema aggregate helpers."""
+    edge1 = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 0.0, 0.0), gp.Pnt(10.0, 0.0, 0.0)).edge()
+    edge2 = BRepBuilderAPI.MakeEdge(gp.Pnt(5.0, 5.0, 0.0), gp.Pnt(5.0, 5.0, 10.0)).edge()
+
+    extrema = BRepExtrema.ExtCC(edge1, edge2)
+
+    assert extrema.is_done
+    square_distances = extrema.square_distances()
+    assert len(square_distances) == extrema.nb_ext
+    assert all(isinstance(distance, float) for distance in square_distances)
+
+    values = extrema.pamameters_and_points()
+    assert len(values) == extrema.nb_ext
+    if values:
+        (parameter1, point1), (parameter2, point2), square_distance = values[0]
+        assert isinstance(parameter1, float)
+        assert isinstance(parameter2, float)
+        assert isinstance(point1, gp.Pnt)
+        assert isinstance(point2, gp.Pnt)
+        assert isinstance(square_distance, float)
+
+    distances, points = extrema.trimmed_square_distances()
+    assert len(distances) == 4
+    assert len(points) == 4
+    assert all(isinstance(distance, float) for distance in distances)
+    assert all(isinstance(point, gp.Pnt) for point in points)
+
+
+def test_extcc_parallel_parameters_and_points_returns_empty_list():
+    """Test parallel edge-edge extrema returns no parameter/point pairs."""
+    edge1 = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 0.0, 0.0), gp.Pnt(10.0, 0.0, 0.0)).edge()
+    edge2 = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 5.0, 0.0), gp.Pnt(10.0, 5.0, 0.0)).edge()
+
+    extrema = BRepExtrema.ExtCC(edge1, edge2)
+
+    assert extrema.is_done
+    assert extrema.is_parallel
+    assert extrema.pamameters_and_points() == []

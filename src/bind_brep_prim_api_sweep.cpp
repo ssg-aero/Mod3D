@@ -15,7 +15,7 @@
 #include <BRepSweep_Revol.hxx>
 #include <BRepFill_Pipe.hxx>
 
-#include "array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 namespace py = pybind11;
 

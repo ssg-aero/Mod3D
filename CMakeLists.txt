@@ -50,9 +50,15 @@ if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif(WIN32)
 add_library(occt-extend SHARED
-    src/extend/UnionFaces.cpp
-    src/extend/GeomSurfaceCompare.cpp
-    src/extend/shapes.cpp
+    src/extend/brep/ExtrudeCut.cpp
+    src/extend/brep/RevolveCut.cpp
+    src/extend/brep/UnionFaces.cpp
+    src/extend/extrema/ExtremaUtils.cpp
+    src/extend/gbs/GbsConverters.cpp
+    src/extend/geometry/GeomSurfaceCompare.cpp
+    src/extend/render/TessellationUtils.cpp
+    src/extend/topology/shapes.cpp
+    src/extend/topology/TopologyUtils.cpp
 )
 # if(WIN32)
 #     set_target_properties(occt-extend PROPERTIES
@@ -70,12 +76,18 @@ if(MOD3D_BUILD_OCCTEXT OR MOD3D_BUILD_PYTHON)
         ${OpenCASCADE_ModelingData_LIBRARIES}
         ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
         ${OpenCASCADE_DataExchange_LIBRARIES}
+        $<$<BOOL:${Gbs_FOUND}>:GBS::gbs>
+    )
+
+    target_compile_definitions(occt-extend PRIVATE
+        HAS_GBS=$<BOOL:${Gbs_FOUND}>
     )
 
     target_include_directories(occt-extend PRIVATE 
         ${CMAKE_CURRENT_SOURCE_DIR}/src 
         ${CMAKE_CURRENT_SOURCE_DIR}/inc 
         ${OpenCASCADE_INCLUDE_DIR}
+        $<$<BOOL:${Gbs_FOUND}>:${GBS_INCLUDE_DIR}>
     )
     cmake_policy(SET CMP0177 NEW)
     install(TARGETS occt-extend

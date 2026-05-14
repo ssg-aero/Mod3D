@@ -36,6 +36,10 @@ jobs:
           # --- Windows : compilateur clang depuis conda ---
           # Le runner a MinGW pre-installe qui entre en conflit avec
           # les libs OCCT. On utilise clang comme en local.
+          # On utilise bash (Git Bash) parce que `micromamba shell init`
+          # crash sur le runner windows-2025-vs2026 (toute version, tout
+          # shell) ; la step "Activate env (Windows)" expose manuellement
+          # CONDA_PREFIX et PATH apres le Setup.
           - os: windows-latest
             extra-packages: >-
               clangxx
@@ -45,7 +49,7 @@ jobs:
             cmake-extra: >-
               -DCMAKE_C_COMPILER=clang
               -DCMAKE_CXX_COMPILER=clang++
-            shell: cmd /C call {0}
+            shell: bash
 
           # --- macOS : compilateur Apple clang (pre-installe via Xcode) ---
           # Pas besoin de forcer le compilateur, CMake trouve Apple clang.
@@ -63,7 +67,64 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup micromamba environment
+      # OCCT pinned to 7.9.x: 8.x removes several legacy headers
+      # (Geom2dLProp_CLProps2d, TopTools iterators, ...) and breaks
+      # transitive includes (gp_Ax1). Migration tracked separately.
+      #
+      # Sur Windows on omet `init-shell` car `micromamba shell init`
+      # crash sur l'image runner windows-2025-vs2026 (exit 0xC0000005).
+      # L'environnement reste expose via les variables (CONDA_PREFIX,
+      # PATH) que l'action positionne sans avoir besoin d'init.
+      - name: Setup micromamba environment (Windows)
+        if: runner.os == 'Windows'
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          # Version pinnee (au lieu de `latest`) pour forcer le download :
+          # la micromamba pre-installee sur l'image runner
+          # windows-2025-vs2026 crash sur toutes les sous-commandes
+          # (exit 0xC0000005). Toute version != pre-installee declenche
+          # un download d'une binaire saine.
+          micromamba-version: '1.5.10-0'
+          environment-name: ci
+          condarc: |
+            channels:
+              - conda-forge
+          create-args: >-
+            python=3.13
+            cmake
+            ninja
+            pybind11
+            occt=7.9.*
+            eigen
+            numpy
+            pythreejs
+            pybind11-stubgen
+            pytest
+            ${{ matrix.extra-packages }}
+          cache-environment: true
+          # Par defaut l'action lance `micromamba shell init` meme si
+          # `init-shell` n'est pas specifie. Sur Windows ce crash
+          # (0xC0000005), donc on le desactive explicitement.
+          init-shell: none
+
+      # `init-shell: none` n'expose pas CONDA_PREFIX/PATH, donc CMake
+      # tomberait sur le Python du host (3.14) au lieu de celui de l'env
+      # et ne trouverait pas OpenCASCADE. On fait l'activation a la main
+      # via $GITHUB_ENV/$GITHUB_PATH pour les steps suivantes.
+      - name: Activate micromamba env (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          env_path="$MAMBA_ROOT_PREFIX/envs/ci"
+          echo "CONDA_PREFIX=$env_path" >> "$GITHUB_ENV"
+          echo "$env_path/Library/bin" >> "$GITHUB_PATH"
+          echo "$env_path/Library/usr/bin" >> "$GITHUB_PATH"
+          echo "$env_path/Library/mingw-w64/bin" >> "$GITHUB_PATH"
+          echo "$env_path/Scripts" >> "$GITHUB_PATH"
+          echo "$env_path" >> "$GITHUB_PATH"
+
+      - name: Setup micromamba environment (Unix)
+        if: runner.os != 'Windows'
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: latest
@@ -76,7 +137,7 @@ jobs:
             cmake
             ninja
             pybind11
-            occt
+            occt=7.9.*
             eigen
             numpy
             pythreejs
@@ -84,10 +145,7 @@ jobs:
             pytest
             ${{ matrix.extra-packages }}
           cache-environment: true
-          # Sur Windows, init cmd en plus de bash
-          init-shell: >-
-            bash
-            ${{ matrix.os == 'windows-latest' && 'cmd.exe' || '' }}
+          init-shell: bash
 
       # Sur Windows conda, les libs sont dans CONDA_PREFIX/Library
       # (pas directement dans CONDA_PREFIX comme sur Unix).
@@ -97,7 +155,7 @@ jobs:
           cmake -B build -S . -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DMOD3D_USE_GBS=OFF
-          -DCMAKE_INSTALL_PREFIX=%CONDA_PREFIX%\Library
+          "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX/Library"
           ${{ matrix.cmake-extra }}
 
       - name: Configure (Unix)
@@ -120,7 +178,7 @@ jobs:
       - name: Test (Windows)
         if: runner.os == 'Windows'
         run: |
-          set "PATH=%CONDA_PREFIX%\Library\bin;%PATH%"
+          export PATH="$CONDA_PREFIX/Library/bin:$PATH"
           pytest tests/ -v
 
       - name: Test (Unix)

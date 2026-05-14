@@ -16,7 +16,7 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array2OfInteger.hxx>
 
-#include "array_utils.hpp"
+#include "extend/bindings/array_utils.hpp"
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11
@@ -27,9 +27,7 @@ extern void bind_geom_surfaces_splines(py::module_ &m);
 extern void bind_geom_surfaces_elementary(py::module_ &m);
 #if HAS_GBS
     #include <gbs/bssurf.h>
-    // Helper functions to convert gbs surfaces to OCCT
-    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs::BSSurface<double,3>& surf);
-    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(const gbs::BSSurfaceRational<double,3>& surf);
+    #include "extend/gbs/GbsConverters.hpp"
 #endif
 void bind_geom_surfaces_splines(py::module_ &m)
 {
@@ -267,12 +265,12 @@ void bind_geom_surfaces_splines(py::module_ &m)
             )doc")
 #if HAS_GBS
         .def(py::init([](const gbs::BSSurface<double,3>& surf) {
-            return gbs_bssurface_to_occt(surf);
+            return occt::extended::gbs::to_occt(surf);
         }), py::arg("bssurface"),
             "Create a B-spline surface from a gbs::BSSurface object.")
 
         .def(py::init([](const gbs::BSSurfaceRational<double,3>& surf) {
-            return gbs_bssurface_rational_to_occt(surf);
+            return occt::extended::gbs::to_occt(surf);
         }), py::arg("bssurface_rational"),
             "Create a rational B-spline surface from a gbs::BSSurfaceRational object.")
 #endif
@@ -351,6 +349,15 @@ void bind_geom_surfaces_splines(py::module_ &m)
             }
             return result;
         }, "Return all weights as a numpy array of shape [nb_u_poles, nb_v_poles].")
+
+#if HAS_GBS
+        .def("to_gbs", [](const Geom_BSplineSurface& self) -> py::object {
+            if (self.IsURational() || self.IsVRational()) {
+                return py::cast(occt::extended::gbs::to_gbs_rational(self));
+            }
+            return py::cast(occt::extended::gbs::to_gbs(self));
+        }, "Convert this OCCT B-spline surface to a gbs B-spline surface.")
+#endif
 
         // --- Knot access ---
         .def("u_knot", &Geom_BSplineSurface::UKnot, py::arg("index"),

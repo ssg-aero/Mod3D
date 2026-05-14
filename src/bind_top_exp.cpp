@@ -13,7 +13,8 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 
-#include <explorer_utils.hpp>
+#include "extend/topology/explorer_utils.hpp"
+#include "extend/topology/TopologyUtils.hpp"
 
 namespace py = pybind11;
 
@@ -248,15 +249,13 @@ void bind_top_exp(py::module_ &m)
 
     m.def("map_shapes_and_ancestors",
         [](const TopoDS_Shape& S, TopAbs_ShapeEnum TS, TopAbs_ShapeEnum TA) {
-            TopTools_IndexedDataMapOfShapeListOfShape M;
-            TopExp::MapShapesAndAncestors(S, TS, TA, M);
             py::dict result;
-            for (int i = 1; i <= M.Extent(); ++i) {
+            for (const auto& item : occt::extended::topology::map_shapes_and_ancestors(S, TS, TA)) {
                 py::list ancestors;
-                for (const auto& shape : M.FindFromIndex(i)) {
+                for (const auto& shape : item.ancestors) {
                     ancestors.append(shape);
                 }
-                result[py::cast(M.FindKey(i))] = ancestors;
+                result[py::cast(item.shape)] = ancestors;
             }
             return result;
         },
@@ -274,15 +273,13 @@ void bind_top_exp(py::module_ &m)
 
     m.def("map_shapes_and_unique_ancestors",
         [](const TopoDS_Shape& S, TopAbs_ShapeEnum TS, TopAbs_ShapeEnum TA, bool useOrientation = false) {
-            TopTools_IndexedDataMapOfShapeListOfShape M;
-            TopExp::MapShapesAndUniqueAncestors(S, TS, TA, M, useOrientation);
             py::dict result;
-            for (int i = 1; i <= M.Extent(); ++i) {
+            for (const auto& item : occt::extended::topology::map_shapes_and_unique_ancestors(S, TS, TA, useOrientation)) {
                 py::list ancestors;
-                for (const auto& shape : M.FindFromIndex(i)) {
+                for (const auto& shape : item.ancestors) {
                     ancestors.append(shape);
                 }
-                result[py::cast(M.FindKey(i))] = ancestors;
+                result[py::cast(item.shape)] = ancestors;
             }
             return result;
         },
