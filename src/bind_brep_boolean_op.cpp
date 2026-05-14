@@ -16,6 +16,7 @@
 #include <TopTools_ListOfShape.hxx>
 #include <Precision.hxx>
 
+#include "extend/ExtrudeCut.hpp"
 #include "extend/RevolveCut.hpp"
 
 namespace py = pybind11;
@@ -493,6 +494,32 @@ void bind_brep_boolean_op(py::module_ &m)
             flag : bool
                 True to compute parametric curves)")
     ;
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Vec& vector) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"),
+    R"(Performs an extrude cut operation.
+    Parameters:
+    -----------
+    shape : TopoDS_Shape
+        Object shape to cut from
+    profile : TopoDS_Face
+        Face profile to extrude
+    vector : gp_Vec
+        Extrusion vector)");
+
+    m.def("extrude_cut", [](const TopoDS_Shape& shape, const TopoDS_Wire& profile, const gp_Vec& vector) {
+        return occt::extended::brep::extrude_cut(shape, profile, vector);
+    }, py::arg("shape"), py::arg("profile"), py::arg("vector"),
+    R"(Performs an extrude cut operation.
+    Parameters:
+    -----------
+    shape : TopoDS_Shape
+        Object shape to cut from
+    profile : TopoDS_Wire
+        Wire profile to extrude
+    vector : gp_Vec
+        Extrusion vector)");
 
     m.def("revolve_cut", [](const TopoDS_Shape& shape, const TopoDS_Face& profile, const gp_Ax1& axis)  {
         return occt::extended::brep::revolve_cut(shape, profile, axis);
