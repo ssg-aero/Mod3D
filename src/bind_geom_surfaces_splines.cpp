@@ -350,6 +350,15 @@ void bind_geom_surfaces_splines(py::module_ &m)
             return result;
         }, "Return all weights as a numpy array of shape [nb_u_poles, nb_v_poles].")
 
+#if HAS_GBS
+        .def("to_gbs", [](const Geom_BSplineSurface& self) -> py::object {
+            if (self.IsURational() || self.IsVRational()) {
+                return py::cast(occt::extended::gbs::to_gbs_rational(self));
+            }
+            return py::cast(occt::extended::gbs::to_gbs(self));
+        }, "Convert this OCCT B-spline surface to a gbs B-spline surface.")
+#endif
+
         // --- Knot access ---
         .def("u_knot", &Geom_BSplineSurface::UKnot, py::arg("index"),
             "Return the U knot at index (1-based).")

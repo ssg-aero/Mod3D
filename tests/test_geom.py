@@ -874,6 +874,53 @@ def test_gbs_bspline_creation():
     assert ed_gbs is not None
 
 
+@requires_gbs
+def test_occt_bspline_curve_to_gbs_roundtrip():
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 1.0, 0.0),
+        gp.Pnt(2.0, 1.0, 0.0),
+        gp.Pnt(3.0, 0.0, 0.0),
+    ]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]
+    curve = Geom.BSplineCurve(poles, knots, multiplicities, 2)
+
+    converted = curve.to_gbs()
+    roundtrip = Geom.BSplineCurve(converted)
+
+    assert roundtrip.degree == curve.degree
+    assert roundtrip.nb_poles == curve.nb_poles
+    assert roundtrip.nb_knots == curve.nb_knots
+    np.testing.assert_allclose(roundtrip.poles, curve.poles)
+    np.testing.assert_allclose(roundtrip.knots, curve.knots)
+    np.testing.assert_array_equal(roundtrip.multiplicities, curve.multiplicities)
+
+
+@requires_gbs
+def test_occt_rational_bspline_curve_to_gbs_roundtrip():
+    poles = [
+        gp.Pnt(0.0, 0.0, 0.0),
+        gp.Pnt(1.0, 1.0, 0.0),
+        gp.Pnt(2.0, 1.0, 0.0),
+        gp.Pnt(3.0, 0.0, 0.0),
+    ]
+    weights = [1.0, 0.5, 0.75, 1.0]
+    knots = [0.0, 1.0, 2.0]
+    multiplicities = [3, 1, 3]
+    curve = Geom.BSplineCurve(poles, weights, knots, multiplicities, 2)
+
+    converted = curve.to_gbs()
+    roundtrip = Geom.BSplineCurve(converted)
+
+    assert roundtrip.is_rational
+    assert roundtrip.degree == curve.degree
+    np.testing.assert_allclose(roundtrip.poles, curve.poles)
+    np.testing.assert_allclose(roundtrip.weights, curve.weights)
+    np.testing.assert_allclose(roundtrip.knots, curve.knots)
+    np.testing.assert_array_equal(roundtrip.multiplicities, curve.multiplicities)
+
+
 # ==================== Elementary Surface Tests ====================
 
 def test_plane_creation_from_ax3():
@@ -1231,6 +1278,70 @@ def test_gbs_surface_conversion():
     u, v = 0.5, 0.5
     point = occt_surf.value(u, v)
     print(f"✓ Surface evaluation at ({u}, {v}): {point}")
+
+
+@requires_gbs
+def test_occt_bspline_surface_to_gbs_roundtrip():
+    poles = np.array([
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 2.0, 0.0]],
+        [[1.0, 0.0, 0.0], [1.0, 1.0, 1.0], [1.0, 2.0, 0.0]],
+        [[2.0, 0.0, 0.0], [2.0, 1.0, 0.0], [2.0, 2.0, 0.0]],
+    ])
+    surface = Geom.BSplineSurface(
+        poles,
+        [0.0, 1.0],
+        [0.0, 1.0],
+        [3, 3],
+        [3, 3],
+        2,
+        2,
+    )
+
+    converted = surface.to_gbs()
+    roundtrip = Geom.BSplineSurface(converted)
+
+    assert roundtrip.u_degree == surface.u_degree
+    assert roundtrip.v_degree == surface.v_degree
+    assert roundtrip.nb_u_poles == surface.nb_u_poles
+    assert roundtrip.nb_v_poles == surface.nb_v_poles
+    np.testing.assert_allclose(roundtrip.poles(), surface.poles())
+    np.testing.assert_allclose(roundtrip.u_knots(), surface.u_knots())
+    np.testing.assert_allclose(roundtrip.v_knots(), surface.v_knots())
+    np.testing.assert_array_equal(roundtrip.u_multiplicities(), surface.u_multiplicities())
+    np.testing.assert_array_equal(roundtrip.v_multiplicities(), surface.v_multiplicities())
+
+
+@requires_gbs
+def test_occt_rational_bspline_surface_to_gbs_roundtrip():
+    poles = np.array([
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+        [[1.0, 0.0, 0.0], [1.0, 1.0, 1.0]],
+    ])
+    weights = np.array([
+        [1.0, 0.5],
+        [0.75, 1.0],
+    ])
+    surface = Geom.BSplineSurface(
+        poles,
+        weights,
+        [0.0, 1.0],
+        [0.0, 1.0],
+        [2, 2],
+        [2, 2],
+        1,
+        1,
+    )
+
+    converted = surface.to_gbs()
+    roundtrip = Geom.BSplineSurface(converted)
+
+    assert roundtrip.is_u_rational or roundtrip.is_v_rational
+    assert roundtrip.u_degree == surface.u_degree
+    assert roundtrip.v_degree == surface.v_degree
+    np.testing.assert_allclose(roundtrip.poles(), surface.poles())
+    np.testing.assert_allclose(roundtrip.weights(), surface.weights())
+    np.testing.assert_allclose(roundtrip.u_knots(), surface.u_knots())
+    np.testing.assert_allclose(roundtrip.v_knots(), surface.v_knots())
 
 
 @requires_gbs

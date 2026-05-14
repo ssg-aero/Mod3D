@@ -11,6 +11,64 @@
 
 namespace occt::extended::gbs {
 
+namespace {
+
+std::vector<double> curve_knots(const Geom_BSplineCurve& curve) {
+    std::vector<double> knots;
+    knots.reserve(static_cast<size_t>(curve.NbKnots()));
+    for (Standard_Integer i = 1; i <= curve.NbKnots(); ++i) {
+        knots.push_back(curve.Knot(i));
+    }
+    return knots;
+}
+
+std::vector<size_t> curve_multiplicities(const Geom_BSplineCurve& curve) {
+    std::vector<size_t> mults;
+    mults.reserve(static_cast<size_t>(curve.NbKnots()));
+    for (Standard_Integer i = 1; i <= curve.NbKnots(); ++i) {
+        mults.push_back(static_cast<size_t>(curve.Multiplicity(i)));
+    }
+    return mults;
+}
+
+std::vector<double> surface_u_knots(const Geom_BSplineSurface& surface) {
+    std::vector<double> knots;
+    knots.reserve(static_cast<size_t>(surface.NbUKnots()));
+    for (Standard_Integer i = 1; i <= surface.NbUKnots(); ++i) {
+        knots.push_back(surface.UKnot(i));
+    }
+    return knots;
+}
+
+std::vector<double> surface_v_knots(const Geom_BSplineSurface& surface) {
+    std::vector<double> knots;
+    knots.reserve(static_cast<size_t>(surface.NbVKnots()));
+    for (Standard_Integer i = 1; i <= surface.NbVKnots(); ++i) {
+        knots.push_back(surface.VKnot(i));
+    }
+    return knots;
+}
+
+std::vector<size_t> surface_u_multiplicities(const Geom_BSplineSurface& surface) {
+    std::vector<size_t> mults;
+    mults.reserve(static_cast<size_t>(surface.NbUKnots()));
+    for (Standard_Integer i = 1; i <= surface.NbUKnots(); ++i) {
+        mults.push_back(static_cast<size_t>(surface.UMultiplicity(i)));
+    }
+    return mults;
+}
+
+std::vector<size_t> surface_v_multiplicities(const Geom_BSplineSurface& surface) {
+    std::vector<size_t> mults;
+    mults.reserve(static_cast<size_t>(surface.NbVKnots()));
+    for (Standard_Integer i = 1; i <= surface.NbVKnots(); ++i) {
+        mults.push_back(static_cast<size_t>(surface.VMultiplicity(i)));
+    }
+    return mults;
+}
+
+} // namespace
+
 opencascade::handle<Geom_BSplineCurve>
 to_occt(const ::gbs::BSCurve<double, 3>& curve) {
     const auto poles_ = curve.poles();
@@ -154,6 +212,92 @@ to_occt(const ::gbs::BSSurfaceRational<double, 3>& surface) {
     return new Geom_BSplineSurface(poles, weights, occt_knots_u, occt_knots_v,
                                    occt_mults_u, occt_mults_v,
                                    surface.degreeU(), surface.degreeV());
+}
+
+::gbs::BSCurve<double, 3>
+to_gbs(const Geom_BSplineCurve& curve) {
+    ::gbs::points_vector<double, 3> poles;
+    poles.reserve(static_cast<size_t>(curve.NbPoles()));
+    for (Standard_Integer i = 1; i <= curve.NbPoles(); ++i) {
+        const auto point = curve.Pole(i);
+        poles.push_back({point.X(), point.Y(), point.Z()});
+    }
+
+    return ::gbs::BSCurve<double, 3>(
+        poles,
+        curve_knots(curve),
+        curve_multiplicities(curve),
+        static_cast<size_t>(curve.Degree())
+    );
+}
+
+::gbs::BSCurveRational<double, 3>
+to_gbs_rational(const Geom_BSplineCurve& curve) {
+    ::gbs::points_vector<double, 3> poles;
+    std::vector<double> weights;
+    poles.reserve(static_cast<size_t>(curve.NbPoles()));
+    weights.reserve(static_cast<size_t>(curve.NbPoles()));
+    for (Standard_Integer i = 1; i <= curve.NbPoles(); ++i) {
+        const auto point = curve.Pole(i);
+        poles.push_back({point.X(), point.Y(), point.Z()});
+        weights.push_back(curve.Weight(i));
+    }
+
+    return ::gbs::BSCurveRational<double, 3>(
+        poles,
+        curve_knots(curve),
+        curve_multiplicities(curve),
+        weights,
+        static_cast<size_t>(curve.Degree())
+    );
+}
+
+::gbs::BSSurface<double, 3>
+to_gbs(const Geom_BSplineSurface& surface) {
+    ::gbs::points_vector<double, 3> poles;
+    poles.reserve(static_cast<size_t>(surface.NbUPoles() * surface.NbVPoles()));
+    for (Standard_Integer j = 1; j <= surface.NbVPoles(); ++j) {
+        for (Standard_Integer i = 1; i <= surface.NbUPoles(); ++i) {
+            const auto point = surface.Pole(i, j);
+            poles.push_back({point.X(), point.Y(), point.Z()});
+        }
+    }
+
+    return ::gbs::BSSurface<double, 3>(
+        poles,
+        surface_u_knots(surface),
+        surface_v_knots(surface),
+        surface_u_multiplicities(surface),
+        surface_v_multiplicities(surface),
+        static_cast<size_t>(surface.UDegree()),
+        static_cast<size_t>(surface.VDegree())
+    );
+}
+
+::gbs::BSSurfaceRational<double, 3>
+to_gbs_rational(const Geom_BSplineSurface& surface) {
+    ::gbs::points_vector<double, 3> poles;
+    std::vector<double> weights;
+    poles.reserve(static_cast<size_t>(surface.NbUPoles() * surface.NbVPoles()));
+    weights.reserve(static_cast<size_t>(surface.NbUPoles() * surface.NbVPoles()));
+    for (Standard_Integer j = 1; j <= surface.NbVPoles(); ++j) {
+        for (Standard_Integer i = 1; i <= surface.NbUPoles(); ++i) {
+            const auto point = surface.Pole(i, j);
+            poles.push_back({point.X(), point.Y(), point.Z()});
+            weights.push_back(surface.Weight(i, j));
+        }
+    }
+
+    return ::gbs::BSSurfaceRational<double, 3>(
+        poles,
+        weights,
+        surface_u_knots(surface),
+        surface_v_knots(surface),
+        surface_u_multiplicities(surface),
+        surface_v_multiplicities(surface),
+        static_cast<size_t>(surface.UDegree()),
+        static_cast<size_t>(surface.VDegree())
+    );
 }
 
 } // namespace occt::extended::gbs

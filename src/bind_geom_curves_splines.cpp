@@ -173,6 +173,15 @@ void bind_geom_curves_splines(py::module_ &m)
             }
             return py::array_t<double>();
         }, "Get weights as numpy array")
+
+#if HAS_GBS
+        .def("to_gbs", [](const Geom_BSplineCurve& self) -> py::object {
+            if (self.IsRational()) {
+                return py::cast(occt::extended::gbs::to_gbs_rational(self));
+            }
+            return py::cast(occt::extended::gbs::to_gbs(self));
+        }, "Convert this OCCT B-spline curve to a gbs B-spline curve.")
+#endif
         
         // Knot sequence (with repetitions)
         .def_property_readonly("knot_sequence", [](const Geom_BSplineCurve& self) {

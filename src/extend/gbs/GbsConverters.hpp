@@ -24,6 +24,18 @@ to_occt(const ::gbs::BSSurface<double, 3>& surface);
 opencascade::handle<Geom_BSplineSurface>
 to_occt(const ::gbs::BSSurfaceRational<double, 3>& surface);
 
+::gbs::BSCurve<double, 3>
+to_gbs(const Geom_BSplineCurve& curve);
+
+::gbs::BSCurveRational<double, 3>
+to_gbs_rational(const Geom_BSplineCurve& curve);
+
+::gbs::BSSurface<double, 3>
+to_gbs(const Geom_BSplineSurface& surface);
+
+::gbs::BSSurfaceRational<double, 3>
+to_gbs_rational(const Geom_BSplineSurface& surface);
+
 } // namespace occt::extended::gbs
 
 #endif // HAS_GBS
