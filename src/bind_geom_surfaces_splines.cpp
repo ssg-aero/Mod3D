@@ -16,7 +16,7 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array2OfInteger.hxx>
 
-#include "array_utils.hpp"
+#include "extend/array_utils.hpp"
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type for pybind11

@@ -13,7 +13,7 @@
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 
-#include <explorer_utils.hpp>
+#include "extend/explorer_utils.hpp"
 
 namespace py = pybind11;
 

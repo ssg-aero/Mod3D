@@ -13,7 +13,7 @@
 #include <Geom_BSplineCurve.hxx>
 #include <Geom_BezierCurve.hxx>
 
-#include "array_utils.hpp"
+#include "extend/array_utils.hpp"
 #if HAS_GBS
     #include <gbs/bscurve.h>
     #include "extend/GbsConverters.hpp"
