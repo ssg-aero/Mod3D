@@ -16,6 +16,7 @@
 #include <BRepExtrema_ExtPC.hxx>
 #include <BRepExtrema_ExtPF.hxx>
 
+#include "extend/ExtremaUtils.hpp"
 
 namespace py = pybind11;
 
@@ -177,12 +178,12 @@ void bind_brep_extrema(py::module_ &m)
 
         .def("points_and_distances", [](const BRepExtrema_DistShapeShape& self) {
             std::vector<py::tuple> results;
-            Standard_Integer n = self.NbSolution();
-            for (Standard_Integer i = 1; i <= n; i++) {
-                gp_Pnt p1 = self.PointOnShape1(i);
-                gp_Pnt p2 = self.PointOnShape2(i);
-                Standard_Real dist = p1.Distance(p2);
-                results.push_back(py::make_tuple(p1, p2, dist));
+            const auto values = occt::extended::extrema::points_and_distances(self);
+            results.reserve(values.size());
+            for (const auto& value : values) {
+                results.push_back(py::make_tuple(value.point_on_shape1,
+                                                value.point_on_shape2,
+                                                value.distance));
             }
             return results;
         },
@@ -248,20 +249,16 @@ void bind_brep_extrema(py::module_ &m)
             py::arg("n"),
             "Returns the point of the N-th extremum distance")
         .def("points",[](const BRepExtrema_ExtPC& self) {
-            std::vector<gp_Pnt> pts;
-            Standard_Integer n = self.NbExt();
-            for (Standard_Integer i = 1; i <= n; i++) {
-                pts.push_back(self.Point(i));
-            }
-            return pts;
+            return occt::extended::extrema::points(self);
         },
             "Returns all extremum points as a list")
         
         .def("trimmed_square_distances", [](const BRepExtrema_ExtPC& self) {
-            Standard_Real dist1, dist2;
-            gp_Pnt pnt1, pnt2;
-            self.TrimmedSquareDistances(dist1, dist2, pnt1, pnt2);
-            return py::make_tuple(dist1, dist2, pnt1, pnt2);
+            const auto result = occt::extended::extrema::trimmed_square_distances(self);
+            return py::make_tuple(result.first_distance,
+                                  result.last_distance,
+                                  result.first_point,
+                                  result.last_point);
         },
             "Returns (dist1, dist2, pnt1, pnt2) for trimmed curve endpoints.\n"
             "dist1: square distance to first parameter point\n"
@@ -311,11 +308,10 @@ void bind_brep_extrema(py::module_ &m)
             "Returns the (u, v) parameters on the face of the N-th extremum distance")
         .def("parameters",[](const BRepExtrema_ExtPF& self) {
             std::vector<py::tuple> params;
-            Standard_Integer n = self.NbExt();
-            for (Standard_Integer i = 1; i <= n; i++) {
-                Standard_Real u, v;
-                self.Parameter(i, u, v);
-                params.push_back(py::make_tuple(u, v));
+            const auto values = occt::extended::extrema::parameters(self);
+            params.reserve(values.size());
+            for (const auto& value : values) {
+                params.push_back(py::make_tuple(value.u, value.v));
             }
             return params;
         },
@@ -325,12 +321,7 @@ void bind_brep_extrema(py::module_ &m)
             py::arg("n"),
             "Returns the point of the N-th extremum distance")
         .def("points",[](const BRepExtrema_ExtPF& self) {
-            std::vector<gp_Pnt> pts;
-            Standard_Integer n = self.NbExt();
-            for (Standard_Integer i = 1; i <= n; i++) {
-                pts.push_back(self.Point(i));
-            }
-            return pts;
+            return occt::extended::extrema::points(self);
         },
             "Returns all extremum points as a list")
         
@@ -377,12 +368,7 @@ void bind_brep_extrema(py::module_ &m)
             py::arg("n"),
             "Returns the value of the N-th extremum square distance")
         .def("square_distances",[](const BRepExtrema_ExtCC& self) {
-            std::vector<Standard_Real> dists;
-            Standard_Integer n = self.NbExt();
-            for (Standard_Integer i = 1; i <= n; i++) {
-                dists.push_back(self.SquareDistance(i));
-            }
-            return dists;
+            return occt::extended::extrema::square_distances(self);
         },
             "Returns all extremum square distances as a list")
         
@@ -403,26 +389,29 @@ void bind_brep_extrema(py::module_ &m)
             "Returns the point on the second edge of the N-th extremum distance")
         
         .def("pamameters_and_points", [](const BRepExtrema_ExtCC& self){
-            auto n = self.NbExt();
             std::vector<py::tuple> results;
-            for (Standard_Integer i = 1; i <= n; i++) {
-                auto t1 = self.ParameterOnE1(i);
-                auto t2 = self.ParameterOnE2(i);
-                auto p1 = self.PointOnE1(i);
-                auto p2 = self.PointOnE2(i);
-                auto d = self.SquareDistance(i);
-                results.push_back(py::make_tuple(py::make_tuple(t1, p1), py::make_tuple(t2, p2), d));
+            const auto values = occt::extended::extrema::parameters_and_points(self);
+            results.reserve(values.size());
+            for (const auto& value : values) {
+                results.push_back(py::make_tuple(
+                    py::make_tuple(value.edge1.parameter, value.edge1.point),
+                    py::make_tuple(value.edge2.parameter, value.edge2.point),
+                    value.square_distance));
             }
             return results;
         })
         
         .def("trimmed_square_distances", [](const BRepExtrema_ExtCC& self) {
-            Standard_Real dist11, dist12, dist21, dist22;
-            gp_Pnt p11, p12, p21, p22;
-            self.TrimmedSquareDistances(dist11, dist12, dist21, dist22, p11, p12, p21, p22);
+            const auto result = occt::extended::extrema::trimmed_square_distances(self);
             return py::make_tuple(
-                py::make_tuple(dist11, dist12, dist21, dist22),
-                py::make_tuple(p11, p12, p21, p22)
+                py::make_tuple(result.first_first_distance,
+                               result.first_last_distance,
+                               result.last_first_distance,
+                               result.last_last_distance),
+                py::make_tuple(result.first_first_point,
+                               result.first_last_point,
+                               result.last_first_point,
+                               result.last_last_point)
             );
         },
             "Returns ((dist11, dist12, dist21, dist22), (p11, p12, p21, p22)).\n"
@@ -486,16 +475,14 @@ void bind_brep_extrema(py::module_ &m)
             py::arg("n"),
             "Returns the point on the face of the N-th extremum distance")
         .def("points_and_parameters", [](const BRepExtrema_ExtCF& self){
-            auto n = self.NbExt();
             std::vector<py::tuple> results;
-            for (Standard_Integer i = 1; i <= n; i++) {
-                auto t = self.ParameterOnEdge(i);
-                Standard_Real u, v;
-                self.ParameterOnFace(i, u, v);
-                auto p1 = self.PointOnEdge(i);
-                auto p2 = self.PointOnFace(i);
-                auto d = self.SquareDistance(i);
-                results.push_back(py::make_tuple(py::make_tuple(t, p1), py::make_tuple(u, v, p2), d));
+            const auto values = occt::extended::extrema::points_and_parameters(self);
+            results.reserve(values.size());
+            for (const auto& value : values) {
+                results.push_back(py::make_tuple(
+                    py::make_tuple(value.edge.parameter, value.edge.point),
+                    py::make_tuple(value.face_parameters.u, value.face_parameters.v, value.face_point),
+                    value.square_distance));
             }
             return results;
         })
@@ -557,17 +544,14 @@ void bind_brep_extrema(py::module_ &m)
             py::arg("n"),
             "Returns the point on face2 of the N-th extremum distance")
         .def("points_and_parameters", [](const BRepExtrema_ExtFF& self){
-            auto n = self.NbExt();
             std::vector<py::tuple> results;
-            for (Standard_Integer i = 1; i <= n; i++) {
-                Standard_Real u1, v1;
-                self.ParameterOnFace1(i, u1, v1);
-                Standard_Real u2, v2;
-                self.ParameterOnFace2(i, u2, v2);
-                auto p1 = self.PointOnFace1(i);
-                auto p2 = self.PointOnFace2(i);
-                auto d = self.SquareDistance(i);
-                results.push_back(py::make_tuple(py::make_tuple(u1, v1, p1), py::make_tuple(u2, v2, p2), d));
+            const auto values = occt::extended::extrema::points_and_parameters(self);
+            results.reserve(values.size());
+            for (const auto& value : values) {
+                results.push_back(py::make_tuple(
+                    py::make_tuple(value.face1.parameters.u, value.face1.parameters.v, value.face1.point),
+                    py::make_tuple(value.face2.parameters.u, value.face2.parameters.v, value.face2.point),
+                    value.square_distance));
             }
             return results;
         })

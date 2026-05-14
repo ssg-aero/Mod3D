@@ -52,6 +52,7 @@ endif(WIN32)
 add_library(occt-extend SHARED
     src/extend/UnionFaces.cpp
     src/extend/ExtrudeCut.cpp
+    src/extend/ExtremaUtils.cpp
     src/extend/GeomSurfaceCompare.cpp
     src/extend/GbsConverters.cpp
     src/extend/RevolveCut.cpp
