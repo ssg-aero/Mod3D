@@ -1,7 +1,9 @@
 from mod3d import (
     gp,
     Geom,
+    BooleanOp,
     BRepBuilderAPI,
+    TopoDS,
 )
 import pytest
 
@@ -261,6 +263,36 @@ def test_make_face_from_wire():
     
     face = face_builder.face()
     assert not face.is_null()
+
+
+def test_extended_shape_transforms_work_with_boolean_overloads():
+    box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+    tool = TopoDS.ExtendedShape(BRepBuilderAPI.MakeBox(4.0, 4.0, 12.0).shape())
+    tool.translate(gp.Vec(3.0, 3.0, -1.0))
+
+    cut = BooleanOp.Cut(box, tool)
+    cut_result = cut.shape()
+
+    assert not cut_result.is_null()
+    assert not cut.has_errors()
+
+    moved = TopoDS.ExtendedShape(box).translated(gp.Vec(5.0, 0.0, 0.0))
+    common = BooleanOp.Common(box, moved)
+    common_result = common.shape()
+
+    assert not common_result.is_null()
+    assert not common.has_errors()
+
+
+def test_shape_transform_helpers_still_work_with_boolean_overloads():
+    box1 = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+    box2 = box1.translated(gp.Vec(10.0, 0.0, 0.0))
+
+    fuse = BooleanOp.Fuse(box1, box2)
+    result = fuse.shape()
+
+    assert not result.is_null()
+    assert not fuse.has_errors()
 
 
 def test_make_face_from_surface_with_wire():

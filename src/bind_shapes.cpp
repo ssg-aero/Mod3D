@@ -3,6 +3,7 @@
 #include <gp_Pnt.hxx>
 #include <gp_Trsf.hxx>
 #include <gp_Ax1.hxx>
+#include <gp_Vec.hxx>
 
 #include <TopLoc_Location.hxx>
 
@@ -20,6 +21,8 @@
 #include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
 #include <TopExp_Explorer.hxx>
+
+#include "extend/Shapes.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
@@ -327,34 +330,22 @@ void bind_shapes(py::module_ &m) {
             py::arg("transformation"), py::arg("raise_exc") = false,
             "Returns a copy with location multiplied by transformation")
         .def("translate", [](TopoDS_Shape &self, const gp_Vec &theVec) {
-            gp_Trsf trsf;
-            trsf.SetTranslation(theVec);
-            self.Move(TopLoc_Location(trsf));
+            occt::extended::shapes::translate(self, theVec);
         }, py::arg("vector"), "Translates the shape by the given vector")
         .def("translated", [](const TopoDS_Shape &self, const gp_Vec &theVec) {
-            gp_Trsf trsf;
-            trsf.SetTranslation(theVec);
-            return self.Moved(TopLoc_Location(trsf));
+            return occt::extended::shapes::translated(self, theVec);
         }, py::arg("vector"), "Returns a translated copy of the shape by the given vector")
         .def("rotate", [](TopoDS_Shape &self, const gp_Ax1 &theAxis, Standard_Real theAngle) {
-            gp_Trsf trsf;
-            trsf.SetRotation(theAxis, theAngle);
-            self.Move(TopLoc_Location(trsf));
+            occt::extended::shapes::rotate(self, theAxis, theAngle);
         }, py::arg("axis"), py::arg("angle"), "Rotates the shape around the given axis by the given angle (in radians)")
         .def("rotated", [](const TopoDS_Shape &self, const gp_Ax1 &theAxis, Standard_Real theAngle) {
-            gp_Trsf trsf;
-            trsf.SetRotation(theAxis, theAngle);
-            return self.Moved(TopLoc_Location(trsf));
+            return occt::extended::shapes::rotated(self, theAxis, theAngle);
         }, py::arg("axis"), py::arg("angle"), "Returns a rotated copy of the shape around the given axis by the given angle (in radians)")
         .def("scale", [](TopoDS_Shape &self, const gp_Pnt &theCenter, Standard_Real theFactor) {
-            gp_Trsf trsf;
-            trsf.SetScale(theCenter, theFactor);
-            self.Move(TopLoc_Location(trsf));
+            occt::extended::shapes::scale(self, theCenter, theFactor);
         }, py::arg("center"), py::arg("factor"), "Scales the shape by the given factor with respect to the given center point")
         .def("scaled", [](const TopoDS_Shape &self, const gp_Pnt &theCenter, Standard_Real theFactor) {
-            gp_Trsf trsf;
-            trsf.SetScale(theCenter, theFactor);
-            return self.Moved(TopLoc_Location(trsf));
+            return occt::extended::shapes::scaled(self, theCenter, theFactor);
         }, py::arg("center"), py::arg("factor"), "Returns a scaled copy of the shape by the given factor with respect to the given center point)")
         // Orientation manipulation
         .def("reverse", &TopoDS_Shape::Reverse,
@@ -443,6 +434,34 @@ void bind_shapes(py::module_ &m) {
         .def("dump_json", &TopoDS_Shape::DumpJson,
             py::arg("stream"), py::arg("depth") = -1,
             "Dumps the content of this shape to a stream in JSON format")
+    ;
+
+    py::class_<occt::extended::shapes::Shape, std::shared_ptr<occt::extended::shapes::Shape>, TopoDS_Shape>(m, "ExtendedShape",
+        "OpenCascade extended shape with convenience transformations")
+        .def(py::init<>(),
+            "Creates a null extended shape")
+        .def(py::init<const TopoDS_Shape&>(), py::arg("shape"),
+            "Creates an extended shape from any TopoDS shape")
+        .def(py::init<const TopoDS_Face&>(), py::arg("face"),
+            "Creates an extended shape from a face")
+        .def(py::init<const TopoDS_Wire&>(), py::arg("wire"),
+            "Creates an extended shape from a wire")
+        .def(py::init<const TopoDS_Edge&>(), py::arg("edge"),
+            "Creates an extended shape from an edge")
+        .def(py::init<const TopoDS_Vertex&>(), py::arg("vertex"),
+            "Creates an extended shape from a vertex")
+        .def("translate", &occt::extended::shapes::Shape::translate,
+            py::arg("vector"), "Translates the shape by the given vector")
+        .def("translated", &occt::extended::shapes::Shape::translated,
+            py::arg("vector"), "Returns a translated extended shape")
+        .def("rotate", &occt::extended::shapes::Shape::rotate,
+            py::arg("axis"), py::arg("angle"), "Rotates the shape around an axis")
+        .def("rotated", &occt::extended::shapes::Shape::rotated,
+            py::arg("axis"), py::arg("angle"), "Returns a rotated extended shape")
+        .def("scale", &occt::extended::shapes::Shape::scale,
+            py::arg("center"), py::arg("factor"), "Scales the shape in place")
+        .def("scaled", &occt::extended::shapes::Shape::scaled,
+            py::arg("center"), py::arg("factor"), "Returns a scaled extended shape")
     ;
 
     py::class_<TopoDS_Compound, std::shared_ptr<TopoDS_Compound>, TopoDS_Shape>(m, "Compound",
