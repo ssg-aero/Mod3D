@@ -57,6 +57,7 @@ add_library(occt-extend SHARED
     src/extend/GbsConverters.cpp
     src/extend/RevolveCut.cpp
     src/extend/shapes.cpp
+    src/extend/TopologyUtils.cpp
 )
 # if(WIN32)
 #     set_target_properties(occt-extend PROPERTIES
