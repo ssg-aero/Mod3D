@@ -71,12 +71,15 @@ jobs:
           condarc: |
             channels:
               - conda-forge
+          # OCCT pinned to 7.9.x: 8.x removes several legacy headers
+          # (Geom2dLProp_CLProps2d, TopTools iterators, ...) and breaks
+          # transitive includes (gp_Ax1). Migration tracked separately.
           create-args: >-
             python=3.13
             cmake
             ninja
             pybind11
-            occt
+            occt=7.9.*
             eigen
             numpy
             pythreejs
