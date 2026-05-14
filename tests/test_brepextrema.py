@@ -365,3 +365,15 @@ def test_extcc_aggregate_helpers():
     assert len(points) == 4
     assert all(isinstance(distance, float) for distance in distances)
     assert all(isinstance(point, gp.Pnt) for point in points)
+
+
+def test_extcc_parallel_parameters_and_points_returns_empty_list():
+    """Test parallel edge-edge extrema returns no parameter/point pairs."""
+    edge1 = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 0.0, 0.0), gp.Pnt(10.0, 0.0, 0.0)).edge()
+    edge2 = BRepBuilderAPI.MakeEdge(gp.Pnt(0.0, 5.0, 0.0), gp.Pnt(10.0, 5.0, 0.0)).edge()
+
+    extrema = BRepExtrema.ExtCC(edge1, edge2)
+
+    assert extrema.is_done
+    assert extrema.is_parallel
+    assert extrema.pamameters_and_points() == []

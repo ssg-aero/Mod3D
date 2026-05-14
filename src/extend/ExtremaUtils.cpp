@@ -70,6 +70,10 @@ std::vector<Standard_Real> square_distances(const BRepExtrema_ExtCC& extrema) {
 std::vector<EdgeEdgeExtremaResult>
 parameters_and_points(const BRepExtrema_ExtCC& extrema) {
     std::vector<EdgeEdgeExtremaResult> results;
+    if (extrema.IsParallel()) {
+        return results;
+    }
+
     const Standard_Integer count = extrema.NbExt();
     results.reserve(static_cast<size_t>(count));
     for (Standard_Integer i = 1; i <= count; ++i) {
