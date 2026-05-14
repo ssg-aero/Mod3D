@@ -135,10 +135,14 @@ void bind_top_exp(py::module_ &m)
             "Example:\n"
             "  for face in TopExp.Explorer(shape, TopAbs.ShapeEnum.FACE):\n"
             "      process_face(face)")
-        .def("get_shapes", [](const TopExp_Explorer& self, bool unique=false) {
+        .def("get_shapes", [](TopExp_Explorer& self, bool unique=false) {
+            // OCCT 8.x removed TopExp_Explorer's copy constructor, so we
+            // mutate self: ReInit() rewinds, then we iterate to the end.
+            // Side effect: the explorer is exhausted after this call.
             py::list shapes;
-            for(TopExp_Explorer exp = self; exp.More(); exp.Next()) {
-                TopoDS_Shape current = exp.Current();
+            self.ReInit();
+            for (; self.More(); self.Next()) {
+                TopoDS_Shape current = self.Current();
 
                 if(unique) {
                     // Check if shape already exists using IsSame

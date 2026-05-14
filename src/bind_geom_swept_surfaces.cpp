@@ -1,4 +1,6 @@
 #include <pybind11/pybind11.h>
+#include <gp_Ax1.hxx>
+#include <gp_Dir.hxx>
 #include <Geom_SweptSurface.hxx>
 #include <Geom_SurfaceOfRevolution.hxx>
 #include <Geom_SurfaceOfLinearExtrusion.hxx>

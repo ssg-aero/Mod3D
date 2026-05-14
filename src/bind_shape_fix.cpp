@@ -165,7 +165,7 @@ void bind_shape_fix(py::module_ &m)
             py::arg("wire"),
             "Loads data for the wire and drops all fixing statuses.")
         
-        .def("set_face", &ShapeFix_Wire::SetFace,
+        .def("set_face", py::overload_cast<const TopoDS_Face&>(&ShapeFix_Wire::SetFace),
             py::arg("face"),
             "Sets the working face for the wire.")
         
@@ -257,7 +257,7 @@ void bind_shape_fix(py::module_ &m)
             "Mode for FixGaps2d (-1 default, 0 skip, 1 force).")
         
         // Fix methods (API level)
-        .def("perform", &ShapeFix_Wire::Perform,
+        .def("perform", [](ShapeFix_Wire& self) { return self.Perform(); },
             "Performs all available fixes based on mode flags.\n\n"
             "Returns True if any fix was applied.")
         
