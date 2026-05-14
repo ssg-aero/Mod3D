@@ -141,6 +141,25 @@ curve = Geom.BSplineCurve(
 )
 ```
 ![B-spline curve from numpy array](docs/images/bspline-curve-numpy.png)
+
+### GBS Interoperability
+
+When Mod3D is built with GBS support, B-spline curves and surfaces can move both ways between GBS and OCCT-backed Mod3D objects.
+
+```python
+from mod3d import Geom
+
+# gbs_curve can be a pygbs.gbs BSCurve3d or BSCurveRational3d.
+curve = Geom.BSplineCurve(gbs_curve)
+
+# Convert an OCCT-backed Mod3D curve back to the matching GBS type.
+gbs_curve_roundtrip = curve.to_gbs()
+
+# Surfaces support the same conversion pattern.
+surface = Geom.BSplineSurface(gbs_surface)
+gbs_surface_roundtrip = surface.to_gbs()
+```
+
 ### Boolean Operations
 
 ```python
@@ -160,12 +179,42 @@ cut    = mod3d.BooleanOp.Cut(box, sphere).shape()
 fuse   = mod3d.BooleanOp.Fuse(box, sphere).shape()
 section = mod3d.BooleanOp.Section(box, sphere).shape()
 ```
+
+`BooleanOp.extrude_cut` and `BooleanOp.revolve_cut` provide concise cut helpers for common subtractive modeling workflows. `extrude_cut` accepts face or wire profiles, and can optionally stop at a limiting plane or face.
+
+```python
+from mod3d import BooleanOp, BRepBuilderAPI, gp
+
+box = BRepBuilderAPI.MakeBox(10.0, 10.0, 10.0).shape()
+profile = BRepBuilderAPI.MakeFace(profile_wire).face()
+
+through_cut = BooleanOp.extrude_cut(box, profile, gp.Vec(0.0, 0.0, 12.0))
+limited_cut = BooleanOp.extrude_cut(
+    box,
+    profile,
+    gp.Vec(0.0, 0.0, 12.0),
+    gp.Pln(gp.Pnt(0.0, 0.0, 6.0), gp.Dir(0.0, 0.0, 1.0)),
+)
+```
+
 fuse:
 ![Boolean fuse](docs/images/boolean-fuse.png)
 common:
 ![Boolean common](docs/images/boolean-common.png)
 cut:
 ![Boolean cut](docs/images/boolean-cut.png)
+
+### Extended Shapes
+
+`TopoDS.ExtendedShape` wraps any shape and exposes chainable transformation helpers while preserving the regular `TopoDS.Shape` API.
+
+```python
+from mod3d import BRepBuilderAPI, TopoDS, gp
+
+shape = TopoDS.ExtendedShape(BRepBuilderAPI.MakeBox(4.0, 4.0, 4.0).shape())
+moved = shape.translated(gp.Vec(10.0, 0.0, 0.0))
+```
+
 ### Filleting
 
 ```python
