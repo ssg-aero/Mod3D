@@ -5,6 +5,7 @@ from __future__ import annotations
 import mod3d.Geom
 import mod3d.Geom2d
 import mod3d.TopoDS
+import mod3d.gp
 import typing
 __all__: list[str] = ['Done1', 'Done2', 'Done3', 'Done4', 'Done5', 'Done6', 'Done7', 'Done8', 'Edge', 'Fail1', 'Fail2', 'Fail3', 'Fail4', 'Fail5', 'Fail6', 'Fail7', 'Fail8', 'OK', 'ShapeExtendStatus']
 class Edge:
@@ -21,12 +22,12 @@ class Edge:
         """
         Empty constructor; initializes Status to OK
         """
-    def bound_uv(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple:
+    def bound_uv(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple[bool, mod3d.gp.Pnt2d, mod3d.gp.Pnt2d]:
         """
         Returns tuple (success, first_uv, last_uv) for the pcurve ends.
         Calls PCurve with orient=True
         """
-    def bound_uv_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location) -> tuple:
+    def bound_uv_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location) -> tuple[bool, mod3d.gp.Pnt2d, mod3d.gp.Pnt2d]:
         """
         Returns tuple (success, first_uv, last_uv) for the pcurve ends on surface
         """
@@ -40,7 +41,7 @@ class Edge:
         Checks mutual orientation of 3d curve and pcurve on surface.
         Analysis is based on curves' bounding points
         """
-    def check_overlapping(self, edge1: mod3d.TopoDS.Edge, edge2: mod3d.TopoDS.Edge, domain_dist: typing.SupportsFloat = 0.0) -> tuple:
+    def check_overlapping(self, edge1: mod3d.TopoDS.Edge, edge2: mod3d.TopoDS.Edge, domain_dist: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> tuple[bool, float]:
         """
         Returns tuple (is_overlapped, tolerance).
         
@@ -48,12 +49,12 @@ class Edge:
         If distance between edges < tolerance, edges are overlapped.
         domain_dist: length of part of edges on which edges are overlapped
         """
-    def check_pcurve_range(self, first: typing.SupportsFloat, last: typing.SupportsFloat, pcurve: mod3d.Geom2d.Curve2d) -> bool:
+    def check_pcurve_range(self, first: typing.SupportsFloat | typing.SupportsIndex, last: typing.SupportsFloat | typing.SupportsIndex, pcurve: mod3d.Geom2d.Curve2d) -> bool:
         """
         Checks possibility for pcurve to have range [first, last] (edge range)
         with respect to real first, last parameters of the pcurve
         """
-    def check_same_parameter(self, edge: mod3d.TopoDS.Edge, nb_control: typing.SupportsInt = 23) -> tuple:
+    def check_same_parameter(self, edge: mod3d.TopoDS.Edge, nb_control: typing.SupportsInt | typing.SupportsIndex = 23) -> tuple[bool, float]:
         """
         Returns tuple (is_valid, max_deviation).
         
@@ -62,7 +63,7 @@ class Edge:
         of the edge on nb_control equidistant points (default 23, as in BRepCheck).
         Returns True if deviation <= edge tolerance, False otherwise
         """
-    def check_same_parameter_on_face(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, nb_control: typing.SupportsInt = 23) -> tuple:
+    def check_same_parameter_on_face(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, nb_control: typing.SupportsInt | typing.SupportsIndex = 23) -> tuple[bool, float]:
         """
         Returns tuple (is_valid, max_deviation).
         
@@ -71,7 +72,7 @@ class Edge:
         on nb_control equidistant points (default 23, as in BRepCheck).
         Returns True if deviation <= edge tolerance, False otherwise
         """
-    def check_vertex_tolerance(self, edge: mod3d.TopoDS.Edge) -> tuple:
+    def check_vertex_tolerance(self, edge: mod3d.TopoDS.Edge) -> tuple[bool, float, float]:
         """
         Returns tuple (needs_update, toler1, toler2).
         
@@ -80,7 +81,7 @@ class Edge:
         toler1: necessary tolerance for first vertex
         toler2: necessary tolerance for last vertex
         """
-    def check_vertex_tolerance_on_face(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple:
+    def check_vertex_tolerance_on_face(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple[bool, float, float]:
         """
         Returns tuple (needs_update, toler1, toler2).
         
@@ -89,7 +90,7 @@ class Edge:
         toler1: necessary tolerance for first vertex
         toler2: necessary tolerance for last vertex
         """
-    def check_vertices_with_curve3d(self, edge: mod3d.TopoDS.Edge, preci: typing.SupportsFloat = -1, vtx: typing.SupportsInt = 0) -> bool:
+    def check_vertices_with_curve3d(self, edge: mod3d.TopoDS.Edge, preci: typing.SupportsFloat | typing.SupportsIndex = -1, vtx: typing.SupportsInt | typing.SupportsIndex = 0) -> bool:
         """
         Checks start/end vertex of edge for matching with 3d curve.
         
@@ -97,7 +98,7 @@ class Edge:
           vtx: 0 = both vertices (default), 1 = start only, 2 = end only
           preci: precision to use (< 0: use vertex tolerances)
         """
-    def check_vertices_with_pcurve(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, preci: typing.SupportsFloat = -1, vtx: typing.SupportsInt = 0) -> bool:
+    def check_vertices_with_pcurve(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, preci: typing.SupportsFloat | typing.SupportsIndex = -1, vtx: typing.SupportsInt | typing.SupportsIndex = 0) -> bool:
         """
         Checks start/end vertex of edge for matching with pcurve on face.
         
@@ -105,7 +106,7 @@ class Edge:
           vtx: 0 = both vertices (default), 1 = start only, 2 = end only
           preci: precision to use (< 0: use vertex tolerances)
         """
-    def check_vertices_with_pcurve_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, preci: typing.SupportsFloat = -1, vtx: typing.SupportsInt = 0) -> bool:
+    def check_vertices_with_pcurve_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, preci: typing.SupportsFloat | typing.SupportsIndex = -1, vtx: typing.SupportsInt | typing.SupportsIndex = 0) -> bool:
         """
         Checks start/end vertex of edge for matching with pcurve on surface.
         
@@ -113,7 +114,7 @@ class Edge:
           vtx: 0 = both vertices (default), 1 = start only, 2 = end only
           preci: precision to use (< 0: use vertex tolerances)
         """
-    def curve3d(self, edge: mod3d.TopoDS.Edge, orient: bool = True) -> tuple:
+    def curve3d(self, edge: mod3d.TopoDS.Edge, orient: bool = True) -> tuple[bool, mod3d.Geom.Curve, float, float]:
         """
         Returns tuple (success, curve, first, last) for the edge's 3d curve.
         
@@ -124,7 +125,7 @@ class Edge:
         """
         Returns start vertex of the edge (taking edge orientation into account)
         """
-    def get_end_tangent2d(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, at_end: bool, dparam: typing.SupportsFloat = 0.0) -> tuple:
+    def get_end_tangent2d(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, at_end: bool, dparam: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> tuple[bool, mod3d.gp.Pnt2d, mod3d.gp.Vec2d]:
         """
         Returns tuple (success, position, tangent) for the edge pcurve end.
         
@@ -135,7 +136,7 @@ class Edge:
         regarding edge orientation. If edge is REVERSED, tangent is reversed.
         Returns True if pcurve exists and tangent is computed and non-null
         """
-    def get_end_tangent2d_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, at_end: bool, dparam: typing.SupportsFloat = 0.0) -> tuple:
+    def get_end_tangent2d_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, at_end: bool, dparam: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> tuple[bool, mod3d.gp.Pnt2d, mod3d.gp.Vec2d]:
         """
         Returns tuple (success, position, tangent) for the edge pcurve end on surface
         """
@@ -168,14 +169,14 @@ class Edge:
         """
         Returns end vertex of the edge (taking edge orientation into account)
         """
-    def pcurve(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, orient: bool = True) -> tuple:
+    def pcurve(self, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face, orient: bool = True) -> tuple[bool, mod3d.Geom2d.Curve2d, float, float]:
         """
         Returns tuple (success, pcurve, first, last) for the edge on the face.
         
         If orient is True (default), takes orientation into account:
         if the edge is reversed, first and last are toggled
         """
-    def pcurve_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, orient: bool = True) -> tuple:
+    def pcurve_on_surface(self, edge: mod3d.TopoDS.Edge, surface: mod3d.Geom.Surface, location: mod3d.TopoDS.TopLoc_Location, orient: bool = True) -> tuple[bool, mod3d.Geom2d.Curve2d, float, float]:
         """
         Returns tuple (success, pcurve, first, last) for the edge on the surface.
         
@@ -250,7 +251,7 @@ class ShapeExtendStatus:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -258,7 +259,7 @@ class ShapeExtendStatus:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...

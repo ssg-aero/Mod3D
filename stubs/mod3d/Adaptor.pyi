@@ -208,7 +208,7 @@ class CompCurve(Curve):
           knot_by_curvilinear_abscissa: If True, use curvilinear abscissa for knots
         """
     @typing.overload
-    def __init__(self, wire: mod3d.TopoDS.Wire, knot_by_curvilinear_abscissa: bool, first: typing.SupportsFloat, last: typing.SupportsFloat, tol: typing.SupportsFloat) -> None:
+    def __init__(self, wire: mod3d.TopoDS.Wire, knot_by_curvilinear_abscissa: bool, first: typing.SupportsFloat | typing.SupportsIndex, last: typing.SupportsFloat | typing.SupportsIndex, tol: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a Curve to access a trimmed portion of wire W.
         
@@ -219,7 +219,7 @@ class CompCurve(Curve):
           last: Last parameter
           tol: Tolerance
         """
-    def edge(self, u: typing.SupportsFloat) -> tuple[mod3d.TopoDS.Edge, float]:
+    def edge(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.TopoDS.Edge, float]:
         """
         Returns an edge and one parameter on it corresponding to parameter U.
         
@@ -239,7 +239,7 @@ class CompCurve(Curve):
           knot_by_curvilinear_abscissa: If True, use curvilinear abscissa for knots
         """
     @typing.overload
-    def initialize(self, wire: mod3d.TopoDS.Wire, knot_by_curvilinear_abscissa: bool, first: typing.SupportsFloat, last: typing.SupportsFloat, tol: typing.SupportsFloat) -> None:
+    def initialize(self, wire: mod3d.TopoDS.Wire, knot_by_curvilinear_abscissa: bool, first: typing.SupportsFloat | typing.SupportsIndex, last: typing.SupportsFloat | typing.SupportsIndex, tol: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets a trimmed portion of wire W.
         
@@ -307,7 +307,7 @@ class Curve:
         Raises:
           Standard_NoSuchObject if curve is not a circle
         """
-    def d0(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def d0(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Computes the point of parameter U on the curve.
         
@@ -317,7 +317,7 @@ class Curve:
         Returns:
           gp_Pnt at parameter u
         """
-    def d1(self, u: typing.SupportsFloat) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec]:
+    def d1(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec]:
         """
         Computes the point and first derivative at parameter U.
         
@@ -330,7 +330,7 @@ class Curve:
         Raises:
           If continuity of current interval is not C1
         """
-    def d2(self, u: typing.SupportsFloat) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
+    def d2(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
         Computes the point, first and second derivatives at parameter U.
         
@@ -343,7 +343,7 @@ class Curve:
         Raises:
           If continuity of current interval is not C2
         """
-    def d3(self, u: typing.SupportsFloat) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
+    def d3(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
         Computes the point and first three derivatives at parameter U.
         
@@ -356,7 +356,7 @@ class Curve:
         Raises:
           If continuity of current interval is not C3
         """
-    def dn(self, u: typing.SupportsFloat, n: typing.SupportsInt) -> mod3d.gp.Vec:
+    def dn(self, u: typing.SupportsFloat | typing.SupportsIndex, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec:
         """
         Returns the derivative of order N at parameter U.
         
@@ -434,7 +434,7 @@ class Curve:
         Raises:
           Standard_NoSuchObject if curve is not a parabola
         """
-    def resolution(self, r3d: typing.SupportsFloat) -> float:
+    def resolution(self, r3d: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns the parametric resolution corresponding to the real space resolution R3d.
         
@@ -448,7 +448,7 @@ class Curve:
         """
         Returns a shallow copy of this adaptor.
         """
-    def trim(self, first: typing.SupportsFloat, last: typing.SupportsFloat, tol: typing.SupportsFloat) -> Curve:
+    def trim(self, first: typing.SupportsFloat | typing.SupportsIndex, last: typing.SupportsFloat | typing.SupportsIndex, tol: typing.SupportsFloat | typing.SupportsIndex) -> Curve:
         """
         Returns a curve equivalent of this curve between parameters First and Last.
         
@@ -457,7 +457,7 @@ class Curve:
           last: Last parameter
           tol: Tolerance for 3D points confusion
         """
-    def value(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def value(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Computes the point of parameter U on the curve.
         
@@ -620,7 +620,7 @@ class GeomCurve(Curve):
           Standard_NullObject if curve is null
         """
     @typing.overload
-    def __init__(self, curve: mod3d.Geom.Curve, u_first: typing.SupportsFloat, u_last: typing.SupportsFloat) -> None:
+    def __init__(self, curve: mod3d.Geom.Curve, u_first: typing.SupportsFloat | typing.SupportsIndex, u_last: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an adaptor for a portion of the Geom_Curve.
         
@@ -645,7 +645,7 @@ class GeomCurve(Curve):
           Standard_NullObject if curve is null
         """
     @typing.overload
-    def load(self, curve: mod3d.Geom.Curve, u_first: typing.SupportsFloat, u_last: typing.SupportsFloat) -> None:
+    def load(self, curve: mod3d.Geom.Curve, u_first: typing.SupportsFloat | typing.SupportsIndex, u_last: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Loads a portion of a Geom_Curve.
         
@@ -693,7 +693,7 @@ class GeomSurface(Surface):
           surface: The Geom_Surface to adapt
         """
     @typing.overload
-    def __init__(self, surface: mod3d.Geom.Surface, u_first: typing.SupportsFloat, u_last: typing.SupportsFloat, v_first: typing.SupportsFloat, v_last: typing.SupportsFloat, tol_u: typing.SupportsFloat = 0.0, tol_v: typing.SupportsFloat = 0.0) -> None:
+    def __init__(self, surface: mod3d.Geom.Surface, u_first: typing.SupportsFloat | typing.SupportsIndex, u_last: typing.SupportsFloat | typing.SupportsIndex, v_first: typing.SupportsFloat | typing.SupportsIndex, v_last: typing.SupportsFloat | typing.SupportsIndex, tol_u: typing.SupportsFloat | typing.SupportsIndex = 0.0, tol_v: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> None:
         """
         Creates an adaptor for a portion of the Geom_Surface.
         
@@ -709,7 +709,7 @@ class GeomSurface(Surface):
         Loads a Geom_Surface.
         """
     @typing.overload
-    def load(self, surface: mod3d.Geom.Surface, u_first: typing.SupportsFloat, u_last: typing.SupportsFloat, v_first: typing.SupportsFloat, v_last: typing.SupportsFloat, tol_u: typing.SupportsFloat = 0.0, tol_v: typing.SupportsFloat = 0.0) -> None:
+    def load(self, surface: mod3d.Geom.Surface, u_first: typing.SupportsFloat | typing.SupportsIndex, u_last: typing.SupportsFloat | typing.SupportsIndex, v_first: typing.SupportsFloat | typing.SupportsIndex, v_last: typing.SupportsFloat | typing.SupportsIndex, tol_u: typing.SupportsFloat | typing.SupportsIndex = 0.0, tol_v: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> None:
         """
         Loads a portion of a Geom_Surface with specified bounds.
         """
@@ -744,7 +744,7 @@ class IsoCurve(Curve):
           surface: The surface adaptor
         """
     @typing.overload
-    def __init__(self, surface: Adaptor3d_Surface, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat) -> None:
+    def __init__(self, surface: Adaptor3d_Surface, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an IsoCurve on a surface.
         
@@ -756,7 +756,7 @@ class IsoCurve(Curve):
         The bounds of the iso curve are the bounds of the surface.
         """
     @typing.overload
-    def __init__(self, surface: Adaptor3d_Surface, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat, w_first: typing.SupportsFloat, w_last: typing.SupportsFloat) -> None:
+    def __init__(self, surface: Adaptor3d_Surface, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat | typing.SupportsIndex, w_first: typing.SupportsFloat | typing.SupportsIndex, w_last: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an IsoCurve on a surface with specified bounds.
         
@@ -776,7 +776,7 @@ class IsoCurve(Curve):
           surface: The new surface adaptor
         """
     @typing.overload
-    def load(self, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat) -> None:
+    def load(self, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the iso on the current surface.
         
@@ -785,7 +785,7 @@ class IsoCurve(Curve):
           param: The parameter value
         """
     @typing.overload
-    def load(self, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat, w_first: typing.SupportsFloat, w_last: typing.SupportsFloat) -> None:
+    def load(self, iso: mod3d.GeomAbs.IsoType, param: typing.SupportsFloat | typing.SupportsIndex, w_first: typing.SupportsFloat | typing.SupportsIndex, w_last: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the iso on the current surface with specified bounds.
         
@@ -829,25 +829,25 @@ class Surface:
         """
         Returns the cylinder if GetType() == Cylinder.
         """
-    def d0(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def d0(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Computes the point at parameters (U, V).
         """
-    def d1(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
+    def d1(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
         Computes the point and first derivatives at parameters (U, V).
         
         Returns:
           Tuple of (point, d1u, d1v)
         """
-    def d2(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
+    def d2(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
         Computes the point and first and second derivatives at parameters (U, V).
         
         Returns:
           Tuple of (point, d1u, d1v, d2u, d2v, d2uv)
         """
-    def dn(self, u: typing.SupportsFloat, v: typing.SupportsFloat, nu: typing.SupportsInt, nv: typing.SupportsInt) -> mod3d.gp.Vec:
+    def dn(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex, nu: typing.SupportsInt | typing.SupportsIndex, nv: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec:
         """
         Returns the derivative of order (Nu, Nv) at parameters (U, V).
         """
@@ -879,15 +879,15 @@ class Surface:
         """
         Returns the torus if GetType() == Torus.
         """
-    def u_resolution(self, r3d: typing.SupportsFloat) -> float:
+    def u_resolution(self, r3d: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns the parametric U resolution for the real space resolution R3d.
         """
-    def v_resolution(self, r3d: typing.SupportsFloat) -> float:
+    def v_resolution(self, r3d: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns the parametric V resolution for the real space resolution R3d.
         """
-    def value(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def value(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Computes the point at parameters (U, V).
         """

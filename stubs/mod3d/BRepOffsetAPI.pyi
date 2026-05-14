@@ -32,7 +32,7 @@ class MakeEvolved(mod3d.BRepBuilderAPI.MakeShape):
         Creates an empty evolved shape
         """
     @typing.overload
-    def __init__(self, spine: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, join_type: mod3d.GeomAbs.JoinType = ..., is_axe_prof: bool = True, is_solid: bool = False, is_prof_on_spine: bool = False, tol: typing.SupportsFloat = 1e-07, is_volume: bool = False, run_in_parallel: bool = False) -> None:
+    def __init__(self, spine: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, join_type: mod3d.GeomAbs.JoinType = ..., is_axe_prof: bool = True, is_solid: bool = False, is_prof_on_spine: bool = False, tol: typing.SupportsFloat | typing.SupportsIndex = 1e-07, is_volume: bool = False, run_in_parallel: bool = False) -> None:
         """
         Constructs an evolved shape by sweeping profile along spine.
         
@@ -109,7 +109,7 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
       filling.build()
       result = filling.shape()
     """
-    def __init__(self, degree: typing.SupportsInt = 3, nb_pts_on_cur: typing.SupportsInt = 15, nb_iter: typing.SupportsInt = 2, anisotropie: bool = False, tol_2d: typing.SupportsFloat = 1e-05, tol_3d: typing.SupportsFloat = 0.0001, tol_ang: typing.SupportsFloat = 0.01, tol_curv: typing.SupportsFloat = 0.1, max_deg: typing.SupportsInt = 8, max_segments: typing.SupportsInt = 9) -> None:
+    def __init__(self, degree: typing.SupportsInt | typing.SupportsIndex = 3, nb_pts_on_cur: typing.SupportsInt | typing.SupportsIndex = 15, nb_iter: typing.SupportsInt | typing.SupportsIndex = 2, anisotropie: bool = False, tol_2d: typing.SupportsFloat | typing.SupportsIndex = 1e-05, tol_3d: typing.SupportsFloat | typing.SupportsIndex = 0.0001, tol_ang: typing.SupportsFloat | typing.SupportsIndex = 0.01, tol_curv: typing.SupportsFloat | typing.SupportsIndex = 0.1, max_deg: typing.SupportsInt | typing.SupportsIndex = 8, max_segments: typing.SupportsInt | typing.SupportsIndex = 9) -> None:
         """
         Constructs a wire filling object.
         
@@ -178,7 +178,7 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
         Returns the index of the constraint
         """
     @typing.overload
-    def add(self, u: typing.SupportsFloat, v: typing.SupportsFloat, support: mod3d.TopoDS.Face, order: mod3d.GeomAbs.Shape) -> int:
+    def add(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex, support: mod3d.TopoDS.Face, order: mod3d.GeomAbs.Shape) -> int:
         """
         Adds a punctual constraint at parametric coordinates on a face.
         
@@ -196,15 +196,15 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
         Computes the surface that satisfies all constraints and builds the face.
         Use is_done() to check success and shape() to retrieve the result
         """
-    def g0_error_at(self, index: typing.SupportsInt) -> float:
+    def g0_error_at(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns maximum distance for constraint at given index
         """
-    def g1_error_at(self, index: typing.SupportsInt) -> float:
+    def g1_error_at(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns maximum angle for constraint at given index
         """
-    def g2_error_at(self, index: typing.SupportsInt) -> float:
+    def g2_error_at(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns maximum curvature difference for constraint at given index
         """
@@ -226,7 +226,7 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
         
         If no initial surface is given, the algorithm computes one automatically.
         """
-    def set_approx_param(self, max_deg: typing.SupportsInt = 8, max_segments: typing.SupportsInt = 9) -> None:
+    def set_approx_param(self, max_deg: typing.SupportsInt | typing.SupportsIndex = 8, max_segments: typing.SupportsInt | typing.SupportsIndex = 9) -> None:
         """
         Sets parameters used to approximate the filling surface.
         
@@ -234,7 +234,7 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
           max_deg: Highest polynomial degree for the surface
           max_segments: Greatest number of segments
         """
-    def set_constr_param(self, tol_2d: typing.SupportsFloat = 1e-05, tol_3d: typing.SupportsFloat = 0.0001, tol_ang: typing.SupportsFloat = 0.01, tol_curv: typing.SupportsFloat = 0.1) -> None:
+    def set_constr_param(self, tol_2d: typing.SupportsFloat | typing.SupportsIndex = 1e-05, tol_3d: typing.SupportsFloat | typing.SupportsIndex = 0.0001, tol_ang: typing.SupportsFloat | typing.SupportsIndex = 0.01, tol_curv: typing.SupportsFloat | typing.SupportsIndex = 0.1) -> None:
         """
         Sets tolerance values used to control constraints.
         
@@ -244,7 +244,7 @@ class MakeFilling(mod3d.BRepBuilderAPI.MakeShape):
           tol_ang: Max angle between surface normal and constraints
           tol_curv: Max curvature difference between surface and constraints
         """
-    def set_resol_param(self, degree: typing.SupportsInt = 3, nb_pts_on_cur: typing.SupportsInt = 15, nb_iter: typing.SupportsInt = 2, anisotropie: bool = False) -> None:
+    def set_resol_param(self, degree: typing.SupportsInt | typing.SupportsIndex = 3, nb_pts_on_cur: typing.SupportsInt | typing.SupportsIndex = 15, nb_iter: typing.SupportsInt | typing.SupportsIndex = 2, anisotropie: bool = False) -> None:
         """
         Sets parameters used for resolution.
         
@@ -307,7 +307,7 @@ class MakeOffset(mod3d.BRepBuilderAPI.MakeShape):
             
     """
     @staticmethod
-    def convert_face(face: mod3d.TopoDS.Face, angle_tolerance: typing.SupportsFloat) -> mod3d.TopoDS.Face:
+    def convert_face(face: mod3d.TopoDS.Face, angle_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Face:
         """
                     Converts a face's wires to arcs and segments only.
         
@@ -405,7 +405,7 @@ class MakeOffset(mod3d.BRepBuilderAPI.MakeShape):
                       join: Corner treatment type (default: Arc)
                       is_open_result: If True, allows open wire results (default: False)
         """
-    def perform(self, offset: typing.SupportsFloat, alt: typing.SupportsFloat = 0.0) -> None:
+    def perform(self, offset: typing.SupportsFloat | typing.SupportsIndex, alt: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> None:
         """
                     Computes the offset at the specified distance.
         
@@ -478,7 +478,7 @@ class MakeOffsetShape(mod3d.BRepBuilderAPI.MakeShape):
         
         Use perform_by_join() or perform_by_simple() to compute the offset.
         """
-    def perform_by_join(self, shape: mod3d.TopoDS.Shape, offset: typing.SupportsFloat, tol: typing.SupportsFloat, mode: OffsetMode = ..., intersection: bool = False, self_inter: bool = False, join: mod3d.GeomAbs.JoinType = ..., remove_internal_edges: bool = False) -> None:
+    def perform_by_join(self, shape: mod3d.TopoDS.Shape, offset: typing.SupportsFloat | typing.SupportsIndex, tol: typing.SupportsFloat | typing.SupportsIndex, mode: OffsetMode = ..., intersection: bool = False, self_inter: bool = False, join: mod3d.GeomAbs.JoinType = ..., remove_internal_edges: bool = False) -> None:
         """
                     Computes offset using the full algorithm with intersection computation.
         
@@ -508,7 +508,7 @@ class MakeOffsetShape(mod3d.BRepBuilderAPI.MakeShape):
                       - Offset should be small enough to avoid self-intersections
                       - Vertices with >3 converging edges may cause failures
         """
-    def perform_by_simple(self, shape: mod3d.TopoDS.Shape, offset_value: typing.SupportsFloat) -> None:
+    def perform_by_simple(self, shape: mod3d.TopoDS.Shape, offset_value: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Computes offset using a simple algorithm without intersection computation.
         
@@ -636,7 +636,7 @@ class NormalProjection(mod3d.BRepBuilderAPI.MakeShape):
         """
         Builds the projection result as a compound of wires.
         """
-    def build_wire(self) -> tuple:
+    def build_wire(self) -> tuple[bool, list]:
         """
                     Builds the result as a list of wires if possible.
         
@@ -677,7 +677,7 @@ class NormalProjection(mod3d.BRepBuilderAPI.MakeShape):
                     Parameters:
                       face_boundaries: If True, limit projection to face boundaries
         """
-    def set_max_distance(self, max_dist: typing.SupportsFloat) -> None:
+    def set_max_distance(self, max_dist: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Sets maximum distance between target and source shape.
         
@@ -687,7 +687,7 @@ class NormalProjection(mod3d.BRepBuilderAPI.MakeShape):
                     Parameters:
                       max_dist: Maximum allowed distance (< 0 to disable)
         """
-    def set_params(self, tol_3d: typing.SupportsFloat, tol_2d: typing.SupportsFloat, continuity: mod3d.GeomAbs.Shape, max_degree: typing.SupportsInt, max_seg: typing.SupportsInt) -> None:
+    def set_params(self, tol_3d: typing.SupportsFloat | typing.SupportsIndex, tol_2d: typing.SupportsFloat | typing.SupportsIndex, continuity: mod3d.GeomAbs.Shape, max_degree: typing.SupportsInt | typing.SupportsIndex, max_seg: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
                     Sets approximation parameters.
         
@@ -729,7 +729,7 @@ class OffsetMode:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -737,7 +737,7 @@ class OffsetMode:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -771,7 +771,7 @@ class ParametrizationType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -779,7 +779,7 @@ class ParametrizationType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -825,7 +825,7 @@ class ThruSectionStatus:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -833,7 +833,7 @@ class ThruSectionStatus:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -880,7 +880,7 @@ class ThruSections(mod3d.BRepBuilderAPI.MakeShape):
               cone = loft.shape()
             
     """
-    def __init__(self, is_solid: bool = False, ruled: bool = False, pres3d: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, is_solid: bool = False, ruled: bool = False, pres3d: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
                     Creates a ThruSections algorithm.
         
@@ -925,7 +925,7 @@ class ThruSections(mod3d.BRepBuilderAPI.MakeShape):
                     Parameters:
                       check: If True, enable compatibility checking (default)
         """
-    def criterium_weight(self) -> tuple:
+    def criterium_weight(self) -> tuple[float, float, float]:
         """
         Returns the criterion weights as a tuple (w1, w2, w3).
         """
@@ -946,7 +946,7 @@ class ThruSections(mod3d.BRepBuilderAPI.MakeShape):
                     Returns:
                       The face generated by the edge
         """
-    def init(self, is_solid: bool = False, ruled: bool = False, pres3d: typing.SupportsFloat = 1e-06) -> None:
+    def init(self, is_solid: bool = False, ruled: bool = False, pres3d: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Reinitializes the algorithm with new parameters.
         """
@@ -961,7 +961,7 @@ class ThruSections(mod3d.BRepBuilderAPI.MakeShape):
                     Parameters:
                       continuity: Geometric continuity (C0, C1, C2, etc.)
         """
-    def set_criterium_weight(self, w1: typing.SupportsFloat, w2: typing.SupportsFloat, w3: typing.SupportsFloat) -> None:
+    def set_criterium_weight(self, w1: typing.SupportsFloat | typing.SupportsIndex, w2: typing.SupportsFloat | typing.SupportsIndex, w3: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Sets weights for optimization criteria.
         
@@ -972,7 +972,7 @@ class ThruSections(mod3d.BRepBuilderAPI.MakeShape):
                       w2: Weight for second criterion
                       w3: Weight for third criterion
         """
-    def set_max_degree(self, max_deg: typing.SupportsInt) -> None:
+    def set_max_degree(self, max_deg: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Sets the maximum U degree for the result surface.
         """

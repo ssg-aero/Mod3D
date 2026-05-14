@@ -28,7 +28,7 @@ class BRepGProp:
         Returns a GProps object containing the computed properties.
         """
     @staticmethod
-    def surface_properties_eps(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat, skip_shared: bool = False) -> tuple:
+    def surface_properties_eps(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat | typing.SupportsIndex, skip_shared: bool = False) -> tuple[GProps, float]:
         """
         Computes surface properties with a specified precision.
         Args:
@@ -46,7 +46,7 @@ class BRepGProp:
         Returns a GProps object containing the computed properties.
         """
     @staticmethod
-    def volume_properties_eps(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat, only_closed: bool = False) -> tuple:
+    def volume_properties_eps(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat | typing.SupportsIndex, only_closed: bool = False) -> tuple[GProps, float]:
         """
         Computes volume properties with a specified precision.
         Args:
@@ -57,7 +57,7 @@ class BRepGProp:
             tuple: (GProps, error) where error is the relative computation error.
         """
     @staticmethod
-    def volume_properties_gk(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat = 0.001, only_closed: bool = False, skip_shared: bool = False) -> tuple:
+    def volume_properties_gk(shape: mod3d.TopoDS.Shape, eps: typing.SupportsFloat | typing.SupportsIndex = 0.001, only_closed: bool = False, skip_shared: bool = False) -> tuple[GProps, float]:
         """
         Computes volume properties using Gauss-Kronrod integration.
         This method provides adaptive integration with better error estimation.
@@ -92,7 +92,7 @@ class GProps:
         For more accuracy, the reference point should be close to the system location,
         e.g., near the center of mass.
         """
-    def add(self, item: GProps, density: typing.SupportsFloat = 1.0) -> None:
+    def add(self, item: GProps, density: typing.SupportsFloat | typing.SupportsIndex = 1.0) -> None:
         """
         Adds the global properties of item to this framework.
         The density parameter (default 1.0) is used as the density of the system
@@ -106,7 +106,7 @@ class GProps:
         """
         Returns the radius of gyration about the given axis.
         """
-    def static_moments(self) -> tuple:
+    def static_moments(self) -> tuple[float, float, float]:
         """
         Returns (Ix, Iy, Iz), the static moments of inertia about the three Cartesian axes.
         """
@@ -160,11 +160,11 @@ class PrincipalProps:
         """
         Returns true if the geometric system has a point of symmetry.
         """
-    def moments(self) -> tuple:
+    def moments(self) -> tuple[float, float, float]:
         """
         Returns (Ixx, Iyy, Izz), the principal moments of inertia.
         """
-    def radii_of_gyration(self) -> tuple:
+    def radii_of_gyration(self) -> tuple[float, float, float]:
         """
         Returns (Rxx, Ryy, Rzz), the principal radii of gyration.
         """

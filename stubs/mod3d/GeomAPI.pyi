@@ -49,7 +49,7 @@ class ExtremaCurveCurve:
         Computes the extrema between curves C1 and C2.
         """
     @typing.overload
-    def __init__(self, c1: mod3d.Geom.Curve, c2: mod3d.Geom.Curve, u1_min: typing.SupportsFloat, u1_max: typing.SupportsFloat, u2_min: typing.SupportsFloat, u2_max: typing.SupportsFloat) -> None:
+    def __init__(self, c1: mod3d.Geom.Curve, c2: mod3d.Geom.Curve, u1_min: typing.SupportsFloat | typing.SupportsIndex, u1_max: typing.SupportsFloat | typing.SupportsIndex, u2_min: typing.SupportsFloat | typing.SupportsIndex, u2_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Computes extrema between portions of the curves.
         
@@ -58,7 +58,7 @@ class ExtremaCurveCurve:
           u1_min, u1_max: Parameter bounds for C1
           u2_min, u2_max: Parameter bounds for C2
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance between the endpoints of extremum at index.
         
@@ -71,11 +71,11 @@ class ExtremaCurveCurve:
         Initializes and computes extrema between curves C1 and C2.
         """
     @typing.overload
-    def init(self, c1: mod3d.Geom.Curve, c2: mod3d.Geom.Curve, u1_min: typing.SupportsFloat, u1_max: typing.SupportsFloat, u2_min: typing.SupportsFloat, u2_max: typing.SupportsFloat) -> None:
+    def init(self, c1: mod3d.Geom.Curve, c2: mod3d.Geom.Curve, u1_min: typing.SupportsFloat | typing.SupportsIndex, u1_max: typing.SupportsFloat | typing.SupportsIndex, u2_min: typing.SupportsFloat | typing.SupportsIndex, u2_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes and computes extrema between portions of curves.
         """
-    def parameters(self, index: typing.SupportsInt) -> tuple[float, float]:
+    def parameters(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns parameters U1 on first curve and U2 on second curve for extremum at index.
         
@@ -85,7 +85,7 @@ class ExtremaCurveCurve:
         Returns:
           Tuple of (U1, U2)
         """
-    def points(self, index: typing.SupportsInt) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
+    def points(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
         """
         Returns points P1 on first curve and P2 on second curve for extremum at index.
         
@@ -183,7 +183,7 @@ class ExtremaCurveCurve2d:
                 dist = extrema.lower_distance  # Should be 5
             
     """
-    def __init__(self, c1: Geom2d_Curve, c2: Geom2d_Curve, u1_min: typing.SupportsFloat, u1_max: typing.SupportsFloat, u2_min: typing.SupportsFloat, u2_max: typing.SupportsFloat) -> None:
+    def __init__(self, c1: Geom2d_Curve, c2: Geom2d_Curve, u1_min: typing.SupportsFloat | typing.SupportsIndex, u1_max: typing.SupportsFloat | typing.SupportsIndex, u2_min: typing.SupportsFloat | typing.SupportsIndex, u2_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Computes extrema between portions of curves C1 and C2.
         
@@ -192,7 +192,7 @@ class ExtremaCurveCurve2d:
           u1_min, u1_max: Parameter bounds for C1
           u2_min, u2_max: Parameter bounds for C2
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance between endpoints of extremum at index.
         """
@@ -203,14 +203,14 @@ class ExtremaCurveCurve2d:
         Returns:
           Tuple of (P1, P2)
         """
-    def parameters(self, index: typing.SupportsInt) -> tuple[float, float]:
+    def parameters(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns parameters U1 on C1 and U2 on C2 for extremum at index.
         
         Returns:
           Tuple of (U1, U2)
         """
-    def points(self, index: typing.SupportsInt) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Pnt2d]:
+    def points(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Pnt2d]:
         """
         Returns points P1 on first curve and P2 on second curve.
         
@@ -284,7 +284,7 @@ class ExtremaCurveSurface:
         Computes extrema between a curve and a surface.
         """
     @typing.overload
-    def __init__(self, curve: mod3d.Geom.Curve, surface: mod3d.Geom.Surface, w_min: typing.SupportsFloat, w_max: typing.SupportsFloat, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat) -> None:
+    def __init__(self, curve: mod3d.Geom.Curve, surface: mod3d.Geom.Surface, w_min: typing.SupportsFloat | typing.SupportsIndex, w_max: typing.SupportsFloat | typing.SupportsIndex, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Computes extrema on portions of curve and surface.
         
@@ -293,7 +293,7 @@ class ExtremaCurveSurface:
           w_min, w_max: Parameter bounds for the curve
           u_min, u_max, v_min, v_max: Parameter bounds for the surface
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance between endpoints of extremum at index.
         """
@@ -303,11 +303,11 @@ class ExtremaCurveSurface:
         Initializes and computes extrema between curve and surface.
         """
     @typing.overload
-    def init(self, curve: mod3d.Geom.Curve, surface: mod3d.Geom.Surface, w_min: typing.SupportsFloat, w_max: typing.SupportsFloat, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat) -> None:
+    def init(self, curve: mod3d.Geom.Curve, surface: mod3d.Geom.Surface, w_min: typing.SupportsFloat | typing.SupportsIndex, w_max: typing.SupportsFloat | typing.SupportsIndex, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes and computes extrema on portions of curve and surface.
         """
-    def parameters(self, index: typing.SupportsInt) -> tuple[float, float, float]:
+    def parameters(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float, float]:
         """
         Returns parameters W on curve and (U,V) on surface for extremum at index.
         
@@ -317,7 +317,7 @@ class ExtremaCurveSurface:
         Returns:
           Tuple of (W, U, V)
         """
-    def points(self, index: typing.SupportsInt) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
+    def points(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
         """
         Returns points P1 on the curve and P2 on the surface for extremum at index.
         
@@ -394,7 +394,7 @@ class ExtremaSurfaceSurface:
         Computes extrema between surfaces S1 and S2.
         """
     @typing.overload
-    def __init__(self, s1: mod3d.Geom.Surface, s2: mod3d.Geom.Surface, u1_min: typing.SupportsFloat, u1_max: typing.SupportsFloat, v1_min: typing.SupportsFloat, v1_max: typing.SupportsFloat, u2_min: typing.SupportsFloat, u2_max: typing.SupportsFloat, v2_min: typing.SupportsFloat, v2_max: typing.SupportsFloat) -> None:
+    def __init__(self, s1: mod3d.Geom.Surface, s2: mod3d.Geom.Surface, u1_min: typing.SupportsFloat | typing.SupportsIndex, u1_max: typing.SupportsFloat | typing.SupportsIndex, v1_min: typing.SupportsFloat | typing.SupportsIndex, v1_max: typing.SupportsFloat | typing.SupportsIndex, u2_min: typing.SupportsFloat | typing.SupportsIndex, u2_max: typing.SupportsFloat | typing.SupportsIndex, v2_min: typing.SupportsFloat | typing.SupportsIndex, v2_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Computes extrema on portions of the surfaces.
         
@@ -403,7 +403,7 @@ class ExtremaSurfaceSurface:
           u1_min, u1_max, v1_min, v1_max: Parameter bounds for S1
           u2_min, u2_max, v2_min, v2_max: Parameter bounds for S2
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance between endpoints of extremum at index.
         """
@@ -413,18 +413,18 @@ class ExtremaSurfaceSurface:
         Initializes and computes extrema between surfaces S1 and S2.
         """
     @typing.overload
-    def init(self, s1: mod3d.Geom.Surface, s2: mod3d.Geom.Surface, u1_min: typing.SupportsFloat, u1_max: typing.SupportsFloat, v1_min: typing.SupportsFloat, v1_max: typing.SupportsFloat, u2_min: typing.SupportsFloat, u2_max: typing.SupportsFloat, v2_min: typing.SupportsFloat, v2_max: typing.SupportsFloat) -> None:
+    def init(self, s1: mod3d.Geom.Surface, s2: mod3d.Geom.Surface, u1_min: typing.SupportsFloat | typing.SupportsIndex, u1_max: typing.SupportsFloat | typing.SupportsIndex, v1_min: typing.SupportsFloat | typing.SupportsIndex, v1_max: typing.SupportsFloat | typing.SupportsIndex, u2_min: typing.SupportsFloat | typing.SupportsIndex, u2_max: typing.SupportsFloat | typing.SupportsIndex, v2_min: typing.SupportsFloat | typing.SupportsIndex, v2_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes and computes extrema on portions of surfaces.
         """
-    def parameters(self, index: typing.SupportsInt) -> tuple[float, float, float, float]:
+    def parameters(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float, float, float]:
         """
         Returns parameters (U1,V1) on S1 and (U2,V2) on S2 for extremum at index.
         
         Returns:
           Tuple of (U1, V1, U2, V2)
         """
-    def points(self, index: typing.SupportsInt) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
+    def points(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Pnt]:
         """
         Returns points P1 on first surface and P2 on second surface.
         
@@ -494,7 +494,7 @@ class InterCurveCurve2d:
         Creates an empty intersector. Use init() to define curves.
         """
     @typing.overload
-    def __init__(self, c1: Geom2d_Curve, c2: Geom2d_Curve, tol: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, c1: Geom2d_Curve, c2: Geom2d_Curve, tol: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates an intersector and computes intersections between C1 and C2.
         
@@ -503,7 +503,7 @@ class InterCurveCurve2d:
           tol: Tolerance for intersection computation
         """
     @typing.overload
-    def __init__(self, c1: Geom2d_Curve, tol: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, c1: Geom2d_Curve, tol: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates an intersector and computes self-intersections of C1.
         
@@ -512,23 +512,23 @@ class InterCurveCurve2d:
           tol: Tolerance for intersection computation
         """
     @typing.overload
-    def init(self, c1: Geom2d_Curve, c2: Geom2d_Curve, tol: typing.SupportsFloat = 1e-06) -> None:
+    def init(self, c1: Geom2d_Curve, c2: Geom2d_Curve, tol: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Initializes and computes intersections between C1 and C2.
         """
     @typing.overload
-    def init(self, c1: Geom2d_Curve, tol: typing.SupportsFloat = 1e-06) -> None:
+    def init(self, c1: Geom2d_Curve, tol: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Initializes and computes self-intersections of C1.
         """
-    def point(self, index: typing.SupportsInt) -> mod3d.gp.Pnt2d:
+    def point(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns intersection point at index.
         
         Parameters:
           index: Index in range [1, nb_points]
         """
-    def segment(self, index: typing.SupportsInt) -> tuple[Geom2d_Curve, Geom2d_Curve]:
+    def segment(self, index: typing.SupportsInt | typing.SupportsIndex) -> tuple[Geom2d_Curve, Geom2d_Curve]:
         """
         Returns intersection segment curves for tangential intersections.
         
@@ -567,14 +567,14 @@ class Interpolate:
             
     """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], periodic: bool = False, tolerance: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], periodic: bool = False, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates interpolation from points list.
         periodic: if True, curve will be closed
         tolerance: used to check if points are too close
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], parameters: collections.abc.Sequence[typing.SupportsFloat], periodic: bool = False, tolerance: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], parameters: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], periodic: bool = False, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates interpolation from points with explicit parameters.
         parameters: parameter values for each point
@@ -622,14 +622,14 @@ class Interpolate2d:
             
     """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], periodic: bool = False, tolerance: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], periodic: bool = False, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates interpolation from 2D points list.
         periodic: if True, curve will be closed
         tolerance: used to check if points are too close
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], parameters: collections.abc.Sequence[typing.SupportsFloat], periodic: bool = False, tolerance: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], parameters: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], periodic: bool = False, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates interpolation from 2D points with explicit parameters
         """
@@ -677,27 +677,27 @@ class PointsToBSpline:
         Creates an empty approximation object. Use init() to define the curve.
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation from points with degree and continuity constraints
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], par_type: Approx_ParametrizationType, deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], par_type: Approx_ParametrizationType, deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation with specified parametrization type
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], parameters: collections.abc.Sequence[typing.SupportsFloat], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], parameters: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation with explicit parameter values
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], weight1: typing.SupportsFloat, weight2: typing.SupportsFloat, weight3: typing.SupportsFloat, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt], weight1: typing.SupportsFloat | typing.SupportsIndex, weight2: typing.SupportsFloat | typing.SupportsIndex, weight3: typing.SupportsFloat | typing.SupportsIndex, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation using variational smoothing.
         Minimizes: weight1*Length + weight2*Curvature + weight3*Torsion
         """
-    def init(self, points: collections.abc.Sequence[mod3d.gp.Pnt], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat = 0.001) -> None:
+    def init(self, points: collections.abc.Sequence[mod3d.gp.Pnt], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol3d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Initializes and computes approximation from points
         """
@@ -733,33 +733,33 @@ class PointsToBSpline2d:
         Creates an empty approximation object. Use init() to define the curve.
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates approximation from 2D points with degree and continuity constraints
         """
     @typing.overload
-    def __init__(self, y_values: collections.abc.Sequence[typing.SupportsFloat], x0: typing.SupportsFloat, dx: typing.SupportsFloat, deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 1e-06) -> None:
+    def __init__(self, y_values: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], x0: typing.SupportsFloat | typing.SupportsIndex, dx: typing.SupportsFloat | typing.SupportsIndex, deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Creates approximation from Y values at uniform X spacing.
         Points are: (x0 + i*dx, y_values[i])
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], par_type: Approx_ParametrizationType, deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], par_type: Approx_ParametrizationType, deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation with specified parametrization type
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], parameters: collections.abc.Sequence[typing.SupportsFloat], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], parameters: collections.abc.Sequence[typing.SupportsFloat | typing.SupportsIndex], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation with explicit parameter values
         """
     @typing.overload
-    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], weight1: typing.SupportsFloat, weight2: typing.SupportsFloat, weight3: typing.SupportsFloat, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 0.001) -> None:
+    def __init__(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], weight1: typing.SupportsFloat | typing.SupportsIndex, weight2: typing.SupportsFloat | typing.SupportsIndex, weight3: typing.SupportsFloat | typing.SupportsIndex, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 0.001) -> None:
         """
         Creates approximation using variational smoothing.
         Minimizes: weight1*Length + weight2*Curvature + weight3*Torsion
         """
-    def init(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], deg_min: typing.SupportsInt = 3, deg_max: typing.SupportsInt = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat = 1e-06) -> None:
+    def init(self, points: collections.abc.Sequence[mod3d.gp.Pnt2d], deg_min: typing.SupportsInt | typing.SupportsIndex = 3, deg_max: typing.SupportsInt | typing.SupportsIndex = 8, continuity: mod3d.GeomAbs.Shape = ..., tol2d: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> None:
         """
         Initializes and computes approximation from 2D points
         """
@@ -799,7 +799,7 @@ class ProjectPointOnCurve:
         Creates a projection of point P onto curve.
         """
     @typing.overload
-    def __init__(self, point: mod3d.gp.Pnt, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat) -> None:
+    def __init__(self, point: mod3d.gp.Pnt, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a projection onto a portion of the curve.
         
@@ -808,7 +808,7 @@ class ProjectPointOnCurve:
           curve: The curve to project onto
           u_min, u_max: Parameter bounds
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance from the point to projection at index.
         """
@@ -818,15 +818,15 @@ class ProjectPointOnCurve:
         Initializes projection of point onto curve.
         """
     @typing.overload
-    def init(self, point: mod3d.gp.Pnt, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat) -> None:
+    def init(self, point: mod3d.gp.Pnt, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes projection onto a portion of the curve.
         """
-    def init_curve(self, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat) -> None:
+    def init_curve(self, curve: mod3d.Geom.Curve, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes the curve only. Use perform() to project points.
         """
-    def parameter(self, index: typing.SupportsInt) -> float:
+    def parameter(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the curve of projection at index.
         
@@ -837,7 +837,7 @@ class ProjectPointOnCurve:
         """
         Projects a point onto the current curve.
         """
-    def point(self, index: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the orthogonal projection point at index.
         
@@ -865,7 +865,7 @@ class ProjectPointOnCurve:
         Returns the nearest orthogonal projection of the point on the curve.
         """
     @property
-    def result(self) -> tuple:
+    def result(self) -> tuple[mod3d.gp.Pnt, float, float]:
         """
         Returns a complete result of the nearest point projection.
         
@@ -898,7 +898,7 @@ class ProjectPointOnCurve2d:
         Creates a projection of 2D point onto curve.
         """
     @typing.overload
-    def __init__(self, point: mod3d.gp.Pnt2d, curve: Geom2d_Curve, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat) -> None:
+    def __init__(self, point: mod3d.gp.Pnt2d, curve: Geom2d_Curve, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a projection onto a portion of the curve.
         
@@ -907,7 +907,7 @@ class ProjectPointOnCurve2d:
           curve: The 2D curve to project onto
           u_min, u_max: Parameter bounds
         """
-    def distance(self, index: typing.SupportsInt) -> float:
+    def distance(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the distance from the point to projection at index.
         """
@@ -917,15 +917,15 @@ class ProjectPointOnCurve2d:
         Initializes projection of point onto curve.
         """
     @typing.overload
-    def init(self, point: mod3d.gp.Pnt2d, curve: Geom2d_Curve, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat) -> None:
+    def init(self, point: mod3d.gp.Pnt2d, curve: Geom2d_Curve, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes projection onto a portion of the curve.
         """
-    def parameter(self, index: typing.SupportsInt) -> float:
+    def parameter(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the curve of projection at index.
         """
-    def point(self, index: typing.SupportsInt) -> mod3d.gp.Pnt2d:
+    def point(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns the orthogonal projection point at index.
         
@@ -953,7 +953,7 @@ class ProjectPointOnCurve2d:
         Returns the nearest orthogonal projection of the point on the curve.
         """
     @property
-    def result(self) -> tuple:
+    def result(self) -> tuple[mod3d.gp.Pnt2d, float, float]:
         """
         Returns a complete result of the nearest point projection.
         

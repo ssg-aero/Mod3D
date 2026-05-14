@@ -46,7 +46,7 @@ class Reader:
         ReturnStatus
             ``RetDone`` on success, ``RetError`` / ``RetFail`` otherwise.
         """
-    def set_system_length_unit(self, length_unit: typing.SupportsFloat) -> None:
+    def set_system_length_unit(self, length_unit: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the system length unit used during transfer.
         
@@ -55,7 +55,7 @@ class Reader:
         length_unit : float
             Length unit value.
         """
-    def shape(self, num: typing.SupportsInt = 1) -> mod3d.TopoDS.Shape:
+    def shape(self, num: typing.SupportsInt | typing.SupportsIndex = 1) -> mod3d.TopoDS.Shape:
         """
         Returns the shape produced at rank *num*.
         
@@ -76,7 +76,7 @@ class Reader:
         -------
         float
         """
-    def transfer_root(self, num: typing.SupportsInt = 1) -> bool:
+    def transfer_root(self, num: typing.SupportsInt | typing.SupportsIndex = 1) -> bool:
         """
         Translates a single root entity identified by its rank.
         
@@ -102,7 +102,7 @@ class Reader:
             Number of successfully translated roots.
         """
     @property
-    def file_units(self) -> tuple:
+    def file_units(self) -> tuple[list[str], list[str], list[str]]:
         """
         Returns the unit names found in the STEP file.
         
@@ -180,7 +180,7 @@ class ReturnStatus:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -188,7 +188,7 @@ class ReturnStatus:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -237,7 +237,7 @@ class StepModelType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -245,7 +245,7 @@ class StepModelType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -285,7 +285,7 @@ class Writer:
         newone : bool, optional
             If ``True``, force creation of a fresh model. Default is ``False``.
         """
-    def print_stats_transfer(self, what: typing.SupportsInt, mode: typing.SupportsInt = 0) -> None:
+    def print_stats_transfer(self, what: typing.SupportsInt | typing.SupportsIndex, mode: typing.SupportsInt | typing.SupportsIndex = 0) -> None:
         """
         Displays statistics for the last translation.
         
@@ -308,7 +308,7 @@ class Writer:
             - 2 — Maximum information per entity (checks).
             - 3 — Number of entities per STEP entity type.
         """
-    def set_tolerance(self, tol: typing.SupportsFloat) -> None:
+    def set_tolerance(self, tol: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets a length-measure value written to uncertainty-measure-with-unit
         when the next shape is translated.

@@ -30,7 +30,7 @@ class MeshAlgoType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -38,7 +38,7 @@ class MeshAlgoType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -81,7 +81,7 @@ class MeshParameters:
         Angular deflection used to tessellate the boundary edges
         """
     @Angle.setter
-    def Angle(self, arg0: typing.SupportsFloat) -> None:
+    def Angle(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def AngleInterior(self) -> float:
@@ -89,7 +89,7 @@ class MeshParameters:
         Angular deflection used to tessellate the face interior
         """
     @AngleInterior.setter
-    def AngleInterior(self, arg0: typing.SupportsFloat) -> None:
+    def AngleInterior(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def CleanModel(self) -> bool:
@@ -113,7 +113,7 @@ class MeshParameters:
         Linear deflection used to tessellate the boundary edges
         """
     @Deflection.setter
-    def Deflection(self, arg0: typing.SupportsFloat) -> None:
+    def Deflection(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def DeflectionInterior(self) -> float:
@@ -121,7 +121,7 @@ class MeshParameters:
         Linear deflection used to tessellate the face interior
         """
     @DeflectionInterior.setter
-    def DeflectionInterior(self, arg0: typing.SupportsFloat) -> None:
+    def DeflectionInterior(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def EnableControlSurfaceDeflectionAllSurfaces(self) -> bool:
@@ -169,7 +169,7 @@ class MeshParameters:
         Minimum size parameter limiting size of triangle's edges
         """
     @MinSize.setter
-    def MinSize(self, arg0: typing.SupportsFloat) -> None:
+    def MinSize(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def Relative(self) -> bool:
@@ -180,7 +180,7 @@ class MeshParameters:
     def Relative(self, arg0: bool) -> None:
         ...
 @typing.overload
-def extract_curve_tessellation(curve: mod3d.Geom.Curve, linear_deflection: typing.SupportsFloat) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
+def extract_curve_tessellation(curve: mod3d.Geom.Curve, linear_deflection: typing.SupportsFloat | typing.SupportsIndex) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
     """
     Extracts tessellation data from the given curve. Previous tessellation data will be cleared.
     
@@ -194,7 +194,7 @@ def extract_curve_tessellation(curve: mod3d.Geom.Curve, linear_deflection: typin
         - vertex positions (numpy array of float, shape (n_points, 3))
     """
 @typing.overload
-def extract_curve_tessellation(edge: mod3d.TopoDS.Edge, linear_deflection: typing.SupportsFloat) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
+def extract_curve_tessellation(edge: mod3d.TopoDS.Edge, linear_deflection: typing.SupportsFloat | typing.SupportsIndex) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
     """
     Extracts tessellation data from the given edge.
     
@@ -208,7 +208,7 @@ def extract_curve_tessellation(edge: mod3d.TopoDS.Edge, linear_deflection: typin
         - vertex positions (numpy array of float, shape (n_points, 3))
     """
 @typing.overload
-def extract_curve_tessellation(wire: mod3d.TopoDS.Wire, linear_deflection: typing.SupportsFloat) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
+def extract_curve_tessellation(wire: mod3d.TopoDS.Wire, linear_deflection: typing.SupportsFloat | typing.SupportsIndex) -> tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]:
     """
     Extracts tessellation data from the given wire.
     
@@ -221,7 +221,7 @@ def extract_curve_tessellation(wire: mod3d.TopoDS.Wire, linear_deflection: typin
         - vertex indices (numpy array of int, shape (n_points,))
         - vertex positions (numpy array of float, shape (n_points, 3))
     """
-def extract_delaunay_tessellation(shape: mod3d.TopoDS.Shape, element_size: typing.SupportsFloat | None = None, surface_deflection: typing.SupportsFloat | None = None, mesh_algo: MeshAlgoType = ..., is_relative: bool = False, angle_deflection: typing.SupportsFloat = 30.0, parallel: bool = True, compute_normals: bool = True, control_surface_deflection: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:
+def extract_delaunay_tessellation(shape: mod3d.TopoDS.Shape, element_size: typing.SupportsFloat | typing.SupportsIndex | None = None, surface_deflection: typing.SupportsFloat | typing.SupportsIndex | None = None, mesh_algo: MeshAlgoType = ..., is_relative: bool = False, angle_deflection: typing.SupportsFloat | typing.SupportsIndex = 30.0, parallel: bool = True, compute_normals: bool = True, control_surface_deflection: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:
     """
     Extracts Delaunay tessellation data from the given shape while preserving the same output format as extract_tessellation.
     
@@ -240,7 +240,7 @@ def extract_delaunay_tessellation(shape: mod3d.TopoDS.Shape, element_size: typin
       A pair (faces, edges) using the same tuple and numpy array layout as extract_tessellation
     """
 @typing.overload
-def extract_tessellation(shape: mod3d.TopoDS.Shape, linear_deflection: typing.SupportsFloat, is_relative: bool = False, angle_deflection: typing.SupportsFloat = 30.0, parallel: bool = True, compute_normals: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:
+def extract_tessellation(shape: mod3d.TopoDS.Shape, linear_deflection: typing.SupportsFloat | typing.SupportsIndex, is_relative: bool = False, angle_deflection: typing.SupportsFloat | typing.SupportsIndex = 30.0, parallel: bool = True, compute_normals: bool = True) -> tuple[list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64], numpy.typing.NDArray[numpy.float64] | None, numpy.typing.NDArray[numpy.float64] | None]], list[tuple[numpy.typing.NDArray[numpy.int32], numpy.typing.NDArray[numpy.float64]]]]:
     """
     Extracts tessellation data from the given shape. Previous tessellation data will be cleared.
     

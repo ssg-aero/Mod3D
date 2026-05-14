@@ -3,6 +3,7 @@ Boundary representation module
 """
 from __future__ import annotations
 import mod3d.Geom
+import mod3d.Geom2d
 import mod3d.GeomAbs
 import mod3d.TopAbs
 import mod3d.TopoDS
@@ -22,17 +23,17 @@ class Tool:
         Returns the continuity of the edge between two faces
         """
     @staticmethod
-    def curve(edge: mod3d.TopoDS.Edge) -> tuple:
+    def curve(edge: mod3d.TopoDS.Edge) -> tuple[mod3d.Geom.Curve, float, float]:
         """
         Returns tuple (curve, first, last) for the edge's 3D curve
         """
     @staticmethod
-    def curve_on_surface(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple:
+    def curve_on_surface(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple[mod3d.Geom2d.Curve2d, float, float]:
         """
         Returns tuple (2d_curve, first, last) for the edge on the face
         """
     @staticmethod
-    def curve_with_location(edge: mod3d.TopoDS.Edge) -> tuple:
+    def curve_with_location(edge: mod3d.TopoDS.Edge) -> tuple[mod3d.Geom.Curve, mod3d.TopoDS.TopLoc_Location, float, float]:
         """
         Returns tuple (curve, location, first, last) for the edge's 3D curve
         """
@@ -96,7 +97,7 @@ class Tool:
         Returns the NaturalRestriction flag of the face
         """
     @staticmethod
-    def parameter(vertex: mod3d.TopoDS.Vertex, edge: mod3d.TopoDS.Edge) -> tuple:
+    def parameter(vertex: mod3d.TopoDS.Vertex, edge: mod3d.TopoDS.Edge) -> tuple[bool, float]:
         """
         Returns tuple (found, parameter) for the vertex on the edge
         """
@@ -122,12 +123,12 @@ class Tool:
         Returns the 3D point of the vertex
         """
     @staticmethod
-    def range(edge: mod3d.TopoDS.Edge, first: typing.SupportsFloat, last: typing.SupportsFloat) -> None:
+    def range(edge: mod3d.TopoDS.Edge, first: typing.SupportsFloat | typing.SupportsIndex, last: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Gets the range of the 3D curve (outputs first and last parameters)
         """
     @staticmethod
-    def range_on_face(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple:
+    def range_on_face(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple[float, float]:
         """
         Returns tuple (first, last) for the edge's range on the face
         """
@@ -153,7 +154,7 @@ class Tool:
         May be a copy if there is a location
         """
     @staticmethod
-    def surface_with_location(face: mod3d.TopoDS.Face) -> tuple:
+    def surface_with_location(face: mod3d.TopoDS.Face) -> tuple[mod3d.Geom.Surface, mod3d.TopoDS.TopLoc_Location]:
         """
         Returns tuple (surface, location) for the face
         """
@@ -173,12 +174,12 @@ class Tool:
         Returns the tolerance of the vertex
         """
     @staticmethod
-    def triangulation(face: mod3d.TopoDS.Face) -> tuple:
+    def triangulation(face: mod3d.TopoDS.Face) -> tuple[Poly_Triangulation, mod3d.TopoDS.TopLoc_Location]:
         """
         Returns tuple (triangulation, location) for the face
         """
     @staticmethod
-    def uv_points(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple:
+    def uv_points(edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Pnt2d]:
         """
         Returns tuple (uv_first, uv_last) for the edge extremities on the face
         """

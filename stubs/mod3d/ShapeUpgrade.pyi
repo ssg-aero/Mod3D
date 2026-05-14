@@ -56,12 +56,12 @@ class UnifySameDomain:
         If vertex: forbids merging of connected edges.
         If edge: forbids merging of connected faces.
         """
-    def set_angular_tolerance(self, tolerance: typing.SupportsFloat) -> None:
+    def set_angular_tolerance(self, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the angular tolerance. Shapes with connection angle greater
         than this value will not be merged. Default is Precision::Angular().
         """
-    def set_linear_tolerance(self, tolerance: typing.SupportsFloat) -> None:
+    def set_linear_tolerance(self, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the linear tolerance (chord error for merging decisions).
         Default is Precision::Confusion().

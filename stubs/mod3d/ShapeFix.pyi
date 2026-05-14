@@ -50,15 +50,15 @@ class Shape:
         
         Returns True if any fix was applied.
         """
-    def set_max_tolerance(self, max_tolerance: typing.SupportsFloat) -> None:
+    def set_max_tolerance(self, max_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets maximal allowed tolerance.
         """
-    def set_min_tolerance(self, min_tolerance: typing.SupportsFloat) -> None:
+    def set_min_tolerance(self, min_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets minimal allowed tolerance.
         """
-    def set_precision(self, precision: typing.SupportsFloat) -> None:
+    def set_precision(self, precision: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the basic precision value.
         """
@@ -68,7 +68,7 @@ class Shape:
         Mode for fixing free faces (-1 default, 0 skip, 1 force). Default True.
         """
     @fix_free_face_mode.setter
-    def fix_free_face_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_free_face_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_free_shell_mode(self) -> int:
@@ -76,7 +76,7 @@ class Shape:
         Mode for fixing free shells (-1 default, 0 skip, 1 force). Default True.
         """
     @fix_free_shell_mode.setter
-    def fix_free_shell_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_free_shell_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_free_wire_mode(self) -> int:
@@ -84,7 +84,7 @@ class Shape:
         Mode for fixing free wires (-1 default, 0 skip, 1 force). Default True.
         """
     @fix_free_wire_mode.setter
-    def fix_free_wire_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_free_wire_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_same_parameter_mode(self) -> int:
@@ -92,7 +92,7 @@ class Shape:
         Mode for applying SameParameter after all fixes (-1 default, 0 skip, 1 force). Default True.
         """
     @fix_same_parameter_mode.setter
-    def fix_same_parameter_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_same_parameter_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_solid_mode(self) -> int:
@@ -100,7 +100,7 @@ class Shape:
         Mode for fixing solids (-1 default, 0 skip, 1 force). Default True.
         """
     @fix_solid_mode.setter
-    def fix_solid_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_solid_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_vertex_position_mode(self) -> int:
@@ -108,7 +108,7 @@ class Shape:
         Mode for fixing vertex positions before all fixes (-1 default, 0 skip, 1 force). Default False.
         """
     @fix_vertex_position_mode.setter
-    def fix_vertex_position_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_vertex_position_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_vertex_tol_mode(self) -> int:
@@ -116,7 +116,7 @@ class Shape:
         Mode for fixing tolerances of vertices on whole shape after all fixes.
         """
     @fix_vertex_tol_mode.setter
-    def fix_vertex_tol_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_vertex_tol_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def shape(self) -> mod3d.TopoDS.Shape:
@@ -161,7 +161,7 @@ class Wire:
         Creates an empty wire fixer with default flags.
         """
     @typing.overload
-    def __init__(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, precision: typing.SupportsFloat) -> None:
+    def __init__(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, precision: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a wire fixer and loads data for the wire and face.
         """
@@ -173,7 +173,7 @@ class Wire:
         """
         Clears all statuses.
         """
-    def fix_closed(self, precision: typing.SupportsFloat = -1.0) -> bool:
+    def fix_closed(self, precision: typing.SupportsFloat | typing.SupportsIndex = -1.0) -> bool:
         """
         Fixes wire to be well closed.
         
@@ -182,7 +182,7 @@ class Wire:
         
         Returns True if any fix was applied.
         """
-    def fix_connected(self, precision: typing.SupportsFloat = -1.0) -> bool:
+    def fix_connected(self, precision: typing.SupportsFloat | typing.SupportsIndex = -1.0) -> bool:
         """
         Fixes connections between adjacent edges.
         
@@ -248,7 +248,7 @@ class Wire:
         
         Returns True if any fix was applied.
         """
-    def fix_small(self, lock_vertex: bool, precision_small: typing.SupportsFloat = 0.0) -> int:
+    def fix_small(self, lock_vertex: bool, precision_small: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> int:
         """
         Removes small edges from the wire.
         
@@ -264,7 +264,7 @@ class Wire:
         
         Returns True if any fix was applied.
         """
-    def init(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, precision: typing.SupportsFloat) -> None:
+    def init(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, precision: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Loads analyzer with all data for the wire and face, and drops all fixing statuses.
         """
@@ -282,15 +282,15 @@ class Wire:
         """
         Sets the working face for the wire.
         """
-    def set_max_tail_angle(self, max_tail_angle: typing.SupportsFloat) -> None:
+    def set_max_tail_angle(self, max_tail_angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the maximal allowed angle of the tails in radians.
         """
-    def set_max_tail_width(self, max_tail_width: typing.SupportsFloat) -> None:
+    def set_max_tail_width(self, max_tail_width: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the maximal allowed width of the tails.
         """
-    def set_precision(self, precision: typing.SupportsFloat) -> None:
+    def set_precision(self, precision: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets working precision.
         """
@@ -313,7 +313,7 @@ class Wire:
         Mode for FixConnected (-1 default, 0 skip, 1 force).
         """
     @fix_connected_mode.setter
-    def fix_connected_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_connected_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_degenerated_mode(self) -> int:
@@ -321,7 +321,7 @@ class Wire:
         Mode for FixDegenerated (-1 default, 0 skip, 1 force).
         """
     @fix_degenerated_mode.setter
-    def fix_degenerated_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_degenerated_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_gaps_2d_mode(self) -> int:
@@ -329,7 +329,7 @@ class Wire:
         Mode for FixGaps2d (-1 default, 0 skip, 1 force).
         """
     @fix_gaps_2d_mode.setter
-    def fix_gaps_2d_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_gaps_2d_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_gaps_3d_mode(self) -> int:
@@ -337,7 +337,7 @@ class Wire:
         Mode for FixGaps3d (-1 default, 0 skip, 1 force).
         """
     @fix_gaps_3d_mode.setter
-    def fix_gaps_3d_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_gaps_3d_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_lacking_mode(self) -> int:
@@ -345,7 +345,7 @@ class Wire:
         Mode for FixLacking (-1 default, 0 skip, 1 force).
         """
     @fix_lacking_mode.setter
-    def fix_lacking_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_lacking_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_reorder_mode(self) -> int:
@@ -353,7 +353,7 @@ class Wire:
         Mode for FixReorder (-1 default, 0 skip, 1 force).
         """
     @fix_reorder_mode.setter
-    def fix_reorder_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_reorder_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_self_intersection_mode(self) -> int:
@@ -361,7 +361,7 @@ class Wire:
         Mode for FixSelfIntersection (-1 default, 0 skip, 1 force).
         """
     @fix_self_intersection_mode.setter
-    def fix_self_intersection_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_self_intersection_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def fix_small_mode(self) -> int:
@@ -369,7 +369,7 @@ class Wire:
         Mode for FixSmall (-1 default, 0 skip, 1 force).
         """
     @fix_small_mode.setter
-    def fix_small_mode(self, arg1: typing.SupportsInt) -> None:
+    def fix_small_mode(self, arg1: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def is_loaded(self) -> bool:

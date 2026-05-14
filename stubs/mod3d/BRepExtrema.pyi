@@ -27,7 +27,7 @@ class DistShapeShape:
           algo: Extrema algorithm (obsolete, not used)
         """
     @typing.overload
-    def __init__(self, shape1: mod3d.TopoDS.Shape, shape2: mod3d.TopoDS.Shape, deflection: typing.SupportsFloat, flag: ExtFlag = ..., algo: ExtAlgo = ...) -> None:
+    def __init__(self, shape1: mod3d.TopoDS.Shape, shape2: mod3d.TopoDS.Shape, deflection: typing.SupportsFloat | typing.SupportsIndex, flag: ExtFlag = ..., algo: ExtAlgo = ...) -> None:
         """
         Create tool and compute minimum distance with specified deflection
         
@@ -50,19 +50,19 @@ class DistShapeShape:
         """
         Load second shape into extrema
         """
-    def par_on_edge_s1(self, n: typing.SupportsInt) -> float:
+    def par_on_edge_s1(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Return the parameter t if the Nth solution is on an edge of the first shape
         """
-    def par_on_edge_s2(self, n: typing.SupportsInt) -> float:
+    def par_on_edge_s2(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Return the parameter t if the Nth solution is on an edge of the second shape
         """
-    def par_on_face_s1(self, n: typing.SupportsInt) -> tuple:
+    def par_on_face_s1(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Return the parameters (u, v) if the Nth solution is on a face of the first shape
         """
-    def par_on_face_s2(self, n: typing.SupportsInt) -> tuple:
+    def par_on_face_s2(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Return the parameters (u, v) if the Nth solution is on a face of the second shape
         """
@@ -73,11 +73,11 @@ class DistShapeShape:
         Returns:
           True if computation succeeded
         """
-    def point_on_shape1(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_shape1(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Return the point corresponding to the Nth solution on the first shape
         """
-    def point_on_shape2(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_shape2(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Return the point corresponding to the Nth solution on the second shape
         """
@@ -89,7 +89,7 @@ class DistShapeShape:
         """
         Set extrema algorithm (obsolete, not used)
         """
-    def set_deflection(self, deflection: typing.SupportsFloat) -> None:
+    def set_deflection(self, deflection: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set deflection for computation of minimum distance
         """
@@ -97,15 +97,15 @@ class DistShapeShape:
         """
         Set extrema flag (obsolete, not used)
         """
-    def support_on_shape1(self, n: typing.SupportsInt) -> mod3d.TopoDS.Shape:
+    def support_on_shape1(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Shape:
         """
         Return the support (Vertex, Edge or Face) where the Nth solution on the first shape is situated
         """
-    def support_on_shape2(self, n: typing.SupportsInt) -> mod3d.TopoDS.Shape:
+    def support_on_shape2(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Shape:
         """
         Return the support (Vertex, Edge or Face) where the Nth solution on the second shape is situated
         """
-    def support_type_shape1(self, n: typing.SupportsInt) -> SupportType:
+    def support_type_shape1(self, n: typing.SupportsInt | typing.SupportsIndex) -> SupportType:
         """
         Return the type of support where the Nth solution on the first shape is situated
         
@@ -114,7 +114,7 @@ class DistShapeShape:
           IsOnEdge: Solution is on an edge
           IsInFace: Solution is inside a face
         """
-    def support_type_shape2(self, n: typing.SupportsInt) -> SupportType:
+    def support_type_shape2(self, n: typing.SupportsInt | typing.SupportsIndex) -> SupportType:
         """
         Return the type of support where the Nth solution on the second shape is situated
         
@@ -170,7 +170,7 @@ class ExtAlgo:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -178,7 +178,7 @@ class ExtAlgo:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -210,11 +210,11 @@ class ExtCC:
         """
     def pamameters_and_points(self) -> list[tuple]:
         ...
-    def parameter_on_e1(self, n: typing.SupportsInt) -> float:
+    def parameter_on_e1(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the first edge of the N-th extremum distance
         """
-    def parameter_on_e2(self, n: typing.SupportsInt) -> float:
+    def parameter_on_e2(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the second edge of the N-th extremum distance
         """
@@ -222,15 +222,15 @@ class ExtCC:
         """
         Computes extrema for the given first edge
         """
-    def point_on_e1(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_e1(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on the first edge of the N-th extremum distance
         """
-    def point_on_e2(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_e2(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on the second edge of the N-th extremum distance
         """
-    def square_distance(self, n: typing.SupportsInt) -> float:
+    def square_distance(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the value of the N-th extremum square distance
         """
@@ -238,7 +238,7 @@ class ExtCC:
         """
         Returns all extremum square distances as a list
         """
-    def trimmed_square_distances(self) -> tuple:
+    def trimmed_square_distances(self) -> tuple[tuple[float, float, float, float], tuple[mod3d.gp.Pnt, mod3d.gp.Pnt, mod3d.gp.Pnt, mod3d.gp.Pnt]]:
         """
         Returns ((dist11, dist12, dist21, dist22), (p11, p12, p21, p22)).
         Square distances between trimmed curve endpoints:
@@ -282,11 +282,11 @@ class ExtCF:
         """
         Initializes the algorithm with an edge and face
         """
-    def parameter_on_edge(self, n: typing.SupportsInt) -> float:
+    def parameter_on_edge(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the edge of the N-th extremum distance
         """
-    def parameter_on_face(self, n: typing.SupportsInt) -> tuple:
+    def parameter_on_face(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns the (u, v) parameters on the face of the N-th extremum distance
         """
@@ -294,17 +294,17 @@ class ExtCF:
         """
         Computes extrema for the given edge and face
         """
-    def point_on_edge(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_edge(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on the edge of the N-th extremum distance
         """
-    def point_on_face(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_face(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on the face of the N-th extremum distance
         """
     def points_and_parameters(self) -> list[tuple]:
         ...
-    def square_distance(self, n: typing.SupportsInt) -> float:
+    def square_distance(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the value of the N-th extremum square distance
         """
@@ -343,11 +343,11 @@ class ExtFF:
         """
         Initializes the algorithm with the second face
         """
-    def parameter_on_face1(self, n: typing.SupportsInt) -> tuple:
+    def parameter_on_face1(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns the (u, v) parameters on face1 of the N-th extremum distance
         """
-    def parameter_on_face2(self, n: typing.SupportsInt) -> tuple:
+    def parameter_on_face2(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns the (u, v) parameters on face2 of the N-th extremum distance
         """
@@ -355,17 +355,17 @@ class ExtFF:
         """
         Computes extrema for the given faces
         """
-    def point_on_face1(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_face1(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on face1 of the N-th extremum distance
         """
-    def point_on_face2(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point_on_face2(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point on face2 of the N-th extremum distance
         """
     def points_and_parameters(self) -> list[tuple]:
         ...
-    def square_distance(self, n: typing.SupportsInt) -> float:
+    def square_distance(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the value of the N-th extremum square distance
         """
@@ -406,7 +406,7 @@ class ExtFlag:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -414,7 +414,7 @@ class ExtFlag:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -445,11 +445,11 @@ class ExtPC:
         """
         Initializes the algorithm with an edge
         """
-    def is_min(self, n: typing.SupportsInt) -> bool:
+    def is_min(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if the N-th extremum distance is a minimum
         """
-    def parameter(self, n: typing.SupportsInt) -> float:
+    def parameter(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the edge of the N-th extremum distance
         """
@@ -457,7 +457,7 @@ class ExtPC:
         """
         Computes extrema for the given vertex
         """
-    def point(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point of the N-th extremum distance
         """
@@ -465,11 +465,11 @@ class ExtPC:
         """
         Returns all extremum points as a list
         """
-    def square_distance(self, n: typing.SupportsInt) -> float:
+    def square_distance(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the value of the N-th extremum square distance
         """
-    def trimmed_square_distances(self) -> tuple:
+    def trimmed_square_distances(self) -> tuple[float, float, mod3d.gp.Pnt, mod3d.gp.Pnt]:
         """
         Returns (dist1, dist2, pnt1, pnt2) for trimmed curve endpoints.
         dist1: square distance to first parameter point
@@ -505,7 +505,7 @@ class ExtPF:
         """
         Initializes the algorithm with a face
         """
-    def parameter(self, n: typing.SupportsInt) -> tuple:
+    def parameter(self, n: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns the (u, v) parameters on the face of the N-th extremum distance
         """
@@ -517,7 +517,7 @@ class ExtPF:
         """
         Computes extrema for the given vertex and face
         """
-    def point(self, n: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def point(self, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the point of the N-th extremum distance
         """
@@ -533,7 +533,7 @@ class ExtPF:
         """
         Sets the extrema flag (MIN, MAX, or MINMAX)
         """
-    def square_distance(self, n: typing.SupportsInt) -> float:
+    def square_distance(self, n: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the value of the N-th extremum square distance
         """
@@ -571,7 +571,7 @@ class SupportType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -579,7 +579,7 @@ class SupportType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...

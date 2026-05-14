@@ -60,7 +60,7 @@ class EdgeError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -68,7 +68,7 @@ class EdgeError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -106,7 +106,7 @@ class FaceError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -114,7 +114,7 @@ class FaceError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -146,7 +146,7 @@ class MakeBox(MakeShape):
         Default constructor
         """
     @typing.overload
-    def __init__(self, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def __init__(self, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a box with a corner at (0,0,0) and the other at (dx, dy, dz)
         
@@ -159,7 +159,7 @@ class MakeBox(MakeShape):
           Standard_DomainError if dx, dy, or dz <= Precision::Confusion()
         """
     @typing.overload
-    def __init__(self, p: mod3d.gp.Pnt, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def __init__(self, p: mod3d.gp.Pnt, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a box with a corner at P and size dx, dy, dz
         
@@ -185,7 +185,7 @@ class MakeBox(MakeShape):
           Standard_DomainError if any component of the vector P1-P2 <= Precision::Confusion()
         """
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a box with Ax2 (the left corner and the axis) and size dx, dy, dz
         
@@ -203,12 +203,12 @@ class MakeBox(MakeShape):
         Builds the box and stores the result
         """
     @typing.overload
-    def init(self, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def init(self, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initialize a box with a corner at (0,0,0) and the other at (dx, dy, dz)
         """
     @typing.overload
-    def init(self, pnt: mod3d.gp.Pnt, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def init(self, pnt: mod3d.gp.Pnt, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initialize a box with a corner at pnt and size dx, dy, dz
         """
@@ -218,7 +218,7 @@ class MakeBox(MakeShape):
         Initialize a box with corners pnt1 and pnt2
         """
     @typing.overload
-    def init(self, axes: mod3d.gp.Ax2, dx: typing.SupportsFloat, dy: typing.SupportsFloat, dz: typing.SupportsFloat) -> None:
+    def init(self, axes: mod3d.gp.Ax2, dx: typing.SupportsFloat | typing.SupportsIndex, dy: typing.SupportsFloat | typing.SupportsIndex, dz: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initialize a box with Ax2 (the left corner and the axes) and size dx, dy, dz
         """
@@ -267,23 +267,23 @@ class MakeBox(MakeShape):
         """
 class MakeCone(MakeOneAxis):
     @typing.overload
-    def __init__(self, r1: typing.SupportsFloat, r2: typing.SupportsFloat, h: typing.SupportsFloat) -> None:
+    def __init__(self, r1: typing.SupportsFloat | typing.SupportsIndex, r2: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, r1: typing.SupportsFloat, r2: typing.SupportsFloat, h: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, r1: typing.SupportsFloat | typing.SupportsIndex, r2: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, Axes: mod3d.gp.Ax2, r1: typing.SupportsFloat, r2: typing.SupportsFloat, h: typing.SupportsFloat) -> None:
+    def __init__(self, Axes: mod3d.gp.Ax2, r1: typing.SupportsFloat | typing.SupportsIndex, r2: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class MakeCylinder(MakeOneAxis):
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat, h: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat, h: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, Axes: mod3d.gp.Ax2, r: typing.SupportsFloat, h: typing.SupportsFloat) -> None:
+    def __init__(self, Axes: mod3d.gp.Ax2, r: typing.SupportsFloat | typing.SupportsIndex, h: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class MakeEdge(MakeShape):
     """
@@ -315,7 +315,7 @@ class MakeEdge(MakeShape):
         Creates an infinite edge on the line L
         """
     @typing.overload
-    def __init__(self, L: mod3d.gp.Lin, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.gp.Lin, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the line L between parameters p1 and p2
         """
@@ -335,7 +335,7 @@ class MakeEdge(MakeShape):
         Creates a closed edge on the circle L
         """
     @typing.overload
-    def __init__(self, L: mod3d.gp.Circ, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.gp.Circ, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the circle L between parameters p1 and p2
         """
@@ -355,7 +355,7 @@ class MakeEdge(MakeShape):
         Creates a closed edge on the ellipse L
         """
     @typing.overload
-    def __init__(self, L: mod3d.gp.Elips, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.gp.Elips, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the ellipse L between parameters p1 and p2
         """
@@ -375,7 +375,7 @@ class MakeEdge(MakeShape):
         Creates an infinite edge on the hyperbola L
         """
     @typing.overload
-    def __init__(self, L: mod3d.gp.Hypr, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.gp.Hypr, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the hyperbola L between parameters p1 and p2
         """
@@ -395,7 +395,7 @@ class MakeEdge(MakeShape):
         Creates an infinite edge on the parabola L
         """
     @typing.overload
-    def __init__(self, L: mod3d.gp.Parab, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.gp.Parab, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the parabola L between parameters p1 and p2
         """
@@ -415,7 +415,7 @@ class MakeEdge(MakeShape):
         Creates an edge on the curve L with natural bounds
         """
     @typing.overload
-    def __init__(self, L: mod3d.Geom.Curve, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.Geom.Curve, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the curve L between parameters p1 and p2
         """
@@ -430,12 +430,12 @@ class MakeEdge(MakeShape):
         Creates an edge on the curve L between vertices V1 and V2
         """
     @typing.overload
-    def __init__(self, L: mod3d.Geom.Curve, P1: mod3d.gp.Pnt, P2: mod3d.gp.Pnt, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.Geom.Curve, P1: mod3d.gp.Pnt, P2: mod3d.gp.Pnt, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the curve L between points P1, P2 with parameters p1, p2
         """
     @typing.overload
-    def __init__(self, L: mod3d.Geom.Curve, V1: mod3d.TopoDS.Vertex, V2: mod3d.TopoDS.Vertex, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def __init__(self, L: mod3d.Geom.Curve, V1: mod3d.TopoDS.Vertex, V2: mod3d.TopoDS.Vertex, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an edge on the curve L between vertices V1, V2 with parameters p1, p2
         """
@@ -453,7 +453,7 @@ class MakeEdge(MakeShape):
         Reinitializes with curve C
         """
     @typing.overload
-    def init(self, C: mod3d.Geom.Curve, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def init(self, C: mod3d.Geom.Curve, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Reinitializes with curve C between parameters p1 and p2
         """
@@ -468,12 +468,12 @@ class MakeEdge(MakeShape):
         Reinitializes with curve C between vertices V1 and V2
         """
     @typing.overload
-    def init(self, C: mod3d.Geom.Curve, P1: mod3d.gp.Pnt, P2: mod3d.gp.Pnt, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def init(self, C: mod3d.Geom.Curve, P1: mod3d.gp.Pnt, P2: mod3d.gp.Pnt, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Reinitializes with curve C between points P1, P2 with parameters p1, p2
         """
     @typing.overload
-    def init(self, C: mod3d.Geom.Curve, V1: mod3d.TopoDS.Vertex, V2: mod3d.TopoDS.Vertex, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> None:
+    def init(self, C: mod3d.Geom.Curve, V1: mod3d.TopoDS.Vertex, V2: mod3d.TopoDS.Vertex, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Reinitializes with curve C between vertices V1, V2 with parameters p1, p2
         """
@@ -508,25 +508,25 @@ class MakeFace(MakeShape):
     def __init__(self, T: mod3d.gp.Torus) -> None:
         ...
     @typing.overload
-    def __init__(self, S: mod3d.Geom.Surface, TolDegen: typing.SupportsFloat) -> None:
+    def __init__(self, S: mod3d.Geom.Surface, TolDegen: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, P: mod3d.gp.Pln, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat) -> None:
+    def __init__(self, P: mod3d.gp.Pln, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, C: mod3d.gp.Cylinder, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat) -> None:
+    def __init__(self, C: mod3d.gp.Cylinder, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, C: mod3d.gp.Cone, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat) -> None:
+    def __init__(self, C: mod3d.gp.Cone, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, S: mod3d.gp.Sphere, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat) -> None:
+    def __init__(self, S: mod3d.gp.Sphere, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, T: mod3d.gp.Torus, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat) -> None:
+    def __init__(self, T: mod3d.gp.Torus, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat, TolDegen: typing.SupportsFloat) -> None:
+    def __init__(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex, TolDegen: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def __init__(self, W: mod3d.TopoDS.Wire, OnlyPlane: bool = False) -> None:
@@ -564,10 +564,10 @@ class MakeFace(MakeShape):
     def init(self, F: mod3d.TopoDS.Face) -> None:
         ...
     @typing.overload
-    def init(self, S: mod3d.Geom.Surface, Bound: bool, TolDegen: typing.SupportsFloat) -> None:
+    def init(self, S: mod3d.Geom.Surface, Bound: bool, TolDegen: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def init(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat, TolDegen: typing.SupportsFloat) -> None:
+    def init(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex, TolDegen: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class MakeOneAxis(MakeShape):
     def face(self) -> mod3d.TopoDS.Face:
@@ -656,11 +656,11 @@ class MakePipeShell(MakeSweep):
         """
         Sets evolution law with homotetic law defined by function at given location
         """
-    def set_max_degree(self, new_max_degree: typing.SupportsInt) -> None:
+    def set_max_degree(self, new_max_degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Define maximum V degree of resulting surface
         """
-    def set_max_segments(self, new_max_segments: typing.SupportsInt) -> None:
+    def set_max_segments(self, new_max_segments: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Define maximum number of spans in V-direction
         """
@@ -689,7 +689,7 @@ class MakePipeShell(MakeSweep):
         """
         Sets an auxiliary spine to define the Normal
         """
-    def set_tolerance(self, tol_3d: typing.SupportsFloat = 0.0001, bound_tol: typing.SupportsFloat = 0.0001, tol_angular: typing.SupportsFloat = 0.01) -> None:
+    def set_tolerance(self, tol_3d: typing.SupportsFloat | typing.SupportsIndex = 0.0001, bound_tol: typing.SupportsFloat | typing.SupportsIndex = 0.0001, tol_angular: typing.SupportsFloat | typing.SupportsIndex = 0.01) -> None:
         """
         Sets tolerance values
         """
@@ -697,7 +697,7 @@ class MakePipeShell(MakeSweep):
         """
         Sets transition mode for discontinuities on spine
         """
-    def simulate(self, number_of_section: typing.SupportsInt) -> list:
+    def simulate(self, number_of_section: typing.SupportsInt | typing.SupportsIndex) -> list:
         """
         Simulates the resulting shape by calculating cross-sections
         """
@@ -881,7 +881,7 @@ class MakePrism(MakeSweep):
         """
 class MakeRevol(MakeSweep):
     @typing.overload
-    def __init__(self, shape: mod3d.TopoDS.Shape, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat, copy: bool = False) -> None:
+    def __init__(self, shape: mod3d.TopoDS.Shape, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex, copy: bool = False) -> None:
         """
         Builds the Revol of base S, axis A and angle D. If Copy is true, S is copied
         """
@@ -931,25 +931,25 @@ class MakeRevolution(MakeOneAxis):
     def __init__(self, meridian: mod3d.Geom.Curve) -> None:
         ...
     @typing.overload
-    def __init__(self, meridian: mod3d.Geom.Curve, angle: typing.SupportsFloat) -> None:
+    def __init__(self, meridian: mod3d.Geom.Curve, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat) -> None:
+    def __init__(self, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve) -> None:
         ...
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, angle: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, meridian: mod3d.Geom.Curve, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def revolution(self) -> mod3d.BRepPrim.Revolution:
         ...
@@ -972,11 +972,11 @@ class MakeShell(MakeShape):
     def __init__(self, S: mod3d.Geom.Surface, Segment: bool = False) -> None:
         ...
     @typing.overload
-    def __init__(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat, Segment: bool = False) -> None:
+    def __init__(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex, Segment: bool = False) -> None:
         ...
     def error(self) -> ShellError:
         ...
-    def init(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat, UMax: typing.SupportsFloat, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat, Segment: bool = False) -> None:
+    def init(self, S: mod3d.Geom.Surface, UMin: typing.SupportsFloat | typing.SupportsIndex, UMax: typing.SupportsFloat | typing.SupportsIndex, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex, Segment: bool = False) -> None:
         ...
     def shell(self) -> mod3d.TopoDS.Shell:
         ...
@@ -1021,7 +1021,7 @@ class MakeSphere(MakeOneAxis):
     - and in case of a portion, two planar faces to close the shape (in planes u=0 and u=angle)
     """
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere of radius R
         
@@ -1029,7 +1029,7 @@ class MakeSphere(MakeOneAxis):
           r: Sphere radius
         """
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical wedge)
         
@@ -1038,7 +1038,7 @@ class MakeSphere(MakeOneAxis):
           angle: Angle between the radii lying within the bounding semidisks
         """
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment)
         
@@ -1048,7 +1048,7 @@ class MakeSphere(MakeOneAxis):
           angle2: Second angle defining a spherical segment
         """
     @typing.overload
-    def __init__(self, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat, angle3: typing.SupportsFloat) -> None:
+    def __init__(self, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex, angle3: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment with wedge)
         
@@ -1059,7 +1059,7 @@ class MakeSphere(MakeOneAxis):
           angle3: Angle between the radii lying within the bounding semidisks
         """
     @typing.overload
-    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat) -> None:
+    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere at given center point
         
@@ -1068,7 +1068,7 @@ class MakeSphere(MakeOneAxis):
           r: Sphere radius
         """
     @typing.overload
-    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical wedge) at given center
         
@@ -1078,7 +1078,7 @@ class MakeSphere(MakeOneAxis):
           angle: Angle between the radii lying within the bounding semidisks
         """
     @typing.overload
-    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat) -> None:
+    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment) at given center
         
@@ -1089,7 +1089,7 @@ class MakeSphere(MakeOneAxis):
           angle2: Second angle defining a spherical segment
         """
     @typing.overload
-    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat, angle3: typing.SupportsFloat) -> None:
+    def __init__(self, center: mod3d.gp.Pnt, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex, angle3: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment with wedge) at given center
         
@@ -1101,7 +1101,7 @@ class MakeSphere(MakeOneAxis):
           angle3: Angle between the radii lying within the bounding semidisks
         """
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere with custom coordinate system
         
@@ -1110,7 +1110,7 @@ class MakeSphere(MakeOneAxis):
           r: Sphere radius
         """
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat, angle: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical wedge) with custom coordinate system
         
@@ -1120,7 +1120,7 @@ class MakeSphere(MakeOneAxis):
           angle: Angle between the radii lying within the bounding semidisks
         """
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment) with custom coordinate system
         
@@ -1131,7 +1131,7 @@ class MakeSphere(MakeOneAxis):
           angle2: Second angle defining a spherical segment
         """
     @typing.overload
-    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat, angle1: typing.SupportsFloat, angle2: typing.SupportsFloat, angle3: typing.SupportsFloat) -> None:
+    def __init__(self, axes: mod3d.gp.Ax2, r: typing.SupportsFloat | typing.SupportsIndex, angle1: typing.SupportsFloat | typing.SupportsIndex, angle2: typing.SupportsFloat | typing.SupportsIndex, angle3: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Make a sphere (spherical segment with wedge) with custom coordinate system
         
@@ -1161,7 +1161,7 @@ class MakeVertex(MakeShape):
     def __init__(self, Pnt: mod3d.gp.Pnt) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def vertex(self) -> mod3d.TopoDS.Vertex:
         ...
@@ -1229,7 +1229,7 @@ class PipeError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1237,7 +1237,7 @@ class PipeError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1262,7 +1262,7 @@ class Sewing:
       sewing.perform()
       result = sewing.sewed_shape()
     """
-    def __init__(self, tolerance: typing.SupportsFloat = 1e-06, option1: bool = True, option2: bool = True, option3: bool = True, option4: bool = False) -> None:
+    def __init__(self, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06, option1: bool = True, option2: bool = True, option3: bool = True, option4: bool = False) -> None:
         """
         Creates a sewing object.
         
@@ -1277,19 +1277,19 @@ class Sewing:
         """
         Defines the shapes to be sewed or controlled
         """
-    def contigous_edge(self, index: typing.SupportsInt) -> mod3d.TopoDS.Edge:
+    def contigous_edge(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Gives each contiguous edge
         """
-    def contigous_edge_couple(self, index: typing.SupportsInt) -> ...:
+    def contigous_edge_couple(self, index: typing.SupportsInt | typing.SupportsIndex) -> ...:
         """
         Gives the sections (edge) belonging to a contiguous edge
         """
-    def degenerated_shape(self, index: typing.SupportsInt) -> mod3d.TopoDS.Shape:
+    def degenerated_shape(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Shape:
         """
         Gives each degenerated shape
         """
-    def deleted_face(self, index: typing.SupportsInt) -> mod3d.TopoDS.Face:
+    def deleted_face(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Face:
         """
         Gives each deleted face
         """
@@ -1297,11 +1297,11 @@ class Sewing:
         """
         Print the information
         """
-    def free_edge(self, index: typing.SupportsInt) -> mod3d.TopoDS.Edge:
+    def free_edge(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Gives each free edge
         """
-    def init(self, tolerance: typing.SupportsFloat = 1e-06, option1: bool = True, option2: bool = True, option3: bool = True, option4: bool = False) -> None:
+    def init(self, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-06, option1: bool = True, option2: bool = True, option3: bool = True, option4: bool = False) -> None:
         """
         Initialize the parameters if necessary
         """
@@ -1333,7 +1333,7 @@ class Sewing:
         """
         Gives a modified subshape
         """
-    def multiple_edge(self, index: typing.SupportsInt) -> mod3d.TopoDS.Edge:
+    def multiple_edge(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Gives each multiple edge
         """
@@ -1356,7 +1356,7 @@ class Sewing:
         Returns a null shape if nothing constructed.
         May be a face, a shell, a solid or a compound
         """
-    def which_face(self, edge: mod3d.TopoDS.Edge, index: typing.SupportsInt = 1) -> mod3d.TopoDS.Face:
+    def which_face(self, edge: mod3d.TopoDS.Edge, index: typing.SupportsInt | typing.SupportsIndex = 1) -> mod3d.TopoDS.Face:
         """
         Gives a modified shape
         """
@@ -1400,7 +1400,7 @@ class Sewing:
         Gets/sets max tolerance
         """
     @max_tolerance.setter
-    def max_tolerance(self, arg1: typing.SupportsFloat) -> None:
+    def max_tolerance(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def min_tolerance(self) -> float:
@@ -1408,7 +1408,7 @@ class Sewing:
         Gets/sets min tolerance
         """
     @min_tolerance.setter
-    def min_tolerance(self, arg1: typing.SupportsFloat) -> None:
+    def min_tolerance(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def nb_contigous_edges(self) -> int:
@@ -1457,7 +1457,7 @@ class Sewing:
         Gets/sets tolerance
         """
     @tolerance.setter
-    def tolerance(self, arg1: typing.SupportsFloat) -> None:
+    def tolerance(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class ShellError:
     """
@@ -1484,7 +1484,7 @@ class ShellError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1492,7 +1492,7 @@ class ShellError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1524,7 +1524,7 @@ class TransitionMode:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1532,7 +1532,7 @@ class TransitionMode:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1564,7 +1564,7 @@ class TypeOfContact:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1572,7 +1572,7 @@ class TypeOfContact:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1607,7 +1607,7 @@ class WireError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1615,7 +1615,7 @@ class WireError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1646,12 +1646,12 @@ def make_edge(C: mod3d.gp.Elips) -> mod3d.TopoDS.Edge:
     Creates a closed edge from a gp_Elips
     """
 @typing.overload
-def make_edge(L: mod3d.gp.Lin, p1: typing.SupportsFloat, p2: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+def make_edge(L: mod3d.gp.Lin, p1: typing.SupportsFloat | typing.SupportsIndex, p2: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
     """
     Creates an edge on a line between parameters p1 and p2
     """
 @typing.overload
-def make_face(S: mod3d.Geom.Surface, TolDegen: typing.SupportsFloat = 1e-06) -> mod3d.TopoDS.Face:
+def make_face(S: mod3d.Geom.Surface, TolDegen: typing.SupportsFloat | typing.SupportsIndex = 1e-06) -> mod3d.TopoDS.Face:
     """
     Creates a face from a Geom_Surface
     """

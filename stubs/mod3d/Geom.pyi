@@ -10,109 +10,93 @@ import typing
 __all__: list[str] = ['BSplineCurve', 'BSplineSurface', 'BezierCurve', 'BezierSurface', 'BoundedCurve', 'BoundedSurface', 'Circle', 'Conic', 'ConicalSurface', 'Curve', 'CylindricalSurface', 'ElementarySurface', 'Ellipse', 'Geometry', 'Hyperbola', 'Line', 'OffsetCurve', 'OffsetSurface', 'Parabola', 'Plane', 'RectangularTrimmedSurface', 'SphericalSurface', 'Surface', 'SurfaceOfLinearExtrusion', 'SurfaceOfRevolution', 'SweptSurface', 'ToroidalSurface', 'TrimmedCurve']
 class BSplineCurve(BoundedCurve):
     @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a B-spline curve from a gbs::BSCurve object.
-        """
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a rational B-spline curve from a gbs::BSCurveRational object.
-        """
-    @staticmethod
     def max_degree() -> int:
         ...
     @typing.overload
-    def __init__(self, poles: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt, periodic: bool = False) -> None:
+    def __init__(self, poles: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt | typing.SupportsIndex, periodic: bool = False) -> None:
         """
         Create a non-rational B-spline curve. Poles can be list of gp_Pnt or numpy array of shape (n,3). Knots and multiplicities can be lists or 1D numpy arrays.
         """
     @typing.overload
-    def __init__(self, poles: typing.Any, weights: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt, periodic: bool = False, check_rational: bool = True) -> None:
+    def __init__(self, poles: typing.Any, weights: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt | typing.SupportsIndex, periodic: bool = False, check_rational: bool = True) -> None:
         """
         Create a rational B-spline curve. All arrays can be lists or numpy arrays.
         """
-    def increase_degree(self, degree: typing.SupportsInt) -> None:
+    def increase_degree(self, degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Increases the degree of this BSpline curve to Degree
         """
     @typing.overload
-    def increase_multiplicity(self, index: typing.SupportsInt, M: typing.SupportsInt) -> None:
+    def increase_multiplicity(self, index: typing.SupportsInt | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def increase_multiplicity(self, I1: typing.SupportsInt, I2: typing.SupportsInt, M: typing.SupportsInt) -> None:
+    def increase_multiplicity(self, I1: typing.SupportsInt | typing.SupportsIndex, I2: typing.SupportsInt | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
-    def increment_multiplicity(self, I1: typing.SupportsInt, I2: typing.SupportsInt, M: typing.SupportsInt) -> None:
+    def increment_multiplicity(self, I1: typing.SupportsInt | typing.SupportsIndex, I2: typing.SupportsInt | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
-    def insert_knot(self, U: typing.SupportsFloat, M: typing.SupportsInt = 1, ParametricTolerance: typing.SupportsFloat = 0.0, Add: bool = True) -> None:
+    def insert_knot(self, U: typing.SupportsFloat | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex = 1, ParametricTolerance: typing.SupportsFloat | typing.SupportsIndex = 0.0, Add: bool = True) -> None:
         ...
-    def is_equal(self, other: BSplineCurve, precision: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: BSplineCurve, precision: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_g1(self, theTf: typing.SupportsFloat, theTl: typing.SupportsFloat, theAngTol: typing.SupportsFloat) -> bool:
+    def is_g1(self, theTf: typing.SupportsFloat | typing.SupportsIndex, theTl: typing.SupportsFloat | typing.SupportsIndex, theAngTol: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def knot(self, Index: typing.SupportsInt) -> float:
+    def knot(self, Index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
-    def local_d0(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def local_d0(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         ...
-    def local_d1(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt) -> tuple:
+    def local_d1(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec]:
         ...
-    def local_d2(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt) -> tuple:
+    def local_d2(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
         ...
-    def local_d3(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt) -> tuple:
+    def local_d3(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         ...
-    def local_dn(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt, N: typing.SupportsInt) -> mod3d.gp.Vec:
+    def local_dn(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex, N: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec:
         ...
-    def local_value(self, U: typing.SupportsFloat, FromK1: typing.SupportsInt, ToK2: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def local_value(self, U: typing.SupportsFloat | typing.SupportsIndex, FromK1: typing.SupportsInt | typing.SupportsIndex, ToK2: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         ...
-    def locate_u(self, U: typing.SupportsFloat, ParametricTolerance: typing.SupportsFloat, WithKnotRepetition: bool = False) -> tuple:
+    def locate_u(self, U: typing.SupportsFloat | typing.SupportsIndex, ParametricTolerance: typing.SupportsFloat | typing.SupportsIndex, WithKnotRepetition: bool = False) -> tuple[int, int]:
         ...
-    def move_point(self, U: typing.SupportsFloat, P: mod3d.gp.Pnt, Index1: typing.SupportsInt, Index2: typing.SupportsInt) -> tuple:
+    def move_point(self, U: typing.SupportsFloat | typing.SupportsIndex, P: mod3d.gp.Pnt, Index1: typing.SupportsInt | typing.SupportsIndex, Index2: typing.SupportsInt | typing.SupportsIndex) -> tuple[int, int]:
         ...
-    def move_point_and_tangent(self, U: typing.SupportsFloat, P: mod3d.gp.Pnt, Tangent: mod3d.gp.Vec, Tolerance: typing.SupportsFloat, StartingCondition: typing.SupportsInt, EndingCondition: typing.SupportsInt) -> int:
+    def move_point_and_tangent(self, U: typing.SupportsFloat | typing.SupportsIndex, P: mod3d.gp.Pnt, Tangent: mod3d.gp.Vec, Tolerance: typing.SupportsFloat | typing.SupportsIndex, StartingCondition: typing.SupportsInt | typing.SupportsIndex, EndingCondition: typing.SupportsInt | typing.SupportsIndex) -> int:
         ...
-    def multiplicity(self, Index: typing.SupportsInt) -> int:
+    def multiplicity(self, Index: typing.SupportsInt | typing.SupportsIndex) -> int:
         ...
-    def periodic_normalization(self, U: typing.SupportsFloat) -> None:
+    def periodic_normalization(self, U: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def pole(self, Index: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def pole(self, Index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         ...
-    def remove_knot(self, Index: typing.SupportsInt, M: typing.SupportsInt, Tolerance: typing.SupportsFloat) -> bool:
+    def remove_knot(self, Index: typing.SupportsInt | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex, Tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def resolution(self, Tolerance3D: typing.SupportsFloat) -> float:
+    def resolution(self, Tolerance3D: typing.SupportsFloat | typing.SupportsIndex) -> float:
         ...
-    def segment(self, U1: typing.SupportsFloat, U2: typing.SupportsFloat, theTolerance: typing.SupportsFloat = 1e-12) -> None:
-        ...
-    @typing.overload
-    def set_knot(self, Index: typing.SupportsInt, K: typing.SupportsFloat) -> None:
+    def segment(self, U1: typing.SupportsFloat | typing.SupportsIndex, U2: typing.SupportsFloat | typing.SupportsIndex, theTolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-12) -> None:
         ...
     @typing.overload
-    def set_knot(self, Index: typing.SupportsInt, K: typing.SupportsFloat, M: typing.SupportsInt) -> None:
+    def set_knot(self, Index: typing.SupportsInt | typing.SupportsIndex, K: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
+    @typing.overload
+    def set_knot(self, Index: typing.SupportsInt | typing.SupportsIndex, K: typing.SupportsFloat | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def set_not_periodic(self) -> None:
         ...
     @typing.overload
-    def set_origin(self, Index: typing.SupportsInt) -> None:
+    def set_origin(self, Index: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def set_origin(self, U: typing.SupportsFloat, Tol: typing.SupportsFloat) -> None:
+    def set_origin(self, U: typing.SupportsFloat | typing.SupportsIndex, Tol: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def set_periodic(self) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt, Weight: typing.SupportsFloat) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def set_weight(self, Index: typing.SupportsInt, Weight: typing.SupportsFloat) -> None:
+    def set_weight(self, Index: typing.SupportsInt | typing.SupportsIndex, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def to_gbs(self) -> typing.Any:
-        """
-        Convert this OCCT B-spline curve to a gbs B-spline curve.
-        """
-    def weight(self, Index: typing.SupportsInt) -> float:
+    def weight(self, Index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @property
     def degree(self) -> int:
@@ -178,20 +162,8 @@ class BSplineSurface(BoundedSurface):
             
     """
     max_degree: typing.ClassVar[int] = 25
-    @staticmethod
     @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a B-spline surface from a gbs::BSSurface object.
-        """
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a rational B-spline surface from a gbs::BSSurfaceRational object.
-        """
-    @typing.overload
-    def __init__(self, poles: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], u_knots: typing.Any, v_knots: typing.Any, u_multiplicities: typing.Any, v_multiplicities: typing.Any, u_degree: typing.SupportsInt, v_degree: typing.SupportsInt, u_periodic: bool = False, v_periodic: bool = False) -> None:
+    def __init__(self, poles: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], u_knots: typing.Any, v_knots: typing.Any, u_multiplicities: typing.Any, v_multiplicities: typing.Any, u_degree: typing.SupportsInt | typing.SupportsIndex, v_degree: typing.SupportsInt | typing.SupportsIndex, u_periodic: bool = False, v_periodic: bool = False) -> None:
         """
                     Create a non-rational B-spline surface.
         
@@ -203,7 +175,7 @@ class BSplineSurface(BoundedSurface):
                         u_periodic, v_periodic: Whether the surface is periodic in U/V.
         """
     @typing.overload
-    def __init__(self, poles: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], weights: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], u_knots: typing.Any, v_knots: typing.Any, u_multiplicities: typing.Any, v_multiplicities: typing.Any, u_degree: typing.SupportsInt, v_degree: typing.SupportsInt, u_periodic: bool = False, v_periodic: bool = False) -> None:
+    def __init__(self, poles: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], weights: typing.Annotated[numpy.typing.ArrayLike, numpy.float64], u_knots: typing.Any, v_knots: typing.Any, u_multiplicities: typing.Any, v_multiplicities: typing.Any, u_degree: typing.SupportsInt | typing.SupportsIndex, v_degree: typing.SupportsInt | typing.SupportsIndex, u_periodic: bool = False, v_periodic: bool = False) -> None:
         """
                     Create a rational B-spline surface.
         
@@ -219,19 +191,19 @@ class BSplineSurface(BoundedSurface):
         """
         Exchange U and V parametric directions.
         """
-    def increase_degree(self, u_degree: typing.SupportsInt, v_degree: typing.SupportsInt) -> None:
+    def increase_degree(self, u_degree: typing.SupportsInt | typing.SupportsIndex, v_degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Increase the degrees to (u_degree, v_degree). Preserves surface shape.
         """
-    def locate_u(self, u: typing.SupportsFloat, tolerance: typing.SupportsFloat) -> tuple:
+    def locate_u(self, u: typing.SupportsFloat | typing.SupportsIndex, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> tuple[int, int]:
         """
         Locate U in the knot sequence. Returns (i1, i2) where UKnot(i1) <= U <= UKnot(i2).
         """
-    def locate_v(self, v: typing.SupportsFloat, tolerance: typing.SupportsFloat) -> tuple:
+    def locate_v(self, v: typing.SupportsFloat | typing.SupportsIndex, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> tuple[int, int]:
         """
         Locate V in the knot sequence. Returns (i1, i2) where VKnot(i1) <= V <= VKnot(i2).
         """
-    def pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Return the pole at (u_index, v_index). Indices are 1-based.
         """
@@ -239,24 +211,24 @@ class BSplineSurface(BoundedSurface):
         """
         Return all poles as a numpy array of shape [nb_u_poles, nb_v_poles, 3].
         """
-    def resolution(self, tolerance_3d: typing.SupportsFloat) -> tuple:
+    def resolution(self, tolerance_3d: typing.SupportsFloat | typing.SupportsIndex) -> tuple[float, float]:
         """
                     Compute parametric tolerances from a 3D tolerance.
         
                     Returns (u_tolerance, v_tolerance) such that if |du| < u_tolerance
                     and |dv| < v_tolerance, then |S(u+du,v+dv) - S(u,v)| < tolerance_3d.
         """
-    def segment(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat, v1: typing.SupportsFloat, v2: typing.SupportsFloat, u_tolerance: typing.SupportsFloat = 1e-07, v_tolerance: typing.SupportsFloat = 1e-07) -> None:
+    def segment(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, v1: typing.SupportsFloat | typing.SupportsIndex, v2: typing.SupportsFloat | typing.SupportsIndex, u_tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-07, v_tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-07) -> None:
         """
         Segment the surface to the parameter range [u1, u2] x [v1, v2].
         """
     @typing.overload
-    def set_pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, p: mod3d.gp.Pnt) -> None:
+    def set_pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, p: mod3d.gp.Pnt) -> None:
         """
         Set the pole at (u_index, v_index) to point p.
         """
     @typing.overload
-    def set_pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, p: mod3d.gp.Pnt, weight: typing.SupportsFloat) -> None:
+    def set_pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, p: mod3d.gp.Pnt, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set the pole and weight at (u_index, v_index).
         """
@@ -276,15 +248,11 @@ class BSplineSurface(BoundedSurface):
         """
         Make the surface periodic in V (must be closed first).
         """
-    def set_weight(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, weight: typing.SupportsFloat) -> None:
+    def set_weight(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set the weight at (u_index, v_index).
         """
-    def to_gbs(self) -> typing.Any:
-        """
-        Convert this OCCT B-spline surface to a gbs B-spline surface.
-        """
-    def u_knot(self, index: typing.SupportsInt) -> float:
+    def u_knot(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Return the U knot at index (1-based).
         """
@@ -300,11 +268,11 @@ class BSplineSurface(BoundedSurface):
         """
         Return all U knot multiplicities as a numpy array.
         """
-    def u_multiplicity(self, index: typing.SupportsInt) -> int:
+    def u_multiplicity(self, index: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Return the multiplicity of U knot at index (1-based).
         """
-    def v_knot(self, index: typing.SupportsInt) -> float:
+    def v_knot(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Return the V knot at index (1-based).
         """
@@ -320,11 +288,11 @@ class BSplineSurface(BoundedSurface):
         """
         Return all V knot multiplicities as a numpy array.
         """
-    def v_multiplicity(self, index: typing.SupportsInt) -> int:
+    def v_multiplicity(self, index: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Return the multiplicity of V knot at index (1-based).
         """
-    def weight(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt) -> float:
+    def weight(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Return the weight at (u_index, v_index). Indices are 1-based.
         """
@@ -418,65 +386,65 @@ class BezierCurve(BoundedCurve):
         """
         Create a rational Bezier curve with control points and weights. Both can be lists or numpy arrays.
         """
-    def increase(self, degree: typing.SupportsInt) -> None:
+    def increase(self, degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Increases the degree of the Bezier curve
         """
     @typing.overload
-    def insert_pole_after(self, index: typing.SupportsInt, P: mod3d.gp.Pnt) -> None:
+    def insert_pole_after(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt) -> None:
         """
         Insert pole after given index
         """
     @typing.overload
-    def insert_pole_after(self, index: typing.SupportsInt, P: mod3d.gp.Pnt, weight: typing.SupportsFloat) -> None:
+    def insert_pole_after(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Insert pole with weight after given index
         """
     @typing.overload
-    def insert_pole_before(self, index: typing.SupportsInt, P: mod3d.gp.Pnt) -> None:
+    def insert_pole_before(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt) -> None:
         """
         Insert pole before given index
         """
     @typing.overload
-    def insert_pole_before(self, index: typing.SupportsInt, P: mod3d.gp.Pnt, weight: typing.SupportsFloat) -> None:
+    def insert_pole_before(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Insert pole with weight before given index
         """
-    def is_cn(self, N: typing.SupportsInt) -> bool:
+    def is_cn(self, N: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Check if curve has CN continuity
         """
-    def pole(self, index: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def pole(self, index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Get pole at given index (1-based)
         """
-    def remove_pole(self, index: typing.SupportsInt) -> None:
+    def remove_pole(self, index: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Remove pole at given index
         """
-    def resolution(self, Tolerance3D: typing.SupportsFloat) -> float:
+    def resolution(self, Tolerance3D: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Compute parametric tolerance for given 3D tolerance
         """
-    def segment(self, U1: typing.SupportsFloat, U2: typing.SupportsFloat) -> None:
+    def segment(self, U1: typing.SupportsFloat | typing.SupportsIndex, U2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Segment the curve between parameters U1 and U2
         """
     @typing.overload
-    def set_pole(self, index: typing.SupportsInt, P: mod3d.gp.Pnt) -> None:
+    def set_pole(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt) -> None:
         """
         Set pole at given index
         """
     @typing.overload
-    def set_pole(self, index: typing.SupportsInt, P: mod3d.gp.Pnt, weight: typing.SupportsFloat) -> None:
+    def set_pole(self, index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set pole and weight at given index
         """
-    def set_weight(self, index: typing.SupportsInt, weight: typing.SupportsFloat) -> None:
+    def set_weight(self, index: typing.SupportsInt | typing.SupportsIndex, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set weight at given index
         """
-    def weight(self, index: typing.SupportsInt) -> float:
+    def weight(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Get weight at given index (1-based)
         """
@@ -557,14 +525,14 @@ class BezierSurface(BoundedSurface):
         """
         Exchange U and V parametric directions (transposes poles/weights).
         """
-    def increase(self, u_degree: typing.SupportsInt, v_degree: typing.SupportsInt) -> None:
+    def increase(self, u_degree: typing.SupportsInt | typing.SupportsIndex, v_degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
                     Increase the degree to (u_degree, v_degree).
         
                     The new degrees must be >= current degrees and <= max_degree.
                     The surface shape is preserved.
         """
-    def pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt) -> mod3d.gp.Pnt:
+    def pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
                     Return the pole at indices (u_index, v_index).
         
@@ -579,27 +547,27 @@ class BezierSurface(BoundedSurface):
         """
         Return all poles as a numpy array of shape [nb_u_poles, nb_v_poles, 3].
         """
-    def segment(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat, v1: typing.SupportsFloat, v2: typing.SupportsFloat) -> None:
+    def segment(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, v1: typing.SupportsFloat | typing.SupportsIndex, v2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Segment the surface to the parameter range [u1, u2] x [v1, v2].
         
                     The poles are modified so the new parameter range becomes [0, 1] x [0, 1].
         """
     @typing.overload
-    def set_pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, p: mod3d.gp.Pnt) -> None:
+    def set_pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, p: mod3d.gp.Pnt) -> None:
         """
         Set the pole at (u_index, v_index) to point p.
         """
     @typing.overload
-    def set_pole(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, p: mod3d.gp.Pnt, weight: typing.SupportsFloat) -> None:
+    def set_pole(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, p: mod3d.gp.Pnt, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set the pole and weight at (u_index, v_index).
         """
-    def set_weight(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt, weight: typing.SupportsFloat) -> None:
+    def set_weight(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex, weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set the weight at (u_index, v_index).
         """
-    def weight(self, u_index: typing.SupportsInt, v_index: typing.SupportsInt) -> float:
+    def weight(self, u_index: typing.SupportsInt | typing.SupportsIndex, v_index: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
                     Return the weight at indices (u_index, v_index).
         
@@ -689,7 +657,7 @@ class Circle(Conic):
         Constructs a circle by conversion of the gp_Circ circle
         """
     @typing.overload
-    def __init__(self, a2: mod3d.gp.Ax2, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: mod3d.gp.Ax2, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a circle of given radius, where a2 locates the circle:
         - center is the origin of a2
@@ -711,7 +679,7 @@ class Circle(Conic):
         Get or set the radius of the circle
         """
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Conic(Curve):
     """
@@ -789,7 +757,7 @@ class ConicalSurface(ElementarySurface):
             
     """
     @typing.overload
-    def __init__(self, a3: mod3d.gp.Ax3, angle: typing.SupportsFloat, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a3: mod3d.gp.Ax3, angle: typing.SupportsFloat | typing.SupportsIndex, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Creates a conical surface.
         
@@ -818,7 +786,7 @@ class ConicalSurface(ElementarySurface):
                     c : gp_Cone
                         The cone definition
         """
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float, float, float, float, float, float, float, float]:
         """
                     Returns the coefficients of the implicit quadric equation.
         
@@ -868,7 +836,7 @@ class ConicalSurface(ElementarySurface):
                         The reference radius (must be >= 0)
         """
     @ref_radius.setter
-    def ref_radius(self, arg1: typing.SupportsFloat) -> None:
+    def ref_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def semi_angle(self) -> float:
@@ -883,43 +851,31 @@ class ConicalSurface(ElementarySurface):
                         The semi-angle in radians. Absolute value must be in (0, PI/2).
         """
     @semi_angle.setter
-    def semi_angle(self, arg1: typing.SupportsFloat) -> None:
+    def semi_angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Curve(Geometry):
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a Geom_Curve from a gbs::BSCurve object (implicit conversion).
-        """
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a Geom_Curve from a gbs::BSCurveRational object (implicit conversion).
-        """
-    def center_of_curvature(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def center_of_curvature(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
         Returns the center of curvature at parameter U
         """
-    def curvature(self, u: typing.SupportsFloat) -> float:
+    def curvature(self, u: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns (curvature, first derivative of curvature) at parameter U
         """
-    def d0(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def d0(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         ...
-    def d1(self, u: typing.SupportsFloat) -> tuple:
+    def d1(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec]:
         ...
-    def d2(self, u: typing.SupportsFloat) -> tuple:
+    def d2(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
         ...
-    def d3(self, u: typing.SupportsFloat) -> tuple:
+    def d3(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         ...
-    def dn(self, u: typing.SupportsFloat, n: typing.SupportsInt) -> mod3d.gp.Vec:
+    def dn(self, u: typing.SupportsFloat | typing.SupportsIndex, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec:
         ...
-    def is_cn(self, n: typing.SupportsInt) -> bool:
+    def is_cn(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
-    def length(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat) -> float:
+    def length(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Compute the length of the curve between parameters U1 and U2
         """
@@ -928,7 +884,7 @@ class Curve(Geometry):
         """
         Compute the length of the curve
         """
-    def normal(self, u: typing.SupportsFloat) -> mod3d.gp.Dir:
+    def normal(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Dir:
         """
         Returns the normal vector at parameter U
         """
@@ -938,18 +894,18 @@ class Curve(Geometry):
         ...
     def reversed(self) -> Curve:
         ...
-    def reversed_parameter(self, u: typing.SupportsFloat) -> float:
+    def reversed_parameter(self, u: typing.SupportsFloat | typing.SupportsIndex) -> float:
         ...
-    def tangent(self, u: typing.SupportsFloat) -> mod3d.gp.Dir:
+    def tangent(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Dir:
         """
         Returns the tangent vector at parameter U
         """
-    def transformed_parameter(self, u: typing.SupportsFloat, t: mod3d.gp.Trsf) -> float:
+    def transformed_parameter(self, u: typing.SupportsFloat | typing.SupportsIndex, t: mod3d.gp.Trsf) -> float:
         ...
-    def value(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def value(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         ...
     @property
-    def bounds(self) -> tuple:
+    def bounds(self) -> tuple[float, float]:
         ...
     @property
     def continuity(self) -> mod3d.GeomAbs.Shape:
@@ -991,7 +947,7 @@ class CylindricalSurface(ElementarySurface):
             
     """
     @typing.overload
-    def __init__(self, a3: mod3d.gp.Ax3, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a3: mod3d.gp.Ax3, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Creates a cylindrical surface.
         
@@ -1017,7 +973,7 @@ class CylindricalSurface(ElementarySurface):
                     c : gp_Cylinder
                         The cylinder definition
         """
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float, float, float, float, float, float, float, float]:
         """
                     Returns the coefficients of the implicit quadric equation.
         
@@ -1059,7 +1015,7 @@ class CylindricalSurface(ElementarySurface):
                         The cylinder radius (must be >= 0)
         """
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class ElementarySurface(Surface):
     """
@@ -1139,7 +1095,7 @@ class Ellipse(Conic):
         Constructs an ellipse by conversion of the gp_Elips ellipse
         """
     @typing.overload
-    def __init__(self, a2: mod3d.gp.Ax2, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: mod3d.gp.Ax2, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs an ellipse with given major and minor radii, where a2 locates the ellipse:
         - center is the origin of a2
@@ -1189,7 +1145,7 @@ class Ellipse(Conic):
         Get or set the major radius of the ellipse
         """
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
@@ -1197,7 +1153,7 @@ class Ellipse(Conic):
         Get or set the minor radius of the ellipse
         """
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def parameter(self) -> float:
@@ -1215,7 +1171,7 @@ class Geometry:
         """
     def copy(self) -> Geometry:
         ...
-    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt = -1) -> None:
+    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt | typing.SupportsIndex = -1) -> None:
         ...
     @typing.overload
     def mirror(self, p: mod3d.gp.Pnt) -> None:
@@ -1235,13 +1191,13 @@ class Geometry:
     @typing.overload
     def mirrored(self, a2: mod3d.gp.Ax2) -> Geometry:
         ...
-    def rotate(self, a1: mod3d.gp.Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: mod3d.gp.Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: mod3d.gp.Ax1, ang: typing.SupportsFloat) -> Geometry:
+    def rotated(self, a1: mod3d.gp.Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Geometry:
         ...
-    def scale(self, p: mod3d.gp.Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: mod3d.gp.Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: mod3d.gp.Pnt, s: typing.SupportsFloat) -> Geometry:
+    def scaled(self, p: mod3d.gp.Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Geometry:
         ...
     def transform(self, t: mod3d.gp.Trsf) -> None:
         ...
@@ -1277,7 +1233,7 @@ class Hyperbola(Conic):
         Constructs a hyperbola by conversion of the gp_Hypr hyperbola
         """
     @typing.overload
-    def __init__(self, a2: mod3d.gp.Ax2, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: mod3d.gp.Ax2, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a hyperbola with given major and minor radii, where a2 locates the hyperbola:
         - center is the origin of a2
@@ -1345,7 +1301,7 @@ class Hyperbola(Conic):
         Get or set the major radius of the hyperbola
         """
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
@@ -1353,7 +1309,7 @@ class Hyperbola(Conic):
         Get or set the minor radius of the hyperbola
         """
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def other_branch(self) -> mod3d.gp.Hypr:
@@ -1389,7 +1345,7 @@ class OffsetCurve(Curve):
     Note: The offset curve can be self-intersecting even if the basis curve is not.
     Continuity is one degree less than the basis curve.
     """
-    def __init__(self, basis_curve: Curve, offset: typing.SupportsFloat, direction: mod3d.gp.Dir, is_not_check_c0: bool = False) -> None:
+    def __init__(self, basis_curve: Curve, offset: typing.SupportsFloat | typing.SupportsIndex, direction: mod3d.gp.Dir, is_not_check_c0: bool = False) -> None:
         """
         Creates an offset curve from a basis curve.
         basis_curve: The basis curve (must be at least C1)
@@ -1427,7 +1383,7 @@ class OffsetCurve(Curve):
         Offset distance from the basis curve
         """
     @offset.setter
-    def offset(self, arg1: typing.SupportsFloat) -> None:
+    def offset(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class OffsetSurface(Surface):
     """
@@ -1448,7 +1404,7 @@ class OffsetSurface(Surface):
             depending on the geometry of the base surface and the offset distance.
             
     """
-    def __init__(self, base_surface: Surface, offset: typing.SupportsFloat) -> None:
+    def __init__(self, base_surface: Surface, offset: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                      Create an offset surface from a base surface and offset distance.
         
@@ -1459,7 +1415,7 @@ class OffsetSurface(Surface):
                      Raises:
                          Standard_ConstructionError: If the base surface is not at least C1 continuous.
         """
-    def is_cn_u(self, n: typing.SupportsInt) -> bool:
+    def is_cn_u(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
                     Check if the offset surface has Cn continuity in the U direction.
         
@@ -1469,7 +1425,7 @@ class OffsetSurface(Surface):
                     Returns:
                         bool: True if the surface is at least Cn continuous in U.
         """
-    def is_cn_v(self, n: typing.SupportsInt) -> bool:
+    def is_cn_v(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
                     Check if the offset surface has Cn continuity in the V direction.
         
@@ -1499,7 +1455,7 @@ class OffsetSurface(Surface):
                     Args:
                         transform (gp.Trsf): The transformation to apply.
         """
-    def u_osculating_surface(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple:
+    def u_osculating_surface(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[bool, bool, BSplineSurface]:
         """
                     Get the local osculating surface along U at point (U, V).
         
@@ -1516,7 +1472,7 @@ class OffsetSurface(Surface):
                                is_opposite=True if derivatives point in opposite directions,
                                and osculating_surface is the B-spline osculating surface.
         """
-    def v_osculating_surface(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple:
+    def v_osculating_surface(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[bool, bool, BSplineSurface]:
         """
                     Get the local osculating surface along V at point (U, V).
         
@@ -1583,7 +1539,7 @@ class OffsetSurface(Surface):
                                   The offset distance
         """
     @offset.setter
-    def offset(self, arg1: typing.SupportsFloat) -> None:
+    def offset(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Parabola(Conic):
     """
@@ -1602,7 +1558,7 @@ class Parabola(Conic):
         Constructs a parabola by conversion of the gp_Parab parabola
         """
     @typing.overload
-    def __init__(self, a2: mod3d.gp.Ax2, focal: typing.SupportsFloat) -> None:
+    def __init__(self, a2: mod3d.gp.Ax2, focal: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a parabola with its local coordinate system a2 and focal length.
         The XDirection of a2 defines the axis of symmetry.
@@ -1632,7 +1588,7 @@ class Parabola(Conic):
         Get or set the focal distance
         """
     @focal.setter
-    def focal(self, arg1: typing.SupportsFloat) -> None:
+    def focal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def focus(self) -> mod3d.gp.Pnt:
@@ -1704,7 +1660,7 @@ class Plane(ElementarySurface):
                         The normal direction to the plane
         """
     @property
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float, float]:
         """
                     The coefficients of the plane equation: Ax + By + Cz + D = 0.
         
@@ -1746,7 +1702,7 @@ class RectangularTrimmedSurface(BoundedSurface):
             
     """
     @typing.overload
-    def __init__(self, surface: Surface, u1: typing.SupportsFloat, u2: typing.SupportsFloat, v1: typing.SupportsFloat, v2: typing.SupportsFloat, u_sense: bool = True, v_sense: bool = True) -> None:
+    def __init__(self, surface: Surface, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, v1: typing.SupportsFloat | typing.SupportsIndex, v2: typing.SupportsFloat | typing.SupportsIndex, u_sense: bool = True, v_sense: bool = True) -> None:
         """
                     Create a rectangular trimmed surface.
         
@@ -1760,7 +1716,7 @@ class RectangularTrimmedSurface(BoundedSurface):
                     For periodic surfaces, u_sense and v_sense control which part is used.
         """
     @typing.overload
-    def __init__(self, surface: Surface, param1: typing.SupportsFloat, param2: typing.SupportsFloat, u_trim: bool, sense: bool = True) -> None:
+    def __init__(self, surface: Surface, param1: typing.SupportsFloat | typing.SupportsIndex, param2: typing.SupportsFloat | typing.SupportsIndex, u_trim: bool, sense: bool = True) -> None:
         """
                     Create a surface trimmed in one direction only.
         
@@ -1771,12 +1727,12 @@ class RectangularTrimmedSurface(BoundedSurface):
                         sense: Direction sense for periodic surfaces.
         """
     @typing.overload
-    def set_trim(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat, v1: typing.SupportsFloat, v2: typing.SupportsFloat, u_sense: bool = True, v_sense: bool = True) -> None:
+    def set_trim(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, v1: typing.SupportsFloat | typing.SupportsIndex, v2: typing.SupportsFloat | typing.SupportsIndex, u_sense: bool = True, v_sense: bool = True) -> None:
         """
         Modify the trim values in both directions.
         """
     @typing.overload
-    def set_trim(self, param1: typing.SupportsFloat, param2: typing.SupportsFloat, u_trim: bool, sense: bool = True) -> None:
+    def set_trim(self, param1: typing.SupportsFloat | typing.SupportsIndex, param2: typing.SupportsFloat | typing.SupportsIndex, u_trim: bool, sense: bool = True) -> None:
         """
         Modify the trim values in one direction only.
         """
@@ -1806,7 +1762,7 @@ class SphericalSurface(ElementarySurface):
             
     """
     @typing.overload
-    def __init__(self, a3: mod3d.gp.Ax3, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a3: mod3d.gp.Ax3, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Creates a spherical surface.
         
@@ -1832,7 +1788,7 @@ class SphericalSurface(ElementarySurface):
                     s : gp_Sphere
                         The sphere definition
         """
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float, float, float, float, float, float, float, float]:
         """
                     Returns the coefficients of the implicit quadric equation.
         
@@ -1866,7 +1822,7 @@ class SphericalSurface(ElementarySurface):
                         The sphere radius (must be >= 0)
         """
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def sphere(self) -> mod3d.gp.Sphere:
@@ -1913,19 +1869,7 @@ class Surface(Geometry):
             BSpline surfaces.
             
     """
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a Geom_Surface from a gbs::BSSurface object (implicit conversion).
-        """
-    @staticmethod
-    @typing.overload
-    def __init__(*args, **kwargs) -> None:
-        """
-        Create a Geom_Surface from a gbs::BSSurfaceRational object (implicit conversion).
-        """
-    def __call__(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def __call__(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
                     Evaluate the surface at parameters (U, V).
         
@@ -1938,7 +1882,7 @@ class Surface(Geometry):
                     Returns:
                         gp.Pnt: The 3D point on the surface.
         """
-    def bounds(self) -> tuple:
+    def bounds(self) -> tuple[float, float, float, float]:
         """
                     Return the parametric bounds of this surface.
         
@@ -1946,7 +1890,7 @@ class Surface(Geometry):
                         tuple: (u1, u2, v1, v2) parametric bounds.
                                For infinite surfaces, values may be very large.
         """
-    def d0(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def d0(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
                     Compute the point at parameters (U, V).
         
@@ -1959,7 +1903,7 @@ class Surface(Geometry):
                     Returns:
                         gp.Pnt: The 3D point on the surface.
         """
-    def d1(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple:
+    def d1(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
                     Compute the point and first derivatives at (U, V).
         
@@ -1973,7 +1917,7 @@ class Surface(Geometry):
                         tuple: (point, d1u, d1v) where d1u and d1v are the first
                                partial derivatives in U and V directions.
         """
-    def d2(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple:
+    def d2(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
                     Compute the point, first and second derivatives at (U, V).
         
@@ -1987,7 +1931,7 @@ class Surface(Geometry):
                         tuple: (point, d1u, d1v, d2u, d2v, d2uv) containing the point,
                                first derivatives, second derivatives, and mixed derivative.
         """
-    def d3(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> tuple:
+    def d3(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec, mod3d.gp.Vec]:
         """
                     Compute the point and derivatives up to third order at (U, V).
         
@@ -2001,7 +1945,7 @@ class Surface(Geometry):
                         tuple: (point, d1u, d1v, d2u, d2v, d2uv, d3u, d3v, d3uuv, d3uvv)
                                containing all derivatives up to order 3.
         """
-    def dn(self, u: typing.SupportsFloat, v: typing.SupportsFloat, nu: typing.SupportsInt, nv: typing.SupportsInt) -> mod3d.gp.Vec:
+    def dn(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex, nu: typing.SupportsInt | typing.SupportsIndex, nv: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec:
         """
                     Compute a specific partial derivative at (U, V).
         
@@ -2020,7 +1964,7 @@ class Surface(Geometry):
                     Raises:
                         Standard_RangeError: If nu + nv < 1 or nu < 0 or nv < 0.
         """
-    def is_cn_u(self, n: typing.SupportsInt) -> bool:
+    def is_cn_u(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
                     Check if the surface has Cn continuity in the U direction.
         
@@ -2030,7 +1974,7 @@ class Surface(Geometry):
                     Returns:
                         bool: True if the surface is at least Cn continuous in U.
         """
-    def is_cn_v(self, n: typing.SupportsInt) -> bool:
+    def is_cn_v(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
                     Check if the surface has Cn continuity in the V direction.
         
@@ -2053,7 +1997,7 @@ class Surface(Geometry):
                     Returns:
                         gp.GTrsf2d: The 2D parameter transformation.
         """
-    def transform_parameters(self, u: typing.SupportsFloat, v: typing.SupportsFloat, transform: mod3d.gp.Trsf) -> tuple:
+    def transform_parameters(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex, transform: mod3d.gp.Trsf) -> tuple[float, float]:
         """
                     Compute parameters on a transformed surface.
         
@@ -2068,7 +2012,7 @@ class Surface(Geometry):
                     Returns:
                         tuple: (u', v') parameters on the transformed surface.
         """
-    def u_iso(self, u: typing.SupportsFloat) -> Curve:
+    def u_iso(self, u: typing.SupportsFloat | typing.SupportsIndex) -> Curve:
         """
                     Compute the U isoparametric curve.
         
@@ -2095,7 +2039,7 @@ class Surface(Geometry):
                     Returns:
                         Surface: A new surface with reversed U parametrization.
         """
-    def u_reversed_parameter(self, u: typing.SupportsFloat) -> float:
+    def u_reversed_parameter(self, u: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
                     Compute the U parameter on the U-reversed surface.
         
@@ -2108,7 +2052,7 @@ class Surface(Geometry):
                     Returns:
                         float: The corresponding U parameter on the reversed surface.
         """
-    def v_iso(self, v: typing.SupportsFloat) -> Curve:
+    def v_iso(self, v: typing.SupportsFloat | typing.SupportsIndex) -> Curve:
         """
                     Compute the V isoparametric curve.
         
@@ -2135,7 +2079,7 @@ class Surface(Geometry):
                     Returns:
                         Surface: A new surface with reversed V parametrization.
         """
-    def v_reversed_parameter(self, v: typing.SupportsFloat) -> float:
+    def v_reversed_parameter(self, v: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
                     Compute the V parameter on the V-reversed surface.
         
@@ -2148,7 +2092,7 @@ class Surface(Geometry):
                     Returns:
                         float: The corresponding V parameter on the reversed surface.
         """
-    def value(self, u: typing.SupportsFloat, v: typing.SupportsFloat) -> mod3d.gp.Pnt:
+    def value(self, u: typing.SupportsFloat | typing.SupportsIndex, v: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt:
         """
                     Compute the point at parameters (U, V).
         
@@ -2279,7 +2223,7 @@ class ToroidalSurface(ElementarySurface):
             
     """
     @typing.overload
-    def __init__(self, a3: mod3d.gp.Ax3, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a3: mod3d.gp.Ax3, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
                     Creates a toroidal surface.
         
@@ -2334,7 +2278,7 @@ class ToroidalSurface(ElementarySurface):
                         The major radius (must be >= 0)
         """
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
@@ -2349,7 +2293,7 @@ class ToroidalSurface(ElementarySurface):
                         The minor radius (must be >= 0)
         """
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def torus(self) -> mod3d.gp.Torus:
@@ -2381,9 +2325,9 @@ class ToroidalSurface(ElementarySurface):
                         The volume
         """
 class TrimmedCurve(BoundedCurve):
-    def __init__(self, c: Curve, u1: typing.SupportsFloat, u2: typing.SupportsFloat, sense: bool = True, adjust_periodic: bool = True) -> None:
+    def __init__(self, c: Curve, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True, adjust_periodic: bool = True) -> None:
         ...
-    def set_trim(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat, sense: bool = True, adjust_periodic: bool = True) -> None:
+    def set_trim(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True, adjust_periodic: bool = True) -> None:
         ...
     @property
     def basis_curve(self) -> Curve:
