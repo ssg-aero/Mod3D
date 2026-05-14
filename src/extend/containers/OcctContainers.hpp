@@ -5,7 +5,6 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 
 #include <string>
@@ -16,8 +15,8 @@ namespace occt::extended::containers {
 inline std::vector<TopoDS_Shape> to_vector(const TopTools_ListOfShape& shapes) {
     std::vector<TopoDS_Shape> result;
     result.reserve(static_cast<size_t>(shapes.Size()));
-    for (TopTools_ListIteratorOfListOfShape it(shapes); it.More(); it.Next()) {
-        result.push_back(it.Value());
+    for (const TopoDS_Shape& shape : shapes) {
+        result.push_back(shape);
     }
     return result;
 }
@@ -25,8 +24,8 @@ inline std::vector<TopoDS_Shape> to_vector(const TopTools_ListOfShape& shapes) {
 inline std::vector<TopoDS_Face> to_face_vector(const TopTools_ListOfShape& shapes) {
     std::vector<TopoDS_Face> result;
     result.reserve(static_cast<size_t>(shapes.Size()));
-    for (TopTools_ListIteratorOfListOfShape it(shapes); it.More(); it.Next()) {
-        result.push_back(TopoDS::Face(it.Value()));
+    for (const TopoDS_Shape& shape : shapes) {
+        result.push_back(TopoDS::Face(shape));
     }
     return result;
 }
@@ -34,8 +33,8 @@ inline std::vector<TopoDS_Face> to_face_vector(const TopTools_ListOfShape& shape
 inline std::vector<TopoDS_Edge> to_edge_vector(const TopTools_ListOfShape& shapes) {
     std::vector<TopoDS_Edge> result;
     result.reserve(static_cast<size_t>(shapes.Size()));
-    for (TopTools_ListIteratorOfListOfShape it(shapes); it.More(); it.Next()) {
-        result.push_back(TopoDS::Edge(it.Value()));
+    for (const TopoDS_Shape& shape : shapes) {
+        result.push_back(TopoDS::Edge(shape));
     }
     return result;
 }
