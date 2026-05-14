@@ -27,9 +27,7 @@ extern void bind_geom_surfaces_splines(py::module_ &m);
 extern void bind_geom_surfaces_elementary(py::module_ &m);
 #if HAS_GBS
     #include <gbs/bssurf.h>
-    // Helper functions to convert gbs surfaces to OCCT
-    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs::BSSurface<double,3>& surf);
-    extern opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(const gbs::BSSurfaceRational<double,3>& surf);
+    #include "extend/GbsConverters.hpp"
 #endif
 void bind_geom_surfaces_splines(py::module_ &m)
 {
@@ -267,12 +265,12 @@ void bind_geom_surfaces_splines(py::module_ &m)
             )doc")
 #if HAS_GBS
         .def(py::init([](const gbs::BSSurface<double,3>& surf) {
-            return gbs_bssurface_to_occt(surf);
+            return occt::extended::gbs::to_occt(surf);
         }), py::arg("bssurface"),
             "Create a B-spline surface from a gbs::BSSurface object.")
 
         .def(py::init([](const gbs::BSSurfaceRational<double,3>& surf) {
-            return gbs_bssurface_rational_to_occt(surf);
+            return occt::extended::gbs::to_occt(surf);
         }), py::arg("bssurface_rational"),
             "Create a rational B-spline surface from a gbs::BSSurfaceRational object.")
 #endif

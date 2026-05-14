@@ -20,98 +20,8 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 
 #if HAS_GBS
     #include <gbs/bssurf.h>
-    // Helper functions to convert gbs surfaces to OCCT
-    inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_to_occt(const gbs::BSSurface<double,3>& surf) {
-        const auto& poles_ = surf.poles();
-        size_t nu = surf.nPolesU();
-        size_t nv = surf.nPolesV();
-        Standard_Integer u_size = static_cast<Standard_Integer>(nu);
-        Standard_Integer v_size = static_cast<Standard_Integer>(nv);
-        
-        TColgp_Array2OfPnt poles(1, u_size, 1, v_size);
-        for (size_t i = 0; i < nu; ++i) {
-            for (size_t j = 0; j < nv; ++j) {
-                size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
-                const auto& pt = poles_[idx];
-                poles.SetValue(static_cast<Standard_Integer>(i + 1), 
-                            static_cast<Standard_Integer>(j + 1), 
-                            gp_Pnt(pt[0], pt[1], pt[2]));
-            }
-        }
-        
-        auto [knots_u, mults_u] = gbs::knots_and_mults(surf.knotsFlatsU());
-        auto [knots_v, mults_v] = gbs::knots_and_mults(surf.knotsFlatsV());
-        
-        TColStd_Array1OfReal occt_knots_u(1, static_cast<Standard_Integer>(knots_u.size()));
-        TColStd_Array1OfInteger occt_mults_u(1, static_cast<Standard_Integer>(mults_u.size()));
-        for (size_t i = 0; i < knots_u.size(); ++i) {
-            occt_knots_u.SetValue(static_cast<Standard_Integer>(i + 1), knots_u[i]);
-            occt_mults_u.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults_u[i]));
-        }
-        
-        TColStd_Array1OfReal occt_knots_v(1, static_cast<Standard_Integer>(knots_v.size()));
-        TColStd_Array1OfInteger occt_mults_v(1, static_cast<Standard_Integer>(mults_v.size()));
-        for (size_t i = 0; i < knots_v.size(); ++i) {
-            occt_knots_v.SetValue(static_cast<Standard_Integer>(i + 1), knots_v[i]);
-            occt_mults_v.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults_v[i]));
-        }
-        
-        return new Geom_BSplineSurface(poles, occt_knots_u, occt_knots_v, 
-                                    occt_mults_u, occt_mults_v, 
-                                    surf.degreeU(), surf.degreeV());
-    }
-
-    inline opencascade::handle<Geom_BSplineSurface> gbs_bssurface_rational_to_occt(const gbs::BSSurfaceRational<double,3>& surf) {
-        auto projected_poles = surf.polesProjected();
-        size_t nu = surf.nPolesU();
-        size_t nv = surf.nPolesV();
-        Standard_Integer u_size = static_cast<Standard_Integer>(nu);
-        Standard_Integer v_size = static_cast<Standard_Integer>(nv);
-        
-        TColgp_Array2OfPnt poles(1, u_size, 1, v_size);
-        for (size_t i = 0; i < nu; ++i) {
-            for (size_t j = 0; j < nv; ++j) {
-                size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
-                const auto& pt = projected_poles[idx];
-                poles.SetValue(static_cast<Standard_Integer>(i + 1), 
-                            static_cast<Standard_Integer>(j + 1), 
-                            gp_Pnt(pt[0], pt[1], pt[2]));
-            }
-        }
-        
-        const auto& weights_ = surf.weights();
-        TColStd_Array2OfReal weights(1, u_size, 1, v_size);
-        for (size_t i = 0; i < nu; ++i) {
-            for (size_t j = 0; j < nv; ++j) {
-                size_t idx = i + j * nu;  // gbs stores poles row-major: all U poles for each V
-                weights.SetValue(static_cast<Standard_Integer>(i + 1), 
-                            static_cast<Standard_Integer>(j + 1), 
-                            weights_[idx]);
-            }
-        }
-        
-        auto [knots_u, mults_u] = gbs::knots_and_mults(surf.knotsFlatsU());
-        auto [knots_v, mults_v] = gbs::knots_and_mults(surf.knotsFlatsV());
-        
-        TColStd_Array1OfReal occt_knots_u(1, static_cast<Standard_Integer>(knots_u.size()));
-        TColStd_Array1OfInteger occt_mults_u(1, static_cast<Standard_Integer>(mults_u.size()));
-        for (size_t i = 0; i < knots_u.size(); ++i) {
-            occt_knots_u.SetValue(static_cast<Standard_Integer>(i + 1), knots_u[i]);
-            occt_mults_u.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults_u[i]));
-        }
-        
-        TColStd_Array1OfReal occt_knots_v(1, static_cast<Standard_Integer>(knots_v.size()));
-        TColStd_Array1OfInteger occt_mults_v(1, static_cast<Standard_Integer>(mults_v.size()));
-        for (size_t i = 0; i < knots_v.size(); ++i) {
-            occt_knots_v.SetValue(static_cast<Standard_Integer>(i + 1), knots_v[i]);
-            occt_mults_v.SetValue(static_cast<Standard_Integer>(i + 1), static_cast<Standard_Integer>(mults_v[i]));
-        }
-        
-        return new Geom_BSplineSurface(poles, weights, occt_knots_u, occt_knots_v, 
-                                    occt_mults_u, occt_mults_v, 
-                                    surf.degreeU(), surf.degreeV());
-    }
-#endif // HAS_GBS
+    #include "extend/GbsConverters.hpp"
+#endif
 
 // Forward declaration
 extern void bind_geom_surfaces_splines(py::module_ &m);
@@ -139,11 +49,11 @@ void bind_geom_surfaces(py::module_ &m)
         // Constructors from gbs types (for implicit conversion support)
 #if HAS_GBS
         .def(py::init([](const gbs::BSSurface<double,3>& surf) {
-            return opencascade::handle<Geom_Surface>(gbs_bssurface_to_occt(surf));
+            return opencascade::handle<Geom_Surface>(occt::extended::gbs::to_occt(surf));
         }), py::arg("bssurface"),
             "Create a Geom_Surface from a gbs::BSSurface object (implicit conversion).")
         .def(py::init([](const gbs::BSSurfaceRational<double,3>& surf) {
-            return opencascade::handle<Geom_Surface>(gbs_bssurface_rational_to_occt(surf));
+            return opencascade::handle<Geom_Surface>(occt::extended::gbs::to_occt(surf));
         }), py::arg("bssurface_rational"),
             "Create a Geom_Surface from a gbs::BSSurfaceRational object (implicit conversion).")
 #endif
