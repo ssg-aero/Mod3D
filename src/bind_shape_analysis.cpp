@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 
+#include <Standard_Version.hxx>
 #include <ShapeAnalysis_Edge.hxx>
 #include <ShapeAnalysis_Surface.hxx>
 #include <ShapeAnalysis_Wire.hxx>
@@ -574,18 +575,26 @@ void bind_shape_analysis(py::module_ &m)
             py::arg("face"),
             "Sets the working face for the wire.")
 
+#if OCC_VERSION_HEX >= 0x080000
+        // SetFace(face, SAS) and SetSurface(SAS) were added in OCCT 8.0 so
+        // callers could share a pre-built surface analyzer across many
+        // wire fixes. On 7.x the only entry points are SetFace(face) and
+        // SetSurface(Geom_Surface[, location]).
         .def("set_face_with_surface",
             py::overload_cast<const TopoDS_Face&, const opencascade::handle<ShapeAnalysis_Surface>&>(
                 &ShapeAnalysis_Wire::SetFace),
             py::arg("face"), py::arg("surface_analysis"),
             "Sets the working face plus a pre-built ShapeAnalysis.Surface.\n"
-            "Useful when the same surface is reused for many wires.")
+            "Useful when the same surface is reused for many wires.\n\n"
+            "Requires OCCT >= 8.0.")
 
         .def("set_surface_analysis",
             py::overload_cast<const opencascade::handle<ShapeAnalysis_Surface>&>(
                 &ShapeAnalysis_Wire::SetSurface),
             py::arg("surface_analysis"),
-            "Sets the working surface from a pre-built ShapeAnalysis.Surface.")
+            "Sets the working surface from a pre-built ShapeAnalysis.Surface.\n\n"
+            "Requires OCCT >= 8.0.")
+#endif
 
         .def("set_surface",
             py::overload_cast<const opencascade::handle<Geom_Surface>&>(

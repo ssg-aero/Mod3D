@@ -214,10 +214,13 @@ class TestShapeAnalysisWire:
         saw.check_edge_curves()
         assert saw.surface is not None
 
-        # set_surface_analysis(SAS) only stores the surface analyzer; the
-        # face stays null, so is_ready remains False (matches OCCT). The
-        # bound surface is still queryable for callers driving individual
+        # set_surface_analysis(SAS) is OCCT 8.0+ only: it lets callers
+        # share one ShapeAnalysis.Surface across many wires. The face
+        # stays null, so is_ready remains False (matches OCCT). The bound
+        # surface is still queryable for callers driving individual
         # surface-aware checks.
+        if not hasattr(ShapeAnalysis.Wire, "set_surface_analysis"):
+            pytest.skip("set_surface_analysis requires OCCT >= 8.0")
         saw2 = ShapeAnalysis.Wire()
         saw2.load(wire)
         sas = ShapeAnalysis.Surface(plane)
