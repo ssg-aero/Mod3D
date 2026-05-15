@@ -2,9 +2,12 @@
 
 #include <ShapeAnalysis_Edge.hxx>
 #include <ShapeAnalysis_Surface.hxx>
+#include <ShapeAnalysis_Wire.hxx>
 #include <ShapeExtend_Status.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Wire.hxx>
+#include <TopoDS_Shape.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -515,5 +518,364 @@ void bind_shape_analysis(py::module_ &m)
         .def_property_readonly("box_v_last", &ShapeAnalysis_Surface::GetBoxVL,
             py::return_value_policy::reference_internal,
             "Bounding box of the V=v_last iso-curve.")
+    ;
+
+    // =========================================================================
+    // ShapeAnalysis_Wire - Wire analyzer (order, connectivity, gaps,
+    //                                      self-intersection, lacking edges,
+    //                                      closure)
+    // =========================================================================
+    py::class_<ShapeAnalysis_Wire, opencascade::handle<ShapeAnalysis_Wire>>(m, "Wire",
+        R"doc(
+        Wire analyzer.
+
+        Inspects a wire-on-face for the issues that ShapeFix_Wire repairs:
+        edge ordering, gaps in 3D and 2D, lacking edges (gap in 2D while
+        connected in 3D), self-intersection, degenerated edges, closure,
+        small edges. Each Check<X>() method runs the analysis and stores
+        a status flag queryable via Status<X>(status).
+
+        Two usage shapes:
+        - Quick one-shot: perform() runs the standard battery in a fixed
+          order and returns True if anything was flagged.
+        - Step-by-step: call individual Check<X>() methods, then inspect
+          Status<X>(ShapeExtendStatus.DoneN) for the detailed verdict.
+
+        Distance metrics (min_distance_3d, max_distance_3d, ...) are
+        populated by the most recent Check<X>() that records them.
+
+        Example:
+            saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+            if saw.check_connected():
+                if saw.status_connected(ShapeAnalysis.ShapeExtendStatus.Done1):
+                    ...  # edges are confused with starting precision
+        )doc")
+
+        .def(py::init<>(),
+            "Creates an empty wire analyzer.")
+
+        .def(py::init<const TopoDS_Wire&, const TopoDS_Face&, Standard_Real>(),
+            py::arg("wire"), py::arg("face"), py::arg("precision"),
+            "Creates a wire analyzer loaded with wire/face/precision.")
+
+        .def("init",
+            py::overload_cast<const TopoDS_Wire&, const TopoDS_Face&, Standard_Real>(
+                &ShapeAnalysis_Wire::Init),
+            py::arg("wire"), py::arg("face"), py::arg("precision"),
+            "Loads wire/face/precision, resetting cached statuses.")
+
+        .def("load",
+            py::overload_cast<const TopoDS_Wire&>(&ShapeAnalysis_Wire::Load),
+            py::arg("wire"),
+            "Loads the wire, resetting cached statuses.")
+
+        .def("set_face",
+            py::overload_cast<const TopoDS_Face&>(&ShapeAnalysis_Wire::SetFace),
+            py::arg("face"),
+            "Sets the working face for the wire.")
+
+        .def("set_face_with_surface",
+            py::overload_cast<const TopoDS_Face&, const opencascade::handle<ShapeAnalysis_Surface>&>(
+                &ShapeAnalysis_Wire::SetFace),
+            py::arg("face"), py::arg("surface_analysis"),
+            "Sets the working face plus a pre-built ShapeAnalysis.Surface.\n"
+            "Useful when the same surface is reused for many wires.")
+
+        .def("set_surface_analysis",
+            py::overload_cast<const opencascade::handle<ShapeAnalysis_Surface>&>(
+                &ShapeAnalysis_Wire::SetSurface),
+            py::arg("surface_analysis"),
+            "Sets the working surface from a pre-built ShapeAnalysis.Surface.")
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&>(
+                &ShapeAnalysis_Wire::SetSurface),
+            py::arg("surface"),
+            "Sets the working surface from a raw Geom_Surface.")
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&, const TopLoc_Location&>(
+                &ShapeAnalysis_Wire::SetSurface),
+            py::arg("surface"), py::arg("location"),
+            "Sets the working surface from a Geom_Surface + location.")
+
+        .def("set_precision", &ShapeAnalysis_Wire::SetPrecision,
+            py::arg("precision"),
+            "Sets the working precision.")
+
+        .def("clear_statuses", &ShapeAnalysis_Wire::ClearStatuses,
+            "Clears every cached status (wire/face/precision are kept).")
+
+        // State
+        .def_property_readonly("is_loaded", &ShapeAnalysis_Wire::IsLoaded,
+            "True when the wire has at least one edge.")
+
+        .def_property_readonly("is_ready", &ShapeAnalysis_Wire::IsReady,
+            "True when both wire and face are loaded.")
+
+        .def_property_readonly("precision", &ShapeAnalysis_Wire::Precision,
+            "Current working precision.")
+
+        .def_property_readonly("nb_edges", &ShapeAnalysis_Wire::NbEdges,
+            "Number of edges in the working wire (0 if not loaded).")
+
+        .def_property_readonly("face", &ShapeAnalysis_Wire::Face,
+            py::return_value_policy::reference_internal,
+            "Working face.")
+
+        .def_property_readonly("surface", &ShapeAnalysis_Wire::Surface,
+            "Working ShapeAnalysis.Surface (built lazily from face/surface).")
+
+        // High-level checks
+        .def("perform", [](ShapeAnalysis_Wire& self) { return self.Perform(); },
+            "Runs the standard analysis battery in OCCT's default order:\n"
+            "CheckOrder, CheckSmall, CheckConnected, CheckEdgeCurves,\n"
+            "CheckDegenerated, CheckSelfIntersection, CheckLacking,\n"
+            "CheckClosed.\n\n"
+            "Returns True if at least one check flagged an issue.")
+
+        .def("check_order",
+            py::overload_cast<const Standard_Boolean, const Standard_Boolean>(
+                &ShapeAnalysis_Wire::CheckOrder),
+            py::arg("is_closed") = true, py::arg("mode_3d") = true,
+            "Checks tail-to-head ordering. Returns False if already ordered.")
+
+        .def("check_connected",
+            py::overload_cast<const Standard_Real>(&ShapeAnalysis_Wire::CheckConnected),
+            py::arg("prec") = 0.0,
+            "Checks vertex sharing between adjacent edges across the wire.")
+
+        .def("check_connected_at",
+            py::overload_cast<const Standard_Integer, const Standard_Real>(
+                &ShapeAnalysis_Wire::CheckConnected),
+            py::arg("num"), py::arg("prec") = 0.0,
+            "Checks edges num-1 and num for shared vertex / closeness.")
+
+        .def("check_small",
+            py::overload_cast<const Standard_Real>(&ShapeAnalysis_Wire::CheckSmall),
+            py::arg("prec_small") = 0.0,
+            "Checks for edges shorter than min(precision, prec_small).")
+
+        .def("check_small_at",
+            py::overload_cast<const Standard_Integer, const Standard_Real>(
+                &ShapeAnalysis_Wire::CheckSmall),
+            py::arg("num"), py::arg("prec_small") = 0.0,
+            "Checks if the num-th edge is small.")
+
+        .def("check_edge_curves", &ShapeAnalysis_Wire::CheckEdgeCurves,
+            "Runs all per-edge curve consistency checks (3D vs pcurve,\n"
+            "vertices vs pcurve, vertices vs 3D, seam, gaps, same parameter).")
+
+        .def("check_degenerated",
+            py::overload_cast<>(&ShapeAnalysis_Wire::CheckDegenerated),
+            "Checks for badly-marked degenerated edges across the wire.")
+
+        .def("check_degenerated_at",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckDegenerated),
+            py::arg("num"),
+            "Checks for a degenerated edge between edges num-1 and num.")
+
+        .def("check_degenerated_values",
+            [](ShapeAnalysis_Wire& self, Standard_Integer num) {
+                gp_Pnt2d dgnr1, dgnr2;
+                Standard_Boolean flagged = self.CheckDegenerated(num, dgnr1, dgnr2);
+                return py::make_tuple(flagged, dgnr1, dgnr2);
+            },
+            py::arg("num"),
+            "Returns tuple (flagged, dgnr1_uv, dgnr2_uv) — the two 2D points\n"
+            "in parametric space that span the singularity between edges\n"
+            "num-1 and num.")
+
+        .def("check_closed", &ShapeAnalysis_Wire::CheckClosed,
+            py::arg("prec") = 0.0,
+            "Checks closure between the last and first edges.")
+
+        .def("check_self_intersection", &ShapeAnalysis_Wire::CheckSelfIntersection,
+            "Looks for self-intersecting edges and intersecting adjacent\n"
+            "edges (does not check every pair, only adjacent ones).")
+
+        .def("check_self_intersecting_edge",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckSelfIntersectingEdge),
+            py::arg("num"),
+            "Checks if the num-th edge is self-intersecting.")
+
+        .def("check_intersecting_edges",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckIntersectingEdges),
+            py::arg("num"),
+            "Checks edges num-1 and num for intersection outside the common\n"
+            "vertex.")
+
+        .def("check_intersecting_edges_pair",
+            py::overload_cast<const Standard_Integer, const Standard_Integer>(
+                &ShapeAnalysis_Wire::CheckIntersectingEdges),
+            py::arg("num1"), py::arg("num2"),
+            "Checks edges num1 and num2 for intersection.")
+
+        .def("check_lacking",
+            py::overload_cast<>(&ShapeAnalysis_Wire::CheckLacking),
+            "Checks for lacking edges (2D gap while connected in 3D).")
+
+        .def("check_lacking_at",
+            py::overload_cast<const Standard_Integer, const Standard_Real>(
+                &ShapeAnalysis_Wire::CheckLacking),
+            py::arg("num"), py::arg("tolerance") = 0.0,
+            "Checks if a lacking edge is needed between edges num-1 and num.")
+
+        .def("check_lacking_values",
+            [](ShapeAnalysis_Wire& self, Standard_Integer num, Standard_Real tol) {
+                gp_Pnt2d p2d1, p2d2;
+                Standard_Boolean flagged = self.CheckLacking(num, tol, p2d1, p2d2);
+                return py::make_tuple(flagged, p2d1, p2d2);
+            },
+            py::arg("num"), py::arg("tolerance"),
+            "Returns tuple (flagged, p2d1, p2d2) — the 2D endpoints of the\n"
+            "gap detected between edges num-1 and num.")
+
+        .def("check_gaps_3d", &ShapeAnalysis_Wire::CheckGaps3d,
+            "Checks 3D-curve gaps between adjacent edges across the wire.")
+
+        .def("check_gap_3d",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckGap3d),
+            py::arg("num") = 0,
+            "Checks 3D-curve gap between edges num-1 and num\n"
+            "(num=0 means check the whole wire).")
+
+        .def("check_gaps_2d", &ShapeAnalysis_Wire::CheckGaps2d,
+            "Checks pcurve gaps between adjacent edges across the wire.")
+
+        .def("check_gap_2d",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckGap2d),
+            py::arg("num") = 0,
+            "Checks pcurve gap between edges num-1 and num.")
+
+        .def("check_curve_gaps", &ShapeAnalysis_Wire::CheckCurveGaps,
+            "Checks the gap between 3D curve and the curve generated by the\n"
+            "pcurve on the surface, summed over the wire.")
+
+        .def("check_curve_gap",
+            py::overload_cast<const Standard_Integer>(&ShapeAnalysis_Wire::CheckCurveGap),
+            py::arg("num") = 0,
+            "Checks the 3D-vs-pcurve gap for the num-th edge.")
+
+        .def("check_outer_bound", &ShapeAnalysis_Wire::CheckOuterBound,
+            py::arg("api_make") = true,
+            "Returns True if the wire bounds an outer region of the face.\n"
+            "api_make=True uses BRepAPI_MakeWire (handles unshared vertices),\n"
+            "False uses BRep_Builder.")
+
+        .def("check_small_area", &ShapeAnalysis_Wire::CheckSmallArea,
+            py::arg("wire"),
+            "Returns True if the wire's parametric area is below precision.")
+
+        .def("check_shape_connect",
+            py::overload_cast<const TopoDS_Shape&, const Standard_Real>(
+                &ShapeAnalysis_Wire::CheckShapeConnect),
+            py::arg("shape"), py::arg("prec") = 0.0,
+            "Checks how the given edge/wire can be connected to this wire.\n"
+            "Use last_check_status(...) on Done1..Done6 to interpret\n"
+            "(see OCCT documentation for the table).")
+
+        .def("check_shape_connect_distances",
+            [](ShapeAnalysis_Wire& self, const TopoDS_Shape& shape, Standard_Real prec) {
+                Standard_Real tailhead, tailtail, headtail, headhead;
+                Standard_Boolean flagged = self.CheckShapeConnect(
+                    tailhead, tailtail, headtail, headhead, shape, prec);
+                return py::make_tuple(flagged, tailhead, tailtail, headtail, headhead);
+            },
+            py::arg("shape"), py::arg("prec") = 0.0,
+            "Returns tuple (flagged, tail_head, tail_tail, head_tail, head_head)\n"
+            "with the four end-to-end distances between this wire and the\n"
+            "given shape (edge or wire).")
+
+        .def("check_notched_edges",
+            [](ShapeAnalysis_Wire& self, Standard_Integer num, Standard_Real tol) {
+                Standard_Integer shortNum = 0;
+                Standard_Real param = 0.0;
+                Standard_Boolean flagged = self.CheckNotchedEdges(num, shortNum, param, tol);
+                return py::make_tuple(flagged, shortNum, param);
+            },
+            py::arg("num"), py::arg("tolerance") = 0.0,
+            "Returns tuple (flagged, short_edge_num, parameter) when a notch\n"
+            "is detected between edges num-1 and num.")
+
+        // Status accessors
+        .def("status_order",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusOrder(s); },
+            py::arg("status"),
+            "Returns True if the last check_order recorded the given status.")
+
+        .def("status_connected",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusConnected(s); },
+            py::arg("status"),
+            "Returns True if the last check_connected recorded the given status.")
+
+        .def("status_edge_curves",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusEdgeCurves(s); },
+            py::arg("status"),
+            "Returns True if the last check_edge_curves recorded the given status.")
+
+        .def("status_degenerated",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusDegenerated(s); },
+            py::arg("status"),
+            "Returns True if the last check_degenerated recorded the given status.")
+
+        .def("status_closed",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusClosed(s); },
+            py::arg("status"),
+            "Returns True if the last check_closed recorded the given status.")
+
+        .def("status_small",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusSmall(s); },
+            py::arg("status"),
+            "Returns True if the last check_small recorded the given status.")
+
+        .def("status_self_intersection",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusSelfIntersection(s); },
+            py::arg("status"),
+            "Returns True if the last check_self_intersection recorded the given status.")
+
+        .def("status_lacking",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusLacking(s); },
+            py::arg("status"),
+            "Returns True if the last check_lacking recorded the given status.")
+
+        .def("status_gaps_3d",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusGaps3d(s); },
+            py::arg("status"),
+            "Returns True if the last check_gaps_3d recorded the given status.")
+
+        .def("status_gaps_2d",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusGaps2d(s); },
+            py::arg("status"),
+            "Returns True if the last check_gaps_2d recorded the given status.")
+
+        .def("status_curve_gaps",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusCurveGaps(s); },
+            py::arg("status"),
+            "Returns True if the last check_curve_gaps recorded the given status.")
+
+        .def("status_loop",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.StatusLoop(s); },
+            py::arg("status"),
+            "Returns True if the last loop check recorded the given status.")
+
+        .def("last_check_status",
+            [](const ShapeAnalysis_Wire& self, ShapeExtend_Status s) { return self.LastCheckStatus(s); },
+            py::arg("status"),
+            "Returns True if the most recent advanced check (e.g.\n"
+            "check_shape_connect) recorded the given status.")
+
+        // Distance metrics
+        .def_property_readonly("min_distance_3d", &ShapeAnalysis_Wire::MinDistance3d,
+            "Lowest 3D distance recorded by the last distance-aware check.")
+
+        .def_property_readonly("min_distance_2d", &ShapeAnalysis_Wire::MinDistance2d,
+            "Lowest 2D-UV distance recorded by the last distance-aware check.")
+
+        .def_property_readonly("max_distance_3d", &ShapeAnalysis_Wire::MaxDistance3d,
+            "Highest 3D distance recorded by the last distance-aware check.")
+
+        .def_property_readonly("max_distance_2d", &ShapeAnalysis_Wire::MaxDistance2d,
+            "Highest 2D-UV distance recorded by the last distance-aware check.")
     ;
 }
