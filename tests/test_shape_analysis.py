@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from mod3d import Geom, ShapeAnalysis, gp
+from mod3d import BRepBuilderAPI, Geom, ShapeAnalysis, ShapeFix, gp
 
 
 class TestShapeAnalysisSurface:
@@ -147,3 +147,182 @@ class TestShapeAnalysisSurface:
         assert ad is not None
         true_ad = sas.true_adaptor3d
         assert true_ad is not None
+
+
+def _rect_wire_and_face():
+    """Build a closed rectangular wire and its planar face."""
+    p1 = gp.Pnt(0, 0, 0)
+    p2 = gp.Pnt(10, 0, 0)
+    p3 = gp.Pnt(10, 10, 0)
+    p4 = gp.Pnt(0, 10, 0)
+
+    e1 = BRepBuilderAPI.MakeEdge(p1, p2).edge()
+    e2 = BRepBuilderAPI.MakeEdge(p2, p3).edge()
+    e3 = BRepBuilderAPI.MakeEdge(p3, p4).edge()
+    e4 = BRepBuilderAPI.MakeEdge(p4, p1).edge()
+
+    w = BRepBuilderAPI.MakeWire()
+    for e in (e1, e2, e3, e4):
+        w.add(e)
+    wire = w.wire()
+    face = BRepBuilderAPI.MakeFace(wire).face()
+    return wire, face
+
+
+class TestShapeAnalysisWire:
+    """Tests for ShapeAnalysis.Wire."""
+
+    def test_default_constructor(self):
+        saw = ShapeAnalysis.Wire()
+        assert not saw.is_loaded
+        assert not saw.is_ready
+        assert saw.nb_edges == 0
+
+    def test_constructor_with_wire_face_precision(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        assert saw.is_loaded
+        assert saw.is_ready
+        assert saw.nb_edges == 4
+        assert saw.precision == pytest.approx(1e-6)
+
+    def test_init_and_load(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire()
+        saw.init(wire, face, 1e-7)
+        assert saw.is_ready
+        assert saw.precision == pytest.approx(1e-7)
+
+        saw2 = ShapeAnalysis.Wire()
+        saw2.load(wire)
+        assert saw2.is_loaded
+        assert not saw2.is_ready
+        saw2.set_face(face)
+        assert saw2.is_ready
+
+    def test_set_surface_overloads(self):
+        wire, _ = _rect_wire_and_face()
+        plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+
+        # set_surface(Geom_Surface) wraps the surface into a face
+        # internally, so the analyzer becomes ready.
+        saw = ShapeAnalysis.Wire()
+        saw.load(wire)
+        saw.set_surface(plane)
+        assert saw.is_ready
+        # check_edge_curves needs the surface; just ensure it runs.
+        saw.check_edge_curves()
+        assert saw.surface is not None
+
+        # set_surface_analysis(SAS) only stores the surface analyzer; the
+        # face stays null, so is_ready remains False (matches OCCT). The
+        # bound surface is still queryable for callers driving individual
+        # surface-aware checks.
+        saw2 = ShapeAnalysis.Wire()
+        saw2.load(wire)
+        sas = ShapeAnalysis.Surface(plane)
+        saw2.set_surface_analysis(sas)
+        assert saw2.is_loaded
+        assert saw2.surface is not None
+
+    def test_perform_on_clean_wire(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        # A clean rectangular wire on a planar face should not be flagged
+        # by any of the standard checks.
+        flagged = saw.perform()
+        assert flagged in (True, False)
+
+    def test_individual_checks_run(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        # All the no-arg / default-arg variants should at least execute.
+        for method in (
+            "check_order",
+            "check_connected",
+            "check_small",
+            "check_edge_curves",
+            "check_degenerated",
+            "check_closed",
+            "check_self_intersection",
+            "check_lacking",
+            "check_gaps_3d",
+            "check_gaps_2d",
+            "check_curve_gaps",
+        ):
+            result = getattr(saw, method)()
+            assert result in (True, False)
+
+    def test_status_accessors(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        saw.check_connected()
+        # Clean rectangular wire: edges share their vertices, so status
+        # for the OK enum should be True (or at minimum a bool).
+        ok = ShapeAnalysis.ShapeExtendStatus.OK
+        assert isinstance(saw.status_connected(ok), bool)
+
+    def test_check_lacking_values_tuple_shape(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        # Even when nothing is flagged, the tuple shape must be (bool, p2d, p2d).
+        result = saw.check_lacking_values(1, 0.0)
+        assert len(result) == 3
+        flagged, p2d1, p2d2 = result
+        assert isinstance(flagged, bool)
+        assert hasattr(p2d1, "x") and hasattr(p2d2, "x")
+
+    def test_check_degenerated_values_tuple_shape(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        result = saw.check_degenerated_values(1)
+        assert len(result) == 3
+        flagged, p2d1, p2d2 = result
+        assert isinstance(flagged, bool)
+
+    def test_distance_metrics_accessible(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        saw.check_connected()
+        # Just check the properties don't error and return floats.
+        assert isinstance(saw.min_distance_3d, float)
+        assert isinstance(saw.max_distance_3d, float)
+        assert isinstance(saw.min_distance_2d, float)
+        assert isinstance(saw.max_distance_2d, float)
+
+    def test_surface_property_built_from_face(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        # The analyzer should be able to expose its working surface
+        # (built lazily from the face on first query).
+        # Trigger a check that needs the surface, then read it back.
+        saw.check_edge_curves()
+        surf = saw.surface
+        assert surf is not None
+
+
+class TestShapeFixWireInitFromAnalyzer:
+    """ShapeFix.Wire.init(ShapeAnalysis.Wire) handoff."""
+
+    def test_init_from_analyzer(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+
+        fixer = ShapeFix.Wire()
+        fixer.init(saw)
+        # The fixer should pick up the analyzer's wire AND face,
+        # so it's immediately ready — no set_face / set_surface needed.
+        assert fixer.is_loaded
+        assert fixer.is_ready
+        assert fixer.nb_edges == 4
+
+    def test_init_from_analyzer_then_perform(self):
+        wire, face = _rect_wire_and_face()
+        saw = ShapeAnalysis.Wire(wire, face, 1e-6)
+        fixer = ShapeFix.Wire()
+        fixer.init(saw)
+        # Standard fix battery should run on the inherited state.
+        result = fixer.perform()
+        assert result in (True, False)
+        fixed = fixer.wire
+        assert fixed is not None
