@@ -90,19 +90,19 @@ class ExtendedShape(Shape):
         """
         Creates an extended shape from a vertex
         """
-    def rotate(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> None:
+    def rotate(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates the shape around an axis
         """
-    def rotated(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> ExtendedShape:
+    def rotated(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> ExtendedShape:
         """
         Returns a rotated extended shape
         """
-    def scale(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> None:
+    def scale(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales the shape in place
         """
-    def scaled(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> ExtendedShape:
+    def scaled(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat | typing.SupportsIndex) -> ExtendedShape:
         """
         Returns a scaled extended shape
         """
@@ -191,7 +191,7 @@ class Shape:
         """
         Returns a copy with orientation composed with the given orientation
         """
-    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt = -1) -> None:
+    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt | typing.SupportsIndex = -1) -> None:
         """
         Dumps the content of this shape to a stream in JSON format
         """
@@ -297,19 +297,19 @@ class Shape:
         """
         Returns a copy with reversed orientation
         """
-    def rotate(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> None:
+    def rotate(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates the shape around the given axis by the given angle (in radians)
         """
-    def rotated(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> Shape:
+    def rotated(self, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> Shape:
         """
         Returns a rotated copy of the shape around the given axis by the given angle (in radians)
         """
-    def scale(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> None:
+    def scale(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales the shape by the given factor with respect to the given center point
         """
-    def scaled(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat) -> Shape:
+    def scaled(self, center: mod3d.gp.Pnt, factor: typing.SupportsFloat | typing.SupportsIndex) -> Shape:
         """
         Returns a scaled copy of the shape by the given factor with respect to the given center point)
         """
@@ -515,7 +515,7 @@ class TopLoc_Location:
         """
         Inequality operator (same as is_different)
         """
-    def __pow__(self, power: typing.SupportsInt) -> TopLoc_Location:
+    def __pow__(self, power: typing.SupportsInt | typing.SupportsIndex) -> TopLoc_Location:
         """
         Raise location to a power (supports negative exponents)
         """
@@ -533,7 +533,7 @@ class TopLoc_Location:
         
         Equivalent to self * other.inverted()
         """
-    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt = -1) -> None:
+    def dump_json(self, stream: ..., std: ..., depth: typing.SupportsInt | typing.SupportsIndex = -1) -> None:
         """
         Dumps the content of this location to a stream in JSON format
         """
@@ -571,7 +571,7 @@ class TopLoc_Location:
         Parameters:
           other: The location to multiply with
         """
-    def powered(self, power: typing.SupportsInt) -> TopLoc_Location:
+    def powered(self, power: typing.SupportsInt | typing.SupportsIndex) -> TopLoc_Location:
         """
         Returns this location raised to the given power.
         
@@ -642,10 +642,10 @@ class Vertex(Shape):
         Creates a vertex from a shape (casts to vertex type)
         """
     @typing.overload
-    def __init__(self, point: mod3d.gp.Pnt, tolerance: typing.SupportsFloat = 1e-07) -> None:
+    def __init__(self, point: mod3d.gp.Pnt, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-07) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat, tolerance: typing.SupportsFloat = 1e-07) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex, tolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-07) -> None:
         ...
     def x(self) -> float:
         ...

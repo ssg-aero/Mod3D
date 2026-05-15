@@ -29,7 +29,7 @@ class ChamfMode:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -37,7 +37,7 @@ class ChamfMode:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -102,7 +102,7 @@ class ConstructionError:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -110,7 +110,7 @@ class ConstructionError:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -148,7 +148,7 @@ class ErrorStatus:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -156,7 +156,7 @@ class ErrorStatus:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -173,7 +173,7 @@ class FilletLocalOperation(mod3d.BRepBuilderAPI.MakeShape):
     Manages contours of tangent edges and provides methods for querying
     and manipulating these contours.
     """
-    def abscissa(self, ic: typing.SupportsInt, vertex: mod3d.TopoDS.Vertex) -> float:
+    def abscissa(self, ic: typing.SupportsInt | typing.SupportsIndex, vertex: mod3d.TopoDS.Vertex) -> float:
         """
         Returns the abscissa of the vertex on the contour of index ic
         """
@@ -181,11 +181,11 @@ class FilletLocalOperation(mod3d.BRepBuilderAPI.MakeShape):
         """
         Adds a contour in the builder (builds a contour of tangent edges)
         """
-    def closed(self, ic: typing.SupportsInt) -> bool:
+    def closed(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if the contour of index ic is closed
         """
-    def closed_and_tangent(self, ic: typing.SupportsInt) -> bool:
+    def closed_and_tangent(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if the contour of index ic is closed and tangent
         """
@@ -194,31 +194,31 @@ class FilletLocalOperation(mod3d.BRepBuilderAPI.MakeShape):
         Returns the index of the contour containing the edge.
         Returns 0 if edge doesn't belong to any contour
         """
-    def edge(self, i: typing.SupportsInt, j: typing.SupportsInt) -> mod3d.TopoDS.Edge:
+    def edge(self, i: typing.SupportsInt | typing.SupportsIndex, j: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Returns the edge j in contour i
         """
-    def first_vertex(self, ic: typing.SupportsInt) -> mod3d.TopoDS.Vertex:
+    def first_vertex(self, ic: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Vertex:
         """
         Returns the first vertex of the contour of index ic
         """
-    def last_vertex(self, ic: typing.SupportsInt) -> mod3d.TopoDS.Vertex:
+    def last_vertex(self, ic: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Vertex:
         """
         Returns the last vertex of the contour of index ic
         """
-    def length(self, ic: typing.SupportsInt) -> float:
+    def length(self, ic: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the length of the contour of index ic
         """
-    def nb_edges(self, i: typing.SupportsInt) -> int:
+    def nb_edges(self, i: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Returns the number of edges in contour i
         """
-    def nb_surf(self, ic: typing.SupportsInt) -> int:
+    def nb_surf(self, ic: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Returns the number of surfaces for contour ic
         """
-    def relative_abscissa(self, ic: typing.SupportsInt, vertex: mod3d.TopoDS.Vertex) -> float:
+    def relative_abscissa(self, ic: typing.SupportsInt | typing.SupportsIndex, vertex: mod3d.TopoDS.Vertex) -> float:
         """
         Returns the relative abscissa ([0, 1]) of the vertex on contour ic
         """
@@ -233,15 +233,15 @@ class FilletLocalOperation(mod3d.BRepBuilderAPI.MakeShape):
         Leaves the algorithm in the same state as before build call.
         Allows contours and radius modifications to build the result another time
         """
-    def reset_contour(self, ic: typing.SupportsInt) -> None:
+    def reset_contour(self, ic: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Resets the contour of index ic, removing all information in the contour
         """
-    def sect(self, ic: typing.SupportsInt, is: typing.SupportsInt) -> ...:
+    def sect(self, ic: typing.SupportsInt | typing.SupportsIndex, is: typing.SupportsInt | typing.SupportsIndex) -> ...:
         """
         Returns the section array for contour ic, surface is
         """
-    def simulate(self, ic: typing.SupportsInt) -> None:
+    def simulate(self, ic: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Simulates the operation on contour ic
         """
@@ -272,7 +272,7 @@ class FilletShape:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -280,7 +280,7 @@ class FilletShape:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -311,7 +311,7 @@ class MakeChamfer(FilletLocalOperation):
         Adds edge to the table of edges (parameters set later)
         """
     @typing.overload
-    def add(self, dis: typing.SupportsFloat, edge: mod3d.TopoDS.Edge) -> None:
+    def add(self, dis: typing.SupportsFloat | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> None:
         """
         Adds edge with symmetric chamfer distance.
         
@@ -320,7 +320,7 @@ class MakeChamfer(FilletLocalOperation):
         to one another, delimiting two series of tangential faces
         """
     @typing.overload
-    def add(self, dis1: typing.SupportsFloat, dis2: typing.SupportsFloat, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> None:
+    def add(self, dis1: typing.SupportsFloat | typing.SupportsIndex, dis2: typing.SupportsFloat | typing.SupportsIndex, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> None:
         """
         Adds edge with two distances chamfer.
         
@@ -332,7 +332,7 @@ class MakeChamfer(FilletLocalOperation):
         
         Builds a contour by propagation from the edge
         """
-    def add_da(self, dis: typing.SupportsFloat, angle: typing.SupportsFloat, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> None:
+    def add_da(self, dis: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex, edge: mod3d.TopoDS.Edge, face: mod3d.TopoDS.Face) -> None:
         """
         Adds a chamfer contour with distance and angle parameters.
         
@@ -357,7 +357,7 @@ class MakeChamfer(FilletLocalOperation):
         """
         Returns the internal filleting algorithm builder
         """
-    def dists(self, ic: typing.SupportsInt) -> tuple:
+    def dists(self, ic: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns tuple (dis1, dis2) for contour ic.
         Returns (-1, -1) if ic is outside bounds
@@ -366,11 +366,11 @@ class MakeChamfer(FilletLocalOperation):
         """
         Returns the list of shapes generated from the shape
         """
-    def get_dist(self, ic: typing.SupportsInt) -> float:
+    def get_dist(self, ic: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the symmetric distance for contour ic
         """
-    def get_dist_angle(self, ic: typing.SupportsInt) -> tuple:
+    def get_dist_angle(self, ic: typing.SupportsInt | typing.SupportsIndex) -> tuple[float, float]:
         """
         Returns tuple (distance, angle) for contour ic
         """
@@ -378,15 +378,15 @@ class MakeChamfer(FilletLocalOperation):
         """
         Returns True if the shape was deleted during chamfer operation
         """
-    def is_distance_angle(self, ic: typing.SupportsInt) -> bool:
+    def is_distance_angle(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if contour ic is made with distance and angle
         """
-    def is_symetric(self, ic: typing.SupportsInt) -> bool:
+    def is_symetric(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if contour ic is a symmetric chamfer
         """
-    def is_two_distances(self, ic: typing.SupportsInt) -> bool:
+    def is_two_distances(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if contour ic is made with two distances
         """
@@ -399,7 +399,7 @@ class MakeChamfer(FilletLocalOperation):
         Reinitializes the algorithm, canceling Build effects.
         Allows modifications to contours and parameters to rebuild
         """
-    def set_dist(self, dis: typing.SupportsFloat, ic: typing.SupportsInt, face: mod3d.TopoDS.Face) -> None:
+    def set_dist(self, dis: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, face: mod3d.TopoDS.Face) -> None:
         """
         Sets the symmetric distance for contour ic.
         
@@ -408,7 +408,7 @@ class MakeChamfer(FilletLocalOperation):
           ic: contour index
           face: reference face
         """
-    def set_dist_angle(self, dis: typing.SupportsFloat, angle: typing.SupportsFloat, ic: typing.SupportsInt, face: mod3d.TopoDS.Face) -> None:
+    def set_dist_angle(self, dis: typing.SupportsFloat | typing.SupportsIndex, angle: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, face: mod3d.TopoDS.Face) -> None:
         """
         Sets distance and angle for contour ic.
         
@@ -418,7 +418,7 @@ class MakeChamfer(FilletLocalOperation):
           ic: contour index
           face: reference face
         """
-    def set_dists(self, dis1: typing.SupportsFloat, dis2: typing.SupportsFloat, ic: typing.SupportsInt, face: mod3d.TopoDS.Face) -> None:
+    def set_dists(self, dis1: typing.SupportsFloat | typing.SupportsIndex, dis2: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, face: mod3d.TopoDS.Face) -> None:
         """
         Sets the two distances for contour ic.
         
@@ -458,14 +458,14 @@ class MakeFillet(FilletLocalOperation):
         The radius must be set after
         """
     @typing.overload
-    def add(self, radius: typing.SupportsFloat, edge: mod3d.TopoDS.Edge) -> None:
+    def add(self, radius: typing.SupportsFloat | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> None:
         """
         Adds a fillet with constant radius.
         
         Builds a contour of tangent edges and sets the radius
         """
     @typing.overload
-    def add(self, r1: typing.SupportsFloat, r2: typing.SupportsFloat, edge: mod3d.TopoDS.Edge) -> None:
+    def add(self, r1: typing.SupportsFloat | typing.SupportsIndex, r2: typing.SupportsFloat | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> None:
         """
         Adds a fillet with linear radius evolution.
         
@@ -508,16 +508,16 @@ class MakeFillet(FilletLocalOperation):
         """
         Returns the internal topology building algorithm
         """
-    def computed_surface(self, ic: typing.SupportsInt, is: typing.SupportsInt) -> ...:
+    def computed_surface(self, ic: typing.SupportsInt | typing.SupportsIndex, is: typing.SupportsInt | typing.SupportsIndex) -> ...:
         """
         Returns surface number is for contour ic
         """
-    def faulty_contour(self, i: typing.SupportsInt) -> int:
+    def faulty_contour(self, i: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Returns the index of the i-th faulty contour.
         Use NbEdges(ic) and Edge(ic,ie) to get contour details
         """
-    def faulty_vertex(self, iv: typing.SupportsInt) -> mod3d.TopoDS.Vertex:
+    def faulty_vertex(self, iv: typing.SupportsInt | typing.SupportsIndex) -> mod3d.TopoDS.Vertex:
         """
         Returns the vertex where computation failed
         """
@@ -525,11 +525,11 @@ class MakeFillet(FilletLocalOperation):
         """
         Returns the list of shapes generated from the shape
         """
-    def get_bounds(self, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge) -> tuple:
+    def get_bounds(self, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> tuple[bool, float, float]:
         """
         Returns tuple (success, first, last) bounds for edge in contour ic
         """
-    def get_law(self, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge) -> ...:
+    def get_law(self, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> ...:
         """
         Returns the radius evolution law for edge in contour ic
         """
@@ -538,12 +538,12 @@ class MakeFillet(FilletLocalOperation):
         Returns True if a part of the result has been computed.
         If filling in a corner failed, a shape with a hole is returned
         """
-    def is_constant(self, ic: typing.SupportsInt) -> bool:
+    def is_constant(self, ic: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if the radius along contour ic is constant.
         Returns False if ic is outside bounds
         """
-    def is_constant_on_edge(self, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge) -> bool:
+    def is_constant_on_edge(self, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> bool:
         """
         Returns True if radius along edge E of contour ic is constant.
         Returns False if ic is outside bounds or edge not in contour
@@ -556,20 +556,20 @@ class MakeFillet(FilletLocalOperation):
         """
         Returns the list of shapes modified from the shape
         """
-    def nb_computed_surfaces(self, ic: typing.SupportsInt) -> int:
+    def nb_computed_surfaces(self, ic: typing.SupportsInt | typing.SupportsIndex) -> int:
         """
         Returns the number of surfaces computed on contour ic
         """
-    def new_faces(self, i: typing.SupportsInt) -> ...:
+    def new_faces(self, i: typing.SupportsInt | typing.SupportsIndex) -> ...:
         """
         Returns the faces created for surface i
         """
-    def radius(self, ic: typing.SupportsInt) -> float:
+    def radius(self, ic: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the radius of the fillet along contour ic.
         Use only if radius is constant. Returns -1 if ic outside bounds
         """
-    def radius_on_edge(self, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge) -> float:
+    def radius_on_edge(self, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> float:
         """
         Returns the radius of the fillet along edge of contour ic.
         Use only if radius is constant. Returns -1 if invalid
@@ -579,7 +579,7 @@ class MakeFillet(FilletLocalOperation):
         Reinitializes the algorithm, canceling Build effects.
         Allows modifications to contours and parameters to rebuild
         """
-    def set_continuity(self, internal_continuity: mod3d.GeomAbs.Shape, angular_tolerance: typing.SupportsFloat) -> None:
+    def set_continuity(self, internal_continuity: mod3d.GeomAbs.Shape, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the parameters of continuity.
         
@@ -591,43 +591,43 @@ class MakeFillet(FilletLocalOperation):
         """
         Assigns fshape as the type of fillet shape built by this algorithm
         """
-    def set_law(self, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge, law: ...) -> None:
+    def set_law(self, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge, law: ...) -> None:
         """
         Sets the radius evolution law for edge in contour ic
         """
-    def set_params(self, tang: typing.SupportsFloat, tesp: typing.SupportsFloat, t2d: typing.SupportsFloat, tapp3d: typing.SupportsFloat, tolapp2d: typing.SupportsFloat, fleche: typing.SupportsFloat) -> None:
+    def set_params(self, tang: typing.SupportsFloat | typing.SupportsIndex, tesp: typing.SupportsFloat | typing.SupportsIndex, t2d: typing.SupportsFloat | typing.SupportsIndex, tapp3d: typing.SupportsFloat | typing.SupportsIndex, tolapp2d: typing.SupportsFloat | typing.SupportsIndex, fleche: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the computation parameters
         """
     @typing.overload
-    def set_radius(self, radius: typing.SupportsFloat, ic: typing.SupportsInt, iinc: typing.SupportsInt) -> None:
+    def set_radius(self, radius: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, iinc: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Sets constant radius for contour ic at edge iinc
         """
     @typing.overload
-    def set_radius(self, r1: typing.SupportsFloat, r2: typing.SupportsFloat, ic: typing.SupportsInt, iinc: typing.SupportsInt) -> None:
+    def set_radius(self, r1: typing.SupportsFloat | typing.SupportsIndex, r2: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, iinc: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Sets linear radius evolution from r1 to r2 for contour ic
         """
     @typing.overload
-    def set_radius(self, law: ..., ic: typing.SupportsInt, iinc: typing.SupportsInt) -> None:
+    def set_radius(self, law: ..., ic: typing.SupportsInt | typing.SupportsIndex, iinc: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Sets radius evolution law for contour ic
         """
     @typing.overload
-    def set_radius(self, uandr: ..., ic: typing.SupportsInt, iinc: typing.SupportsInt) -> None:
+    def set_radius(self, uandr: ..., ic: typing.SupportsInt | typing.SupportsIndex, iinc: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Sets radius evolution by interpolating UandR values for contour ic
         """
-    def set_radius_on_edge(self, radius: typing.SupportsFloat, ic: typing.SupportsInt, edge: mod3d.TopoDS.Edge) -> None:
+    def set_radius_on_edge(self, radius: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, edge: mod3d.TopoDS.Edge) -> None:
         """
         Assigns radius as the radius of the fillet on edge
         """
-    def set_radius_on_vertex(self, radius: typing.SupportsFloat, ic: typing.SupportsInt, vertex: mod3d.TopoDS.Vertex) -> None:
+    def set_radius_on_vertex(self, radius: typing.SupportsFloat | typing.SupportsIndex, ic: typing.SupportsInt | typing.SupportsIndex, vertex: mod3d.TopoDS.Vertex) -> None:
         """
         Sets radius at vertex for contour ic
         """
-    def stripe_status(self, ic: typing.SupportsInt) -> ErrorStatus:
+    def stripe_status(self, ic: typing.SupportsInt | typing.SupportsIndex) -> ErrorStatus:
         """
         Returns the error status for contour ic:
         - Ok: computation successful
@@ -690,7 +690,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         - NoFace: F is a null face
         """
     @typing.overload
-    def add_chamfer(self, e1: mod3d.TopoDS.Edge, e2: mod3d.TopoDS.Edge, d1: typing.SupportsFloat, d2: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def add_chamfer(self, e1: mod3d.TopoDS.Edge, e2: mod3d.TopoDS.Edge, d1: typing.SupportsFloat | typing.SupportsIndex, d2: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Adds a chamfer between adjacent edges E1 and E2.
         
@@ -699,7 +699,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         Returns the chamfer edge and builds the resulting face
         """
     @typing.overload
-    def add_chamfer(self, edge: mod3d.TopoDS.Edge, vertex: mod3d.TopoDS.Vertex, d: typing.SupportsFloat, ang: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def add_chamfer(self, edge: mod3d.TopoDS.Edge, vertex: mod3d.TopoDS.Vertex, d: typing.SupportsFloat | typing.SupportsIndex, ang: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Adds a chamfer between two edges connected by vertex V.
         
@@ -715,7 +715,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         - ComputationError: parameters too large
         - NotAuthorized: edge is fillet/chamfer or not straight/arc
         """
-    def add_fillet(self, vertex: mod3d.TopoDS.Vertex, radius: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def add_fillet(self, vertex: mod3d.TopoDS.Vertex, radius: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Adds a fillet of radius between two edges adjacent to vertex V.
         
@@ -779,7 +779,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         Returns the list of shapes modified from the shape
         """
     @typing.overload
-    def modify_chamfer(self, chamfer: mod3d.TopoDS.Edge, e1: mod3d.TopoDS.Edge, e2: mod3d.TopoDS.Edge, d1: typing.SupportsFloat, d2: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def modify_chamfer(self, chamfer: mod3d.TopoDS.Edge, e1: mod3d.TopoDS.Edge, e2: mod3d.TopoDS.Edge, d1: typing.SupportsFloat | typing.SupportsIndex, d2: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Modifies existing chamfer with new distances.
         
@@ -788,7 +788,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         Returns the new chamfer edge
         """
     @typing.overload
-    def modify_chamfer(self, chamfer: mod3d.TopoDS.Edge, edge: mod3d.TopoDS.Edge, d: typing.SupportsFloat, ang: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def modify_chamfer(self, chamfer: mod3d.TopoDS.Edge, edge: mod3d.TopoDS.Edge, d: typing.SupportsFloat | typing.SupportsIndex, ang: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Modifies existing chamfer with new distance and angle.
         
@@ -805,7 +805,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         - ComputationError: parameters too large
         - NotAuthorized: E1 or E2 is fillet/chamfer
         """
-    def modify_fillet(self, fillet: mod3d.TopoDS.Edge, radius: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def modify_fillet(self, fillet: mod3d.TopoDS.Edge, radius: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Assigns new radius to existing fillet.
         
@@ -818,7 +818,7 @@ class MakeFillet2d(mod3d.BRepBuilderAPI.MakeShape):
         
         Raises Standard_NegativeValue if Radius <= 0
         """
-    def new_edges(self, i: typing.SupportsInt) -> ...:
+    def new_edges(self, i: typing.SupportsInt | typing.SupportsIndex) -> ...:
         """
         Returns the edges created for curve i
         """

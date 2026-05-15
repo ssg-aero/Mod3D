@@ -67,10 +67,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # OCCT pinned to 7.9.x: 8.x removes several legacy headers
-      # (Geom2dLProp_CLProps2d, TopTools iterators, ...) and breaks
-      # transitive includes (gp_Ax1). Migration tracked separately.
-      #
       # Sur Windows on omet `init-shell` car `micromamba shell init`
       # crash sur l'image runner windows-2025-vs2026 (exit 0xC0000005).
       # L'environnement reste expose via les variables (CONDA_PREFIX,
@@ -94,7 +90,7 @@ jobs:
             cmake
             ninja
             pybind11
-            occt=7.9.*
+            occt
             eigen
             numpy
             pythreejs
@@ -137,7 +133,7 @@ jobs:
             cmake
             ninja
             pybind11
-            occt=7.9.*
+            occt
             eigen
             numpy
             pythreejs

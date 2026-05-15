@@ -17,13 +17,13 @@ class Ax1:
         ...
     def angle(self, other: Ax1) -> float:
         ...
-    def is_coaxial(self, other: Ax1, angular_tolerance: typing.SupportsFloat, linear_tolerance: typing.SupportsFloat) -> bool:
+    def is_coaxial(self, other: Ax1, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_normal(self, other: Ax1, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Ax1, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_opposite(self, other: Ax1, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Ax1, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_parallel(self, other: Ax1, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Ax1, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, p: Pnt) -> None:
@@ -47,13 +47,13 @@ class Ax1:
         ...
     def reversed(self) -> Ax1:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Ax1:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Ax1:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Ax1:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Ax1:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -91,10 +91,10 @@ class Ax2:
     def angle(self, other: Ax2) -> float:
         ...
     @typing.overload
-    def is_coplanar(self, other: Ax2, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_coplanar(self, other: Ax2, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
-    def is_coplanar(self, a1: Ax1, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_coplanar(self, a1: Ax1, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, p: Pnt) -> None:
@@ -114,13 +114,13 @@ class Ax2:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Ax2:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Ax2:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Ax2:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Ax2:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Ax2:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -189,19 +189,19 @@ class Ax22d:
         """
         Returns a mirrored copy
         """
-    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates about point P
         """
-    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat) -> Ax22d:
+    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> Ax22d:
         """
         Returns a rotated copy
         """
-    def scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales about point P
         """
-    def scaled(self, p: Pnt2d, s: typing.SupportsFloat) -> Ax22d:
+    def scaled(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> Ax22d:
         """
         Returns a scaled copy
         """
@@ -277,19 +277,19 @@ class Ax2d:
         """
         Returns the angle between directions
         """
-    def is_coaxial(self, other: Ax2d, angular_tolerance: typing.SupportsFloat, linear_tolerance: typing.SupportsFloat) -> bool:
+    def is_coaxial(self, other: Ax2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if axes are coaxial within tolerances
         """
-    def is_normal(self, other: Ax2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Ax2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if axes are normal (perpendicular)
         """
-    def is_opposite(self, other: Ax2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Ax2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if axes are opposite
         """
-    def is_parallel(self, other: Ax2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Ax2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if axes are parallel
         """
@@ -321,19 +321,19 @@ class Ax2d:
         """
         Returns a reversed copy
         """
-    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates about point P by angle (radians)
         """
-    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat) -> Ax2d:
+    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> Ax2d:
         """
         Returns a rotated copy
         """
-    def scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales about point P by factor S
         """
-    def scaled(self, p: Pnt2d, s: typing.SupportsFloat) -> Ax2d:
+    def scaled(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> Ax2d:
         """
         Returns a scaled copy
         """
@@ -395,10 +395,10 @@ class Ax3:
     def as_ax2(self) -> Ax2:
         ...
     @typing.overload
-    def is_coplanar(self, other: Ax3, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_coplanar(self, other: Ax3, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
-    def is_coplanar(self, a1: Ax1, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_coplanar(self, a1: Ax1, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, p: Pnt) -> None:
@@ -418,13 +418,13 @@ class Ax3:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Ax3:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Ax3:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Ax3:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Ax3:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Ax3:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -449,7 +449,7 @@ class Circ:
         Creates an indefinite circle
         """
     @typing.overload
-    def __init__(self, a2: Ax2, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a circle with a2 locating the circle and giving its orientation:
         - center is the origin of a2
@@ -462,7 +462,7 @@ class Circ:
         """
         Computes the area of the circle (π * r²)
         """
-    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Returns True if point p is on the circumference within the given tolerance
         """
@@ -504,20 +504,20 @@ class Circ:
         """
         Returns a mirrored copy with respect to plane defined by a2
         """
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates the circle around axis a1 by angle ang (in radians)
         """
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Circ:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Circ:
         """
         Returns a rotated copy around axis a1 by angle ang (in radians)
         """
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales the circle with center p and scale factor s.
         If s is negative, radius stays positive but XAxis and YAxis are reversed
         """
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Circ:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Circ:
         """
         Returns a scaled copy with center p and scale factor s
         """
@@ -583,7 +583,7 @@ class Circ:
         Get or set the radius of this circle
         """
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def x_axis(self) -> Ax1:
@@ -605,12 +605,12 @@ class Circ2d:
         Creates a circle with center at origin and radius 1
         """
     @typing.overload
-    def __init__(self, a: Ax2d, radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: Ax2d, radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Creates a circle with axis A (center at A.Location()) and radius
         """
     @typing.overload
-    def __init__(self, a: Ax22d, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: Ax22d, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a circle with coordinate system A and radius
         """
@@ -624,7 +624,7 @@ class Circ2d:
         """
         Returns the main axis
         """
-    def contains(self, p: Pnt2d, linear_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: Pnt2d, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if point P is on the circle within tolerance
         """
@@ -680,19 +680,19 @@ class Circ2d:
         """
         Returns a reversed copy
         """
-    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates about point P
         """
-    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat) -> Circ2d:
+    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> Circ2d:
         """
         Returns a rotated copy
         """
-    def scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales about point P
         """
-    def scaled(self, p: Pnt2d, s: typing.SupportsFloat) -> Circ2d:
+    def scaled(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> Circ2d:
         """
         Returns a scaled copy
         """
@@ -704,7 +704,7 @@ class Circ2d:
         """
         Sets the center
         """
-    def set_radius(self, r: typing.SupportsFloat) -> None:
+    def set_radius(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the radius
         """
@@ -752,7 +752,7 @@ class Cone:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, a2: Ax2, semi_angle: typing.SupportsFloat, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, semi_angle: typing.SupportsFloat | typing.SupportsIndex, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
@@ -774,13 +774,13 @@ class Cone:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Cone:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Cone:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Cone:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Cone:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Cone:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -802,13 +802,13 @@ class Cone:
     def radius(self) -> float:
         ...
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def semi_angle(self) -> float:
         ...
     @semi_angle.setter
-    def semi_angle(self, arg1: typing.SupportsFloat) -> None:
+    def semi_angle(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Cylinder:
     axis: Ax1
@@ -818,7 +818,7 @@ class Cylinder:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, a2: Ax2, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
@@ -840,13 +840,13 @@ class Cylinder:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Cylinder:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Cylinder:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Cylinder:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Cylinder:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Cylinder:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -868,7 +868,7 @@ class Cylinder:
     def radius(self) -> float:
         ...
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Dir:
     xyz: XYZ
@@ -882,7 +882,7 @@ class Dir:
     def __init__(self, coord: XYZ) -> None:
         ...
     @typing.overload
-    def __init__(self, xv: typing.SupportsFloat, yv: typing.SupportsFloat, zv: typing.SupportsFloat) -> None:
+    def __init__(self, xv: typing.SupportsFloat | typing.SupportsIndex, yv: typing.SupportsFloat | typing.SupportsIndex, zv: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __mul__(self, arg0: Dir) -> float:
         ...
@@ -897,10 +897,10 @@ class Dir:
     def angle_with_ref(self, other: Dir, vref: Dir) -> float:
         ...
     @typing.overload
-    def coord(self, index: typing.SupportsInt) -> float:
+    def coord(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @typing.overload
-    def coord(self) -> tuple:
+    def coord(self) -> tuple[float, float, float]:
         ...
     def cross(self, right: Dir) -> None:
         ...
@@ -914,13 +914,13 @@ class Dir:
         ...
     def dot_cross(self, v1: Dir, v2: Dir) -> float:
         ...
-    def is_equal(self, other: Dir, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Dir, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_normal(self, other: Dir, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Dir, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_opposite(self, other: Dir, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Dir, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_parallel(self, other: Dir, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Dir, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, v: Dir) -> None:
@@ -944,9 +944,9 @@ class Dir:
         ...
     def reversed(self) -> Dir:
         ...
-    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> Dir:
+    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Dir:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -956,19 +956,19 @@ class Dir:
     def x(self) -> float:
         ...
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> float:
         ...
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def z(self) -> float:
         ...
     @z.setter
-    def z(self, arg1: typing.SupportsFloat) -> None:
+    def z(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Dir2d:
     """
@@ -981,7 +981,7 @@ class Dir2d:
         Creates direction (1, 0)
         """
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates direction from components (will be normalized)
         """
@@ -1009,19 +1009,19 @@ class Dir2d:
         """
         Returns the dot product
         """
-    def is_equal(self, other: Dir2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Dir2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests equality within angular tolerance
         """
-    def is_normal(self, other: Dir2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Dir2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if directions are normal (perpendicular)
         """
-    def is_opposite(self, other: Dir2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Dir2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if directions are opposite
         """
-    def is_parallel(self, other: Dir2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Dir2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if directions are parallel
         """
@@ -1053,11 +1053,11 @@ class Dir2d:
         """
         Returns a reversed copy
         """
-    def rotate(self, angle: typing.SupportsFloat) -> None:
+    def rotate(self, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates by angle (radians)
         """
-    def rotated(self, angle: typing.SupportsFloat) -> Dir2d:
+    def rotated(self, angle: typing.SupportsFloat | typing.SupportsIndex) -> Dir2d:
         """
         Returns a rotated copy
         """
@@ -1083,7 +1083,7 @@ class Dir2d:
         Get or set the X component (will renormalize on set)
         """
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def xy(self) -> XY:
@@ -1099,7 +1099,7 @@ class Dir2d:
         Get or set the Y component (will renormalize on set)
         """
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Elips:
     """
@@ -1118,7 +1118,7 @@ class Elips:
         Creates an indefinite ellipse
         """
     @typing.overload
-    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs an ellipse with given major and minor radii, where a2 locates the ellipse:
         - center is the origin of a2
@@ -1178,13 +1178,13 @@ class Elips:
         """
         Returns p = (1 - e²) * MajorRadius where e is the eccentricity
         """
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Elips:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Elips:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Elips:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Elips:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -1224,7 +1224,7 @@ class Elips:
         Get or set the major radius of the ellipse
         """
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
@@ -1232,7 +1232,7 @@ class Elips:
         Get or set the minor radius of the ellipse
         """
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def position(self) -> Ax2:
@@ -1262,12 +1262,12 @@ class Elips2d:
         Creates an ellipse
         """
     @typing.overload
-    def __init__(self, a: Ax2d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: Ax2d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Creates an ellipse with axis A and radii
         """
     @typing.overload
-    def __init__(self, a: Ax22d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: Ax22d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates an ellipse with coordinate system A and radii
         """
@@ -1341,11 +1341,11 @@ class Elips2d:
         """
         Sets the center
         """
-    def set_major_radius(self, r: typing.SupportsFloat) -> None:
+    def set_major_radius(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the major radius
         """
-    def set_minor_radius(self, r: typing.SupportsFloat) -> None:
+    def set_minor_radius(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the minor radius
         """
@@ -1458,7 +1458,7 @@ class EulerSequence:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -1466,7 +1466,7 @@ class EulerSequence:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -1494,7 +1494,7 @@ class Hypr:
         Creates an indefinite hyperbola
         """
     @typing.overload
-    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a hyperbola with given major and minor radii, where a2 locates the hyperbola:
         - center is the origin of a2
@@ -1570,13 +1570,13 @@ class Hypr:
         """
         Returns p = (e² - 1) * MajorRadius where e is the eccentricity
         """
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Hypr:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Hypr:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Hypr:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Hypr:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -1616,7 +1616,7 @@ class Hypr:
         Get or set the major radius of the hyperbola
         """
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
@@ -1624,7 +1624,7 @@ class Hypr:
         Get or set the minor radius of the hyperbola
         """
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def position(self) -> Ax2:
@@ -1654,12 +1654,12 @@ class Hypr2d:
         Creates a hyperbola
         """
     @typing.overload
-    def __init__(self, a: Ax2d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: Ax2d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Creates a hyperbola with axis A and radii
         """
     @typing.overload
-    def __init__(self, a: Ax22d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: Ax22d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a hyperbola with coordinate system A and radii
         """
@@ -1749,11 +1749,11 @@ class Hypr2d:
         """
         Sets the center
         """
-    def set_major_radius(self, r: typing.SupportsFloat) -> None:
+    def set_major_radius(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the major radius
         """
-    def set_minor_radius(self, r: typing.SupportsFloat) -> None:
+    def set_minor_radius(self, r: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the minor radius
         """
@@ -1793,7 +1793,7 @@ class Lin:
         ...
     def angle(self, other: Lin) -> float:
         ...
-    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def distance(self, p: Pnt) -> float:
@@ -1825,13 +1825,13 @@ class Lin:
         ...
     def reversed(self) -> Lin:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Lin:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Lin:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Lin:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Lin:
         ...
     @typing.overload
     def square_distance(self, p: Pnt) -> float:
@@ -1875,7 +1875,7 @@ class Lin2d:
         Creates a line through point P with direction V
         """
     @typing.overload
-    def __init__(self, a: typing.SupportsFloat, b: typing.SupportsFloat, c: typing.SupportsFloat) -> None:
+    def __init__(self, a: typing.SupportsFloat | typing.SupportsIndex, b: typing.SupportsFloat | typing.SupportsIndex, c: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a line from equation A*X + B*Y + C = 0
         """
@@ -1885,11 +1885,11 @@ class Lin2d:
         """
         Returns the angle to another line
         """
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float]:
         """
         Returns the coefficients (A, B, C) of A*X + B*Y + C = 0
         """
-    def contains(self, p: Pnt2d, linear_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: Pnt2d, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if point P is on the line within tolerance
         """
@@ -1947,19 +1947,19 @@ class Lin2d:
         """
         Returns a reversed copy
         """
-    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates about point P
         """
-    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat) -> Lin2d:
+    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> Lin2d:
         """
         Returns a rotated copy
         """
-    def scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales about point P
         """
-    def scaled(self, p: Pnt2d, s: typing.SupportsFloat) -> Lin2d:
+    def scaled(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> Lin2d:
         """
         Returns a scaled copy
         """
@@ -2007,7 +2007,7 @@ class Mat:
     """
     def __add__(self, other: Mat) -> Mat:
         ...
-    def __getitem__(self, index: tuple[typing.SupportsInt, typing.SupportsInt]) -> float:
+    def __getitem__(self, index: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex]) -> float:
         """
         Access element by (row, col) tuple, 1-indexed
         """
@@ -2017,7 +2017,7 @@ class Mat:
     def __imul__(self, arg0: Mat) -> Mat:
         ...
     @typing.overload
-    def __imul__(self, arg0: typing.SupportsFloat) -> Mat:
+    def __imul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Mat:
         ...
     @typing.overload
     def __init__(self) -> None:
@@ -2025,7 +2025,7 @@ class Mat:
         Creates a matrix with null coefficients
         """
     @typing.overload
-    def __init__(self, a11: typing.SupportsFloat, a12: typing.SupportsFloat, a13: typing.SupportsFloat, a21: typing.SupportsFloat, a22: typing.SupportsFloat, a23: typing.SupportsFloat, a31: typing.SupportsFloat, a32: typing.SupportsFloat, a33: typing.SupportsFloat) -> None:
+    def __init__(self, a11: typing.SupportsFloat | typing.SupportsIndex, a12: typing.SupportsFloat | typing.SupportsIndex, a13: typing.SupportsFloat | typing.SupportsIndex, a21: typing.SupportsFloat | typing.SupportsIndex, a22: typing.SupportsFloat | typing.SupportsIndex, a23: typing.SupportsFloat | typing.SupportsIndex, a31: typing.SupportsFloat | typing.SupportsIndex, a32: typing.SupportsFloat | typing.SupportsIndex, a33: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a matrix with specified coefficients
         """
@@ -2036,27 +2036,27 @@ class Mat:
         """
     def __isub__(self, arg0: Mat) -> Mat:
         ...
-    def __itruediv__(self, arg0: typing.SupportsFloat) -> Mat:
+    def __itruediv__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Mat:
         ...
     @typing.overload
     def __mul__(self, other: Mat) -> Mat:
         ...
     @typing.overload
-    def __mul__(self, scalar: typing.SupportsFloat) -> Mat:
+    def __mul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Mat:
         ...
     def __repr__(self) -> str:
         ...
-    def __rmul__(self, scalar: typing.SupportsFloat) -> Mat:
+    def __rmul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Mat:
         ...
-    def __setitem__(self, index: tuple[typing.SupportsInt, typing.SupportsInt], value: typing.SupportsFloat) -> None:
+    def __setitem__(self, index: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], value: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Set element by (row, col) tuple, 1-indexed
         """
     def __sub__(self, other: Mat) -> Mat:
         ...
-    def __truediv__(self, scalar: typing.SupportsFloat) -> Mat:
+    def __truediv__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Mat:
         ...
-    def column(self, col: typing.SupportsInt) -> XYZ:
+    def column(self, col: typing.SupportsInt | typing.SupportsIndex) -> XYZ:
         """
         Returns the column of given index (1-3) as gp_XYZ
         """
@@ -2068,19 +2068,19 @@ class Mat:
         """
         Returns the inverse matrix
         """
-    def power(self, n: typing.SupportsInt) -> None:
+    def power(self, n: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Computes self^n in place. n=0 gives identity, n<0 gives inverse^|n|
         """
-    def powered(self, n: typing.SupportsInt) -> Mat:
+    def powered(self, n: typing.SupportsInt | typing.SupportsIndex) -> Mat:
         """
         Returns self^n
         """
-    def row(self, row: typing.SupportsInt) -> XYZ:
+    def row(self, row: typing.SupportsInt | typing.SupportsIndex) -> XYZ:
         """
         Returns the row of given index (1-3) as gp_XYZ
         """
-    def set_col(self, col: typing.SupportsInt, value: XYZ) -> None:
+    def set_col(self, col: typing.SupportsInt | typing.SupportsIndex, value: XYZ) -> None:
         """
         Assigns gp_XYZ to the column of given index
         """
@@ -2092,7 +2092,7 @@ class Mat:
         """
         Sets matrix M such that M * v = ref.Cross(v)
         """
-    def set_diagonal(self, x1: typing.SupportsFloat, x2: typing.SupportsFloat, x3: typing.SupportsFloat) -> None:
+    def set_diagonal(self, x1: typing.SupportsFloat | typing.SupportsIndex, x2: typing.SupportsFloat | typing.SupportsIndex, x3: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Modifies the main diagonal of the matrix
         """
@@ -2104,11 +2104,11 @@ class Mat:
         """
         Modifies this matrix to represent the identity matrix
         """
-    def set_rotation(self, axis: XYZ, angle: typing.SupportsFloat) -> None:
+    def set_rotation(self, axis: XYZ, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets this matrix to represent a rotation around axis by angle (radians)
         """
-    def set_row(self, row: typing.SupportsInt, value: XYZ) -> None:
+    def set_row(self, row: typing.SupportsInt | typing.SupportsIndex, value: XYZ) -> None:
         """
         Assigns gp_XYZ to the row of given index
         """
@@ -2116,11 +2116,11 @@ class Mat:
         """
         Assigns three gp_XYZ to the rows
         """
-    def set_scale(self, scale: typing.SupportsFloat) -> None:
+    def set_scale(self, scale: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets this matrix to represent uniform scaling
         """
-    def set_value(self, row: typing.SupportsInt, col: typing.SupportsInt, value: typing.SupportsFloat) -> None:
+    def set_value(self, row: typing.SupportsInt | typing.SupportsIndex, col: typing.SupportsInt | typing.SupportsIndex, value: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the coefficient at (row, col), 1-indexed
         """
@@ -2132,7 +2132,7 @@ class Mat:
         """
         Returns the transposed matrix
         """
-    def value(self, row: typing.SupportsInt, col: typing.SupportsInt) -> float:
+    def value(self, row: typing.SupportsInt | typing.SupportsIndex, col: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the coefficient at (row, col), 1-indexed
         """
@@ -2168,7 +2168,7 @@ class Parab:
         Creates an indefinite parabola
         """
     @typing.overload
-    def __init__(self, a2: Ax2, focal: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, focal: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a parabola with its local coordinate system a2 and focal length.
         The XDirection defines the axis of symmetry.
@@ -2213,13 +2213,13 @@ class Parab:
         """
         Returns the parameter p (distance between focus and directrix = 2*focal)
         """
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Parab:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Parab:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Parab:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Parab:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -2251,7 +2251,7 @@ class Parab:
         Get or set the focal length of the parabola
         """
     @focal.setter
-    def focal(self, arg1: typing.SupportsFloat) -> None:
+    def focal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def location(self) -> Pnt:
@@ -2289,12 +2289,12 @@ class Parab2d:
         Creates a parabola
         """
     @typing.overload
-    def __init__(self, a: Ax2d, focal: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: Ax2d, focal: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Creates a parabola with axis A and focal length
         """
     @typing.overload
-    def __init__(self, a: Ax22d, focal: typing.SupportsFloat) -> None:
+    def __init__(self, a: Ax22d, focal: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates a parabola with coordinate system A and focal length
         """
@@ -2344,7 +2344,7 @@ class Parab2d:
         """
         Sets the axis
         """
-    def set_focal(self, f: typing.SupportsFloat) -> None:
+    def set_focal(self, f: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the focal length
         """
@@ -2370,17 +2370,17 @@ class Pln:
     def __init__(self, p: Pnt, v: Dir) -> None:
         ...
     @typing.overload
-    def __init__(self, a: typing.SupportsFloat, b: typing.SupportsFloat, c: typing.SupportsFloat, d: typing.SupportsFloat) -> None:
+    def __init__(self, a: typing.SupportsFloat | typing.SupportsIndex, b: typing.SupportsFloat | typing.SupportsIndex, c: typing.SupportsFloat | typing.SupportsIndex, d: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
-    def coefficients(self) -> tuple:
+    def coefficients(self) -> tuple[float, float, float, float]:
         ...
     @typing.overload
-    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: Pnt, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
-    def contains(self, p: gp_Lin, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def contains(self, p: gp_Lin, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     def direct(self) -> bool:
         ...
@@ -2411,13 +2411,13 @@ class Pln:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Pln:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Pln:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Pln:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Pln:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Pln:
         ...
     @typing.overload
     def square_distance(self, p: Pnt) -> float:
@@ -2457,23 +2457,23 @@ class Pnt:
     def __init__(self, coord: XYZ) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
-    def bary_center(self, alpha: typing.SupportsFloat, p: Pnt, beta: typing.SupportsFloat) -> None:
+    def bary_center(self, alpha: typing.SupportsFloat | typing.SupportsIndex, p: Pnt, beta: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def coord(self, index: typing.SupportsInt) -> float:
+    def coord(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @typing.overload
-    def coord(self) -> tuple:
+    def coord(self) -> tuple[float, float, float]:
         """
         Returns tuple of (x, y, z)
         """
     def distance(self, other: Pnt) -> float:
         ...
-    def is_equal(self, other: Pnt, linear_tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Pnt, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, p: Pnt) -> None:
@@ -2493,19 +2493,19 @@ class Pnt:
     @typing.overload
     def mirrored(self, a2: gp_Ax2) -> Pnt:
         ...
-    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> Pnt:
+    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Pnt:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Pnt:
-        ...
-    @typing.overload
-    def set_coord(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Pnt:
         ...
     @typing.overload
-    def set_coord(self, index: typing.SupportsInt, value: typing.SupportsFloat) -> None:
+    def set_coord(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
+        ...
+    @typing.overload
+    def set_coord(self, index: typing.SupportsInt | typing.SupportsIndex, value: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def square_distance(self, other: Pnt) -> float:
         ...
@@ -2529,19 +2529,19 @@ class Pnt:
     def x(self) -> float:
         ...
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> float:
         ...
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def z(self) -> float:
         ...
     @z.setter
-    def z(self, arg1: typing.SupportsFloat) -> None:
+    def z(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Pnt2d:
     """
@@ -2553,7 +2553,7 @@ class Pnt2d:
         Creates point at origin (0, 0)
         """
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates point at (X, Y)
         """
@@ -2568,7 +2568,7 @@ class Pnt2d:
         """
         Returns the distance to another point
         """
-    def is_equal(self, other: Pnt2d, tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Pnt2d, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Returns True if distance to other is <= tolerance
         """
@@ -2592,19 +2592,19 @@ class Pnt2d:
         """
         Returns a point mirrored about axis A
         """
-    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def rotate(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates this point about point P by angle (radians)
         """
-    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat) -> Pnt2d:
+    def rotated(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> Pnt2d:
         """
         Returns a rotated copy
         """
-    def scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales this point about point P by factor S
         """
-    def scaled(self, p: Pnt2d, s: typing.SupportsFloat) -> Pnt2d:
+    def scaled(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> Pnt2d:
         """
         Returns a scaled copy
         """
@@ -2642,7 +2642,7 @@ class Pnt2d:
         Get or set the X coordinate
         """
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def xy(self) -> XY:
@@ -2658,7 +2658,7 @@ class Pnt2d:
         Get or set the Y coordinate
         """
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Quaternion:
     """
@@ -2674,7 +2674,7 @@ class Quaternion:
     def __imul__(self, arg0: Quaternion) -> Quaternion:
         ...
     @typing.overload
-    def __imul__(self, arg0: typing.SupportsFloat) -> Quaternion:
+    def __imul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Quaternion:
         ...
     @typing.overload
     def __init__(self) -> None:
@@ -2682,7 +2682,7 @@ class Quaternion:
         Creates an identity quaternion (no rotation)
         """
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat, w: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex, w: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates quaternion from components (x, y, z, w)
         """
@@ -2697,7 +2697,7 @@ class Quaternion:
         Creates quaternion for rotation from vec_from to vec_to with preferred axis
         """
     @typing.overload
-    def __init__(self, axis: Vec, angle: typing.SupportsFloat) -> None:
+    def __init__(self, axis: Vec, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates quaternion for rotation around axis by angle (radians)
         """
@@ -2712,7 +2712,7 @@ class Quaternion:
     def __mul__(self, other: Quaternion) -> Quaternion:
         ...
     @typing.overload
-    def __mul__(self, scalar: typing.SupportsFloat) -> Quaternion:
+    def __mul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Quaternion:
         ...
     @typing.overload
     def __mul__(self, vec: Vec) -> Vec:
@@ -2721,7 +2721,7 @@ class Quaternion:
         ...
     def __repr__(self) -> str:
         ...
-    def __rmul__(self, scalar: typing.SupportsFloat) -> Quaternion:
+    def __rmul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Quaternion:
         ...
     def __sub__(self, other: Quaternion) -> Quaternion:
         ...
@@ -2729,11 +2729,11 @@ class Quaternion:
         """
         Returns the dot product with another quaternion
         """
-    def get_euler_angles(self, order: EulerSequence) -> tuple:
+    def get_euler_angles(self, order: EulerSequence) -> tuple[float, float, float]:
         """
         Returns (alpha, beta, gamma) Euler angles in specified sequence
         """
-    def get_vector_and_angle(self) -> tuple:
+    def get_vector_and_angle(self) -> tuple[Vec, float]:
         """
         Returns (axis, angle) tuple representing the rotation
         """
@@ -2769,19 +2769,19 @@ class Quaternion:
         """
         Returns quaternion with reversed rotation direction
         """
-    def scale(self, scale: typing.SupportsFloat) -> None:
+    def scale(self, scale: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales all components by given factor
         """
-    def scaled(self, scale: typing.SupportsFloat) -> Quaternion:
+    def scaled(self, scale: typing.SupportsFloat | typing.SupportsIndex) -> Quaternion:
         """
         Returns quaternion with all components scaled
         """
-    def set(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat, w: typing.SupportsFloat) -> None:
+    def set(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex, w: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets quaternion components
         """
-    def set_euler_angles(self, order: EulerSequence, alpha: typing.SupportsFloat, beta: typing.SupportsFloat, gamma: typing.SupportsFloat) -> None:
+    def set_euler_angles(self, order: EulerSequence, alpha: typing.SupportsFloat | typing.SupportsIndex, beta: typing.SupportsFloat | typing.SupportsIndex, gamma: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets quaternion from Euler angles (radians) in specified sequence
         """
@@ -2803,7 +2803,7 @@ class Quaternion:
         """
         Sets quaternion to rotation from vec_from to vec_to with preferred axis
         """
-    def set_vector_and_angle(self, axis: Vec, angle: typing.SupportsFloat) -> None:
+    def set_vector_and_angle(self, axis: Vec, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets quaternion from axis and angle (radians)
         """
@@ -2858,7 +2858,7 @@ class Sphere:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, a2: Ax2, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
@@ -2880,13 +2880,13 @@ class Sphere:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Sphere:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Sphere:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Sphere:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Sphere:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Sphere:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -2908,7 +2908,7 @@ class Sphere:
     def radius(self) -> float:
         ...
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Torus:
     axis: Ax1
@@ -2918,7 +2918,7 @@ class Torus:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a2: Ax2, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __repr__(self) -> str:
         ...
@@ -2940,13 +2940,13 @@ class Torus:
     @typing.overload
     def mirrored(self, a2: Ax2) -> Torus:
         ...
-    def rotate(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: Ax1, ang: typing.SupportsFloat) -> Torus:
+    def rotated(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Torus:
         ...
-    def scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, p: Pnt, s: typing.SupportsFloat) -> Torus:
+    def scaled(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> Torus:
         ...
     def transform(self, t: gp_Trsf) -> None:
         ...
@@ -2968,13 +2968,13 @@ class Torus:
     def major_radius(self) -> float:
         ...
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
         ...
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Trsf:
     """
@@ -3014,7 +3014,7 @@ class Trsf:
         Returns (has_rotation, axis, angle) where angle is in range (0, PI]
         """
     @typing.overload
-    def get_rotation(self, axis: XYZ, angle: typing.SupportsFloat) -> bool:
+    def get_rotation(self, axis: XYZ, angle: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Outputs the axis and angle (in range (0, PI]) of the rotational part.
         Returns True if there is a rotational part, False otherwise
@@ -3039,11 +3039,11 @@ class Trsf:
         """
         Composes this transformation with t: self = self * t
         """
-    def power(self, n: typing.SupportsInt) -> None:
+    def power(self, n: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Raises the transformation to power n: self = self^n
         """
-    def powered(self, n: typing.SupportsInt) -> Trsf:
+    def powered(self, n: typing.SupportsInt | typing.SupportsIndex) -> Trsf:
         """
         Returns the transformation raised to power n
         """
@@ -3072,7 +3072,7 @@ class Trsf:
         Makes the transformation into a planar symmetry with plane defined by a2
         """
     @typing.overload
-    def set_rotation(self, a1: Ax1, ang: typing.SupportsFloat) -> None:
+    def set_rotation(self, a1: Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the transformation into a rotation around axis a1 by angle ang (radians)
         """
@@ -3085,7 +3085,7 @@ class Trsf:
         """
         Replaces the rotation part with specified quaternion
         """
-    def set_scale(self, p: Pnt, s: typing.SupportsFloat) -> None:
+    def set_scale(self, p: Pnt, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the transformation into a scale with center p and scaling value s
         """
@@ -3118,14 +3118,14 @@ class Trsf:
         """
         Replaces the translation vector with vector v
         """
-    def set_values(self, a11: typing.SupportsFloat, a12: typing.SupportsFloat, a13: typing.SupportsFloat, a14: typing.SupportsFloat, a21: typing.SupportsFloat, a22: typing.SupportsFloat, a23: typing.SupportsFloat, a24: typing.SupportsFloat, a31: typing.SupportsFloat, a32: typing.SupportsFloat, a33: typing.SupportsFloat, a34: typing.SupportsFloat) -> None:
+    def set_values(self, a11: typing.SupportsFloat | typing.SupportsIndex, a12: typing.SupportsFloat | typing.SupportsIndex, a13: typing.SupportsFloat | typing.SupportsIndex, a14: typing.SupportsFloat | typing.SupportsIndex, a21: typing.SupportsFloat | typing.SupportsIndex, a22: typing.SupportsFloat | typing.SupportsIndex, a23: typing.SupportsFloat | typing.SupportsIndex, a24: typing.SupportsFloat | typing.SupportsIndex, a31: typing.SupportsFloat | typing.SupportsIndex, a32: typing.SupportsFloat | typing.SupportsIndex, a33: typing.SupportsFloat | typing.SupportsIndex, a34: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets the transformation coefficients directly.
         The matrix is orthogonalized before future use.
         Raises ConstructionError if determinant is null
         """
     @typing.overload
-    def transforms(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def transforms(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Transforms coordinates (x, y, z) in place
         """
@@ -3134,7 +3134,7 @@ class Trsf:
         """
         Transforms XYZ coordinates in place
         """
-    def value(self, row: typing.SupportsInt, col: typing.SupportsInt) -> float:
+    def value(self, row: typing.SupportsInt | typing.SupportsIndex, col: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns coefficient at position (row, col) including scale factor.
         row: 1-3, col: 1-4
@@ -3163,7 +3163,7 @@ class Trsf:
         Get or set the scale factor
         """
     @scale_factor.setter
-    def scale_factor(self, arg1: typing.SupportsFloat) -> None:
+    def scale_factor(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def translation_part(self) -> XYZ:
@@ -3211,11 +3211,11 @@ class Trsf2d:
         """
         Composes with transformation T: self = self * T
         """
-    def power(self, n: typing.SupportsInt) -> None:
+    def power(self, n: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Raises to power n
         """
-    def powered(self, n: typing.SupportsInt) -> Trsf2d:
+    def powered(self, n: typing.SupportsInt | typing.SupportsIndex) -> Trsf2d:
         """
         Returns raised to power n
         """
@@ -3241,11 +3241,11 @@ class Trsf2d:
         """
         Sets as axis mirror about A
         """
-    def set_rotation(self, p: Pnt2d, angle: typing.SupportsFloat) -> None:
+    def set_rotation(self, p: Pnt2d, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets as rotation about point P
         """
-    def set_scale(self, p: Pnt2d, s: typing.SupportsFloat) -> None:
+    def set_scale(self, p: Pnt2d, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Sets as scaling about point P
         """
@@ -3269,7 +3269,7 @@ class Trsf2d:
         """
         Sets as translation from P1 to P2
         """
-    def transforms(self, x: typing.SupportsFloat, y: typing.SupportsFloat) -> tuple:
+    def transforms(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex) -> tuple[float, float]:
         """
         Transforms coordinates and returns (x, y)
         """
@@ -3277,7 +3277,7 @@ class Trsf2d:
         """
         Returns the translation vector
         """
-    def value(self, row: typing.SupportsInt, col: typing.SupportsInt) -> float:
+    def value(self, row: typing.SupportsInt | typing.SupportsIndex, col: typing.SupportsInt | typing.SupportsIndex) -> float:
         """
         Returns the coefficient at row, col (1-indexed)
         """
@@ -3323,7 +3323,7 @@ class TrsfForm:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -3331,7 +3331,7 @@ class TrsfForm:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -3347,7 +3347,7 @@ class Vec:
         ...
     def __iadd__(self, arg0: Vec) -> None:
         ...
-    def __imul__(self, arg0: typing.SupportsFloat) -> None:
+    def __imul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def __init__(self) -> None:
@@ -3359,19 +3359,19 @@ class Vec:
     def __init__(self, coord: XYZ) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def __init__(self, p1: Pnt, p2: Pnt) -> None:
         ...
     def __isub__(self, arg0: Vec) -> None:
         ...
-    def __itruediv__(self, arg0: typing.SupportsFloat) -> None:
+    def __itruediv__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __ixor__(self, arg0: Vec) -> None:
         ...
     @typing.overload
-    def __mul__(self, arg0: typing.SupportsFloat) -> Vec:
+    def __mul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
     @typing.overload
     def __mul__(self, arg0: Vec) -> float:
@@ -3380,11 +3380,11 @@ class Vec:
         ...
     def __repr__(self) -> str:
         ...
-    def __rmul__(self, arg0: typing.SupportsFloat) -> Vec:
+    def __rmul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
     def __sub__(self, arg0: Vec) -> Vec:
         ...
-    def __truediv__(self, arg0: typing.SupportsFloat) -> Vec:
+    def __truediv__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
     def __xor__(self, arg0: Vec) -> Vec:
         ...
@@ -3408,21 +3408,21 @@ class Vec:
         ...
     def crossed(self, right: Vec) -> Vec:
         ...
-    def divide(self, scalar: typing.SupportsFloat) -> None:
+    def divide(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def divided(self, scalar: typing.SupportsFloat) -> Vec:
+    def divided(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
     def dot(self, other: Vec) -> float:
         ...
     def dot_cross(self, v1: Vec, v2: Vec) -> float:
         ...
-    def is_equal(self, other: Vec, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Vec, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_normal(self, other: Vec, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Vec, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_opposite(self, other: Vec, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Vec, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def is_parallel(self, other: Vec, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Vec, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     @typing.overload
     def mirror(self, v: Vec) -> None:
@@ -3442,9 +3442,9 @@ class Vec:
     @typing.overload
     def mirrored(self, a2: gp_Ax2) -> Vec:
         ...
-    def multiplied(self, scalar: typing.SupportsFloat) -> Vec:
+    def multiplied(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
-    def multiply(self, scalar: typing.SupportsFloat) -> None:
+    def multiply(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def normalize(self) -> None:
         ...
@@ -3454,13 +3454,13 @@ class Vec:
         ...
     def reversed(self) -> Vec:
         ...
-    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> None:
+    def rotate(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat) -> Vec:
+    def rotated(self, a1: gp_Ax1, ang: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
-    def scale(self, s: typing.SupportsFloat) -> None:
+    def scale(self, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def scaled(self, s: typing.SupportsFloat) -> Vec:
+    def scaled(self, s: typing.SupportsFloat | typing.SupportsIndex) -> Vec:
         ...
     def subtract(self, other: Vec) -> None:
         ...
@@ -3480,19 +3480,19 @@ class Vec:
     def x(self) -> float:
         ...
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> float:
         ...
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def z(self) -> float:
         ...
     @z.setter
-    def z(self, arg1: typing.SupportsFloat) -> None:
+    def z(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Vec2d:
     """
@@ -3508,7 +3508,7 @@ class Vec2d:
         Creates a null vector
         """
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates vector with components (X, Y)
         """
@@ -3527,7 +3527,7 @@ class Vec2d:
         """
         Creates vector from P1 to P2
         """
-    def __mul__(self, scalar: typing.SupportsFloat) -> Vec2d:
+    def __mul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Vec2d:
         ...
     def __neg__(self) -> Vec2d:
         ...
@@ -3535,7 +3535,7 @@ class Vec2d:
         ...
     def __sub__(self, other: Vec2d) -> Vec2d:
         ...
-    def __truediv__(self, scalar: typing.SupportsFloat) -> Vec2d:
+    def __truediv__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> Vec2d:
         ...
     def angle(self, other: Vec2d) -> float:
         """
@@ -3557,19 +3557,19 @@ class Vec2d:
         """
         Returns the dot product
         """
-    def is_equal(self, other: Vec2d, linear_tolerance: typing.SupportsFloat, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: Vec2d, linear_tolerance: typing.SupportsFloat | typing.SupportsIndex, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests equality within tolerances
         """
-    def is_normal(self, other: Vec2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_normal(self, other: Vec2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if vectors are normal (perpendicular)
         """
-    def is_opposite(self, other: Vec2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_opposite(self, other: Vec2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if vectors are opposite
         """
-    def is_parallel(self, other: Vec2d, angular_tolerance: typing.SupportsFloat) -> bool:
+    def is_parallel(self, other: Vec2d, angular_tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Tests if vectors are parallel
         """
@@ -3609,19 +3609,19 @@ class Vec2d:
         """
         Returns a reversed copy
         """
-    def rotate(self, angle: typing.SupportsFloat) -> None:
+    def rotate(self, angle: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Rotates this vector by angle (radians)
         """
-    def rotated(self, angle: typing.SupportsFloat) -> Vec2d:
+    def rotated(self, angle: typing.SupportsFloat | typing.SupportsIndex) -> Vec2d:
         """
         Returns a rotated copy
         """
-    def scale(self, s: typing.SupportsFloat) -> None:
+    def scale(self, s: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Scales this vector
         """
-    def scaled(self, s: typing.SupportsFloat) -> Vec2d:
+    def scaled(self, s: typing.SupportsFloat | typing.SupportsIndex) -> Vec2d:
         """
         Returns a scaled copy
         """
@@ -3649,7 +3649,7 @@ class Vec2d:
         Get or set the X component
         """
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> float:
@@ -3657,7 +3657,7 @@ class Vec2d:
         Get or set the Y component
         """
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class XY:
     """
@@ -3671,11 +3671,11 @@ class XY:
         Creates XY with zero coordinates
         """
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Creates XY with given coordinates
         """
-    def __mul__(self, scalar: typing.SupportsFloat) -> XY:
+    def __mul__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> XY:
         ...
     def __neg__(self) -> XY:
         ...
@@ -3683,7 +3683,7 @@ class XY:
         ...
     def __sub__(self, other: XY) -> XY:
         ...
-    def __truediv__(self, scalar: typing.SupportsFloat) -> XY:
+    def __truediv__(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> XY:
         ...
     def crossed(self, other: XY) -> float:
         """
@@ -3693,7 +3693,7 @@ class XY:
         """
         Returns the dot product
         """
-    def is_equal(self, other: XY, tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: XY, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Returns True if distance to other is <= tolerance
         """
@@ -3718,7 +3718,7 @@ class XY:
         Returns X^2 + Y^2
         """
     @property
-    def coord(self) -> tuple:
+    def coord(self) -> tuple[float, float]:
         """
         Get or set both coordinates as a tuple (x, y)
         """
@@ -3736,7 +3736,7 @@ class XY:
         Get or set the X coordinate
         """
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def xy(self) -> XY:
@@ -3752,7 +3752,7 @@ class XY:
         Get or set the Y coordinate
         """
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class XYZ:
     __hash__: typing.ClassVar[None] = None
@@ -3762,33 +3762,33 @@ class XYZ:
         ...
     def __iadd__(self, arg0: XYZ) -> None:
         ...
-    def __imul__(self, arg0: typing.SupportsFloat) -> None:
+    def __imul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def __init__(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __isub__(self, arg0: XYZ) -> None:
         ...
-    def __itruediv__(self, arg0: typing.SupportsFloat) -> None:
+    def __itruediv__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def __ixor__(self, arg0: XYZ) -> None:
         ...
     @typing.overload
-    def __mul__(self, arg0: typing.SupportsFloat) -> XYZ:
+    def __mul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> XYZ:
         ...
     @typing.overload
     def __mul__(self, arg0: XYZ) -> float:
         ...
     def __repr__(self) -> str:
         ...
-    def __rmul__(self, arg0: typing.SupportsFloat) -> XYZ:
+    def __rmul__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> XYZ:
         ...
     def __sub__(self, arg0: XYZ) -> XYZ:
         ...
-    def __truediv__(self, arg0: typing.SupportsFloat) -> XYZ:
+    def __truediv__(self, arg0: typing.SupportsFloat | typing.SupportsIndex) -> XYZ:
         ...
     def __xor__(self, arg0: XYZ) -> XYZ:
         ...
@@ -3797,10 +3797,10 @@ class XYZ:
     def added(self, other: XYZ) -> XYZ:
         ...
     @typing.overload
-    def coord(self, index: typing.SupportsInt) -> float:
+    def coord(self, index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @typing.overload
-    def coord(self) -> tuple:
+    def coord(self) -> tuple[float, float, float]:
         """
         Returns tuple of (x, y, z)
         """
@@ -3818,26 +3818,26 @@ class XYZ:
         ...
     def distance(self, other: XYZ) -> float:
         ...
-    def divide(self, scalar: typing.SupportsFloat) -> None:
+    def divide(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def divided(self, scalar: typing.SupportsFloat) -> XYZ:
+    def divided(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> XYZ:
         ...
     def dot(self, other: XYZ) -> float:
         ...
     def dot_cross(self, coord1: XYZ, coord2: XYZ) -> float:
         ...
-    def is_equal(self, other: XYZ, tolerance: typing.SupportsFloat) -> bool:
+    def is_equal(self, other: XYZ, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
     def modulus(self) -> float:
         ...
     @typing.overload
-    def multiplied(self, scalar: typing.SupportsFloat) -> XYZ:
+    def multiplied(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> XYZ:
         ...
     @typing.overload
     def multiplied(self, other: XYZ) -> XYZ:
         ...
     @typing.overload
-    def multiply(self, scalar: typing.SupportsFloat) -> None:
+    def multiply(self, scalar: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def multiply(self, other: XYZ) -> None:
@@ -3851,10 +3851,10 @@ class XYZ:
     def reversed(self) -> XYZ:
         ...
     @typing.overload
-    def set_coord(self, x: typing.SupportsFloat, y: typing.SupportsFloat, z: typing.SupportsFloat) -> None:
+    def set_coord(self, x: typing.SupportsFloat | typing.SupportsIndex, y: typing.SupportsFloat | typing.SupportsIndex, z: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def set_coord(self, index: typing.SupportsInt, value: typing.SupportsFloat) -> None:
+    def set_coord(self, index: typing.SupportsInt | typing.SupportsIndex, value: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def square_modulus(self) -> float:
         ...
@@ -3866,19 +3866,19 @@ class XYZ:
     def x(self) -> float:
         ...
     @x.setter
-    def x(self, arg1: typing.SupportsFloat) -> None:
+    def x(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> float:
         ...
     @y.setter
-    def y(self, arg1: typing.SupportsFloat) -> None:
+    def y(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def z(self) -> float:
         ...
     @z.setter
-    def z(self, arg1: typing.SupportsFloat) -> None:
+    def z(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class gp:
     """
@@ -3902,9 +3902,9 @@ class gp:
     oy: typing.ClassVar[Ax1]  # value = gp_Ax1(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 1.000000, 0.000000))
     oy2d: typing.ClassVar[Ax2d]  # value = gp_Ax2d(location=(0.000000, 0.000000), direction=(0.000000, 1.000000))
     oz: typing.ClassVar[Ax1]  # value = gp_Ax1(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 0.000000, 1.000000))
-    xoy: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 0.000000, 1.000000), xdir=(1.000000, 0.000000, -0.000000))
-    yoz: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(1.000000, 0.000000, 0.000000), xdir=(-0.000000, 1.000000, 0.000000))
-    zox: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 1.000000, 0.000000), xdir=(0.000000, -0.000000, 1.000000))
+    xoy: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 0.000000, 1.000000), xdir=(1.000000, 0.000000, 0.000000))
+    yoz: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(1.000000, 0.000000, 0.000000), xdir=(0.000000, 1.000000, 0.000000))
+    zox: typing.ClassVar[Ax2]  # value = gp_Ax2(loc=(0.000000, 0.000000, 0.000000), dir=(0.000000, 1.000000, 0.000000), xdir=(0.000000, 0.000000, 1.000000))
     @staticmethod
     def resolution() -> float:
         """

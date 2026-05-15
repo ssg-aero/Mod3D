@@ -55,7 +55,7 @@ class Algo(mod3d.BRepBuilderAPI.MakeShape):
         Additional tolerance for operations (read/write)
         """
     @fuzzy_value.setter
-    def fuzzy_value(self, arg1: typing.SupportsFloat) -> None:
+    def fuzzy_value(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def run_parallel(self) -> bool:
@@ -197,7 +197,7 @@ class BuilderAlgo(Algo):
         """
         Returns the result shape built by the algorithm
         """
-    def simplify_result(self, unify_edges: bool = True, unify_faces: bool = True, angular_tol: typing.SupportsFloat = 1e-12) -> None:
+    def simplify_result(self, unify_edges: bool = True, unify_faces: bool = True, angular_tol: typing.SupportsFloat | typing.SupportsIndex = 1e-12) -> None:
         """
         Simplifies the result by unifying tangential edges and faces.
                     
@@ -342,7 +342,7 @@ class GlueEnum:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -350,7 +350,7 @@ class GlueEnum:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -485,7 +485,7 @@ def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, axis: mod
             Axis of revolutio
     """
 @typing.overload
-def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> mod3d.TopoDS.Shape:
+def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Face, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Shape:
     """
     Performs a revolve cut operation.
         Parameters:
@@ -514,7 +514,7 @@ def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, axis: mod
             Axis of revolution in radians
     """
 @typing.overload
-def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat) -> mod3d.TopoDS.Shape:
+def revolve_cut(shape: mod3d.TopoDS.Shape, profile: mod3d.TopoDS.Wire, axis: mod3d.gp.Ax1, angle: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Shape:
     """
     Performs a revolve cut operation.
         

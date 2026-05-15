@@ -14,60 +14,60 @@ class BSplineCurve2d(BoundedCurve2d):
     A B-spline curve is defined by poles, knots, multiplicities and degree.
     """
     @typing.overload
-    def __init__(self, poles: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt, periodic: bool = False) -> None:
+    def __init__(self, poles: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt | typing.SupportsIndex, periodic: bool = False) -> None:
         """
         Create a non-rational B-spline curve
         """
     @typing.overload
-    def __init__(self, poles: typing.Any, weights: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt, periodic: bool = False) -> None:
+    def __init__(self, poles: typing.Any, weights: typing.Any, knots: typing.Any, multiplicities: typing.Any, degree: typing.SupportsInt | typing.SupportsIndex, periodic: bool = False) -> None:
         """
         Create a rational B-spline curve
         """
-    def increase_degree(self, degree: typing.SupportsInt) -> None:
+    def increase_degree(self, degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Increases the degree of this curve
         """
-    def insert_knot(self, U: typing.SupportsFloat, M: typing.SupportsInt = 1, ParametricTolerance: typing.SupportsFloat = 0.0) -> None:
+    def insert_knot(self, U: typing.SupportsFloat | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex = 1, ParametricTolerance: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> None:
         """
         Inserts a knot
         """
-    def insert_knots(self, Knots: typing.Any, Multiplicities: typing.Any, ParametricTolerance: typing.SupportsFloat = 0.0, Add: bool = False) -> None:
+    def insert_knots(self, Knots: typing.Any, Multiplicities: typing.Any, ParametricTolerance: typing.SupportsFloat | typing.SupportsIndex = 0.0, Add: bool = False) -> None:
         """
         Inserts multiple knots
         """
-    def knot(self, Index: typing.SupportsInt) -> float:
+    def knot(self, Index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
-    def locate_u(self, U: typing.SupportsFloat, ParametricTolerance: typing.SupportsFloat, WithKnotRepetition: bool = False) -> tuple:
+    def locate_u(self, U: typing.SupportsFloat | typing.SupportsIndex, ParametricTolerance: typing.SupportsFloat | typing.SupportsIndex, WithKnotRepetition: bool = False) -> tuple[int, int]:
         ...
-    def multiplicity(self, Index: typing.SupportsInt) -> int:
+    def multiplicity(self, Index: typing.SupportsInt | typing.SupportsIndex) -> int:
         ...
-    def pole(self, Index: typing.SupportsInt) -> mod3d.gp.Pnt2d:
+    def pole(self, Index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         ...
-    def remove_knot(self, Index: typing.SupportsInt, M: typing.SupportsInt, Tolerance: typing.SupportsFloat) -> bool:
+    def remove_knot(self, Index: typing.SupportsInt | typing.SupportsIndex, M: typing.SupportsInt | typing.SupportsIndex, Tolerance: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         """
         Removes a knot
         """
-    def segment(self, U1: typing.SupportsFloat, U2: typing.SupportsFloat, theTolerance: typing.SupportsFloat = 1e-12) -> None:
+    def segment(self, U1: typing.SupportsFloat | typing.SupportsIndex, U2: typing.SupportsFloat | typing.SupportsIndex, theTolerance: typing.SupportsFloat | typing.SupportsIndex = 1e-12) -> None:
         """
         Modifies this B-spline curve by segmenting it between U1 and U2
         """
-    def set_knot(self, Index: typing.SupportsInt, K: typing.SupportsFloat) -> None:
+    def set_knot(self, Index: typing.SupportsInt | typing.SupportsIndex, K: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def set_not_periodic(self) -> None:
         ...
-    def set_origin(self, Index: typing.SupportsInt) -> None:
+    def set_origin(self, Index: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def set_periodic(self) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def set_weight(self, Index: typing.SupportsInt, Weight: typing.SupportsFloat) -> None:
+    def set_weight(self, Index: typing.SupportsInt | typing.SupportsIndex, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def weight(self, Index: typing.SupportsInt) -> float:
+    def weight(self, Index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @property
     def degree(self) -> int:
@@ -133,33 +133,33 @@ class BezierCurve2d(BoundedCurve2d):
         """
         Create a rational Bezier curve from poles and weights
         """
-    def increase(self, degree: typing.SupportsInt) -> None:
+    def increase(self, degree: typing.SupportsInt | typing.SupportsIndex) -> None:
         """
         Increases the degree of this Bezier curve
         """
-    def insert_pole_after(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat = 1.0) -> None:
+    def insert_pole_after(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat | typing.SupportsIndex = 1.0) -> None:
         ...
-    def insert_pole_before(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat = 1.0) -> None:
+    def insert_pole_before(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat | typing.SupportsIndex = 1.0) -> None:
         ...
-    def pole(self, Index: typing.SupportsInt) -> mod3d.gp.Pnt2d:
+    def pole(self, Index: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         ...
-    def remove_pole(self, Index: typing.SupportsInt) -> None:
+    def remove_pole(self, Index: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
-    def resolution(self, ToleranceUV: typing.SupportsFloat) -> float:
+    def resolution(self, ToleranceUV: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Computes the parametric resolution corresponding to a 2D resolution
         """
-    def segment(self, U1: typing.SupportsFloat, U2: typing.SupportsFloat) -> None:
+    def segment(self, U1: typing.SupportsFloat | typing.SupportsIndex, U2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d) -> None:
         ...
     @typing.overload
-    def set_pole(self, Index: typing.SupportsInt, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat) -> None:
+    def set_pole(self, Index: typing.SupportsInt | typing.SupportsIndex, P: mod3d.gp.Pnt2d, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def set_weight(self, Index: typing.SupportsInt, Weight: typing.SupportsFloat) -> None:
+    def set_weight(self, Index: typing.SupportsInt | typing.SupportsIndex, Weight: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
-    def weight(self, Index: typing.SupportsInt) -> float:
+    def weight(self, Index: typing.SupportsInt | typing.SupportsIndex) -> float:
         ...
     @property
     def degree(self) -> int:
@@ -208,13 +208,13 @@ class Circle2d(Conic2d):
         Constructs a circle by conversion of gp_Circ2d
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax2d, radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: mod3d.gp.Ax2d, radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Constructs a circle with axis A and radius.
         sense=True for counter-clockwise, False for clockwise
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax22d, radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: mod3d.gp.Ax22d, radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a circle with coordinate system A and radius
         """
@@ -222,7 +222,7 @@ class Circle2d(Conic2d):
     def radius(self) -> float:
         ...
     @radius.setter
-    def radius(self, arg1: typing.SupportsFloat) -> None:
+    def radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Conic2d(Curve2d):
     """
@@ -271,40 +271,40 @@ class Curve2d(Geometry2d):
     Abstract base class for 2D curves.
     Provides parametric curve operations in 2D space.
     """
-    def center_of_curvature(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt2d:
+    def center_of_curvature(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns the center of curvature at parameter U
         """
-    def curvature(self, u: typing.SupportsFloat) -> float:
+    def curvature(self, u: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns (curvature, first derivative of curvature) at parameter U
         """
-    def d0(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt2d:
+    def d0(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns the point at parameter U
         """
-    def d1(self, u: typing.SupportsFloat) -> tuple:
+    def d1(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Vec2d]:
         """
         Returns (point, first derivative) at parameter U
         """
-    def d2(self, u: typing.SupportsFloat) -> tuple:
+    def d2(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Vec2d, mod3d.gp.Vec2d]:
         """
         Returns (point, first derivative, second derivative) at parameter U
         """
-    def d3(self, u: typing.SupportsFloat) -> tuple:
+    def d3(self, u: typing.SupportsFloat | typing.SupportsIndex) -> tuple[mod3d.gp.Pnt2d, mod3d.gp.Vec2d, mod3d.gp.Vec2d, mod3d.gp.Vec2d]:
         """
         Returns (point, d1, d2, d3) at parameter U
         """
-    def dn(self, u: typing.SupportsFloat, n: typing.SupportsInt) -> mod3d.gp.Vec2d:
+    def dn(self, u: typing.SupportsFloat | typing.SupportsIndex, n: typing.SupportsInt | typing.SupportsIndex) -> mod3d.gp.Vec2d:
         """
         Returns the Nth derivative vector at parameter U
         """
-    def is_cn(self, n: typing.SupportsInt) -> bool:
+    def is_cn(self, n: typing.SupportsInt | typing.SupportsIndex) -> bool:
         """
         Returns True if the curve has CN continuity
         """
     @typing.overload
-    def length(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat) -> float:
+    def length(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Compute the length of the curve between parameters U1 and U2
         """
@@ -313,7 +313,7 @@ class Curve2d(Geometry2d):
         """
         Compute the length of the curve
         """
-    def normal(self, u: typing.SupportsFloat) -> mod3d.gp.Dir2d:
+    def normal(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Dir2d:
         """
         Returns the normal direction at parameter U 
         """
@@ -329,24 +329,24 @@ class Curve2d(Geometry2d):
         """
         Returns a copy of this curve with reversed parametrization
         """
-    def reversed_parameter(self, u: typing.SupportsFloat) -> float:
+    def reversed_parameter(self, u: typing.SupportsFloat | typing.SupportsIndex) -> float:
         """
         Returns the parameter on the reversed curve for the point of parameter U
         """
-    def tangent(self, u: typing.SupportsFloat) -> mod3d.gp.Dir2d:
+    def tangent(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Dir2d:
         """
         Returns the tangent direction at parameter U 
         """
-    def transformed_parameter(self, u: typing.SupportsFloat, t: mod3d.gp.Trsf2d) -> float:
+    def transformed_parameter(self, u: typing.SupportsFloat | typing.SupportsIndex, t: mod3d.gp.Trsf2d) -> float:
         """
         Returns the parameter on the transformed curve for the transform T
         """
-    def value(self, u: typing.SupportsFloat) -> mod3d.gp.Pnt2d:
+    def value(self, u: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns the point at parameter U
         """
     @property
-    def bounds(self) -> tuple:
+    def bounds(self) -> tuple[float, float]:
         """
         Returns (first_parameter, last_parameter)
         """
@@ -393,12 +393,12 @@ class Ellipse2d(Conic2d):
         Constructs an ellipse by conversion of gp_Elips2d
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax2d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: mod3d.gp.Ax2d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Constructs an ellipse with given axis and radii
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax22d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: mod3d.gp.Ax22d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs an ellipse with coordinate system A and radii
         """
@@ -431,13 +431,13 @@ class Ellipse2d(Conic2d):
     def major_radius(self) -> float:
         ...
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
         ...
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def parameter(self) -> float:
@@ -465,12 +465,12 @@ class Hyperbola2d(Conic2d):
         Constructs a hyperbola by conversion of gp_Hypr2d
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax2d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: mod3d.gp.Ax2d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Constructs a hyperbola with given axis and radii
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax22d, major_radius: typing.SupportsFloat, minor_radius: typing.SupportsFloat) -> None:
+    def __init__(self, a: mod3d.gp.Ax22d, major_radius: typing.SupportsFloat | typing.SupportsIndex, minor_radius: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a hyperbola with coordinate system A and radii
         """
@@ -523,13 +523,13 @@ class Hyperbola2d(Conic2d):
     def major_radius(self) -> float:
         ...
     @major_radius.setter
-    def major_radius(self, arg1: typing.SupportsFloat) -> None:
+    def major_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def minor_radius(self) -> float:
         ...
     @minor_radius.setter
-    def minor_radius(self, arg1: typing.SupportsFloat) -> None:
+    def minor_radius(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def other_branch(self) -> mod3d.gp.Hypr2d:
@@ -577,7 +577,7 @@ class OffsetCurve2d(Curve2d):
     An offset curve is at constant distance (offset) from a basis curve.
     The offset is perpendicular to the basis curve.
     """
-    def __init__(self, basis_curve: Curve2d, offset: typing.SupportsFloat, is_not_check_c0: bool = False) -> None:
+    def __init__(self, basis_curve: Curve2d, offset: typing.SupportsFloat | typing.SupportsIndex, is_not_check_c0: bool = False) -> None:
         """
         Creates an offset curve from a basis curve.
         Offset is the distance (positive = left side of curve direction)
@@ -590,7 +590,7 @@ class OffsetCurve2d(Curve2d):
         """
         Changes the basis curve
         """
-    def set_offset_value(self, d: typing.SupportsFloat) -> None:
+    def set_offset_value(self, d: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Changes the offset value
         """
@@ -598,7 +598,7 @@ class OffsetCurve2d(Curve2d):
     def offset(self) -> float:
         ...
     @offset.setter
-    def offset(self, arg1: typing.SupportsFloat) -> None:
+    def offset(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
 class Parabola2d(Conic2d):
     """
@@ -613,17 +613,17 @@ class Parabola2d(Conic2d):
         Constructs a parabola by conversion of gp_Parab2d
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax22d, focal: typing.SupportsFloat) -> None:
+    def __init__(self, a: mod3d.gp.Ax22d, focal: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Constructs a parabola with coordinate system A and focal length
         """
     @typing.overload
-    def __init__(self, a: mod3d.gp.Ax2d, focal: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, a: mod3d.gp.Ax2d, focal: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Constructs a parabola with axis A and focal length
         """
     @typing.overload
-    def __init__(self, d: mod3d.gp.Ax2d, f: typing.SupportsFloat, sense: bool = True) -> None:
+    def __init__(self, d: mod3d.gp.Ax2d, f: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True) -> None:
         """
         Constructs a parabola from directrix D and focus F
         """
@@ -636,7 +636,7 @@ class Parabola2d(Conic2d):
     def focal(self) -> float:
         ...
     @focal.setter
-    def focal(self, arg1: typing.SupportsFloat) -> None:
+    def focal(self, arg1: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @property
     def focus(self) -> mod3d.gp.Pnt2d:
@@ -653,11 +653,11 @@ class TrimmedCurve2d(BoundedCurve2d):
     Describes a portion of a curve limited by two parameter values.
     The trimmed curve has the same parametric properties as the basis curve.
     """
-    def __init__(self, c: Curve2d, u1: typing.SupportsFloat, u2: typing.SupportsFloat, sense: bool = True, adjust_periodic: bool = True) -> None:
+    def __init__(self, c: Curve2d, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True, adjust_periodic: bool = True) -> None:
         """
         Creates a trimmed curve from curve C between parameters U1 and U2
         """
-    def set_trim(self, u1: typing.SupportsFloat, u2: typing.SupportsFloat, sense: bool = True, adjust_periodic: bool = True) -> None:
+    def set_trim(self, u1: typing.SupportsFloat | typing.SupportsIndex, u2: typing.SupportsFloat | typing.SupportsIndex, sense: bool = True, adjust_periodic: bool = True) -> None:
         """
         Changes the trim parameters
         """

@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 
 #include <gp_Ax2.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <BRepPrimAPI_MakeSweep.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <BRepOffsetAPI_MakePipe.hxx>

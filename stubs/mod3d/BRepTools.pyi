@@ -123,7 +123,7 @@ class ReShape:
         Clears all substitution requests
         """
     @typing.overload
-    def copy_vertex(self, vertex: mod3d.TopoDS.Vertex, tolerance: typing.SupportsFloat = -1.0) -> mod3d.TopoDS.Vertex:
+    def copy_vertex(self, vertex: mod3d.TopoDS.Vertex, tolerance: typing.SupportsFloat | typing.SupportsIndex = -1.0) -> mod3d.TopoDS.Vertex:
         """
         Returns modified copy of vertex if original one is not recorded,
         or returns modified original vertex otherwise.
@@ -132,7 +132,7 @@ class ReShape:
           tolerance: New tolerance of vertex (optional, -1.0 keeps original)
         """
     @typing.overload
-    def copy_vertex(self, vertex: mod3d.TopoDS.Vertex, new_position: mod3d.gp.Pnt, tolerance: typing.SupportsFloat) -> mod3d.TopoDS.Vertex:
+    def copy_vertex(self, vertex: mod3d.TopoDS.Vertex, new_position: mod3d.gp.Pnt, tolerance: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Vertex:
         """
         Returns modified copy of vertex if original one is not recorded,
         or returns modified original vertex otherwise.
@@ -159,7 +159,7 @@ class ReShape:
         
         The orientation of the replacing shape respects that of the original one
         """
-    def status(self, shape: mod3d.TopoDS.Shape, last: bool = False) -> tuple:
+    def status(self, shape: mod3d.TopoDS.Shape, last: bool = False) -> tuple[int, mod3d.TopoDS.Shape]:
         """
         Returns a complete substitution status for a shape.
         
@@ -260,7 +260,7 @@ class WireExplorer:
         Initializes exploration of the wire on a face.
         """
     @typing.overload
-    def init(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, u_min: typing.SupportsFloat, u_max: typing.SupportsFloat, v_min: typing.SupportsFloat, v_max: typing.SupportsFloat) -> None:
+    def init(self, wire: mod3d.TopoDS.Wire, face: mod3d.TopoDS.Face, u_min: typing.SupportsFloat | typing.SupportsIndex, u_max: typing.SupportsFloat | typing.SupportsIndex, v_min: typing.SupportsFloat | typing.SupportsIndex, v_max: typing.SupportsFloat | typing.SupportsIndex) -> None:
         """
         Initializes exploration with explicit UV bounds of the face.
         """

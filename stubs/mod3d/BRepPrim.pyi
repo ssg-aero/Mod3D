@@ -15,9 +15,9 @@ class Builder:
     @typing.overload
     def __init__(self, B: BRep_Builder) -> None:
         ...
-    def add_edge_vertex(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P: typing.SupportsFloat, direct: bool) -> None:
+    def add_edge_vertex(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P: typing.SupportsFloat | typing.SupportsIndex, direct: bool) -> None:
         ...
-    def add_edge_vertex_closed(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P1: typing.SupportsFloat, P2: typing.SupportsFloat) -> None:
+    def add_edge_vertex_closed(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P1: typing.SupportsFloat | typing.SupportsIndex, P2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def add_face_wire(self, F: mod3d.TopoDS.Face, W: mod3d.TopoDS.Wire) -> None:
         ...
@@ -53,7 +53,7 @@ class Builder:
         ...
     def reverse_face(self, F: mod3d.TopoDS.Face) -> None:
         ...
-    def set_parameters(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P1: typing.SupportsFloat, P2: typing.SupportsFloat) -> None:
+    def set_parameters(self, E: mod3d.TopoDS.Edge, V: mod3d.TopoDS.Vertex, P1: typing.SupportsFloat | typing.SupportsIndex, P2: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def set_pcurve(self, E: mod3d.TopoDS.Edge, F: mod3d.TopoDS.Face, L: mod3d.gp.Lin2d) -> None:
@@ -69,7 +69,7 @@ class OneAxis:
     def angle(self) -> float:
         ...
     @typing.overload
-    def angle(self, a: typing.SupportsFloat) -> None:
+    def angle(self, a: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     @typing.overload
     def axes(self) -> mod3d.gp.Ax2:
@@ -123,9 +123,9 @@ class OneAxis:
         ...
     def meridian_closed(self) -> bool:
         ...
-    def meridian_on_axis(self, v: typing.SupportsFloat) -> bool:
+    def meridian_on_axis(self, v: typing.SupportsFloat | typing.SupportsIndex) -> bool:
         ...
-    def set_meridian_offset(self, meridian_offset: typing.SupportsFloat = 0.0) -> None:
+    def set_meridian_offset(self, meridian_offset: typing.SupportsFloat | typing.SupportsIndex = 0.0) -> None:
         ...
     def shell(self) -> mod3d.TopoDS.Shell:
         ...
@@ -153,7 +153,7 @@ class OneAxis:
     def v_max(self) -> float:
         ...
     @typing.overload
-    def v_max(self, v: typing.SupportsFloat) -> None:
+    def v_max(self, v: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def v_max_infinite(self) -> bool:
         ...
@@ -161,12 +161,12 @@ class OneAxis:
     def v_min(self) -> float:
         ...
     @typing.overload
-    def v_min(self, v: typing.SupportsFloat) -> None:
+    def v_min(self, v: typing.SupportsFloat | typing.SupportsIndex) -> None:
         ...
     def v_min_infinite(self) -> bool:
         ...
 class Revolution(OneAxis):
-    def __init__(self, A: mod3d.gp.Ax2, VMin: typing.SupportsFloat, VMax: typing.SupportsFloat, M: mod3d.Geom.Curve, PM: mod3d.Geom2d.Curve2d) -> None:
+    def __init__(self, A: mod3d.gp.Ax2, VMin: typing.SupportsFloat | typing.SupportsIndex, VMax: typing.SupportsFloat | typing.SupportsIndex, M: mod3d.Geom.Curve, PM: mod3d.Geom2d.Curve2d) -> None:
         """
         Create a revolution body. M is the meridian and must be in the XZ plane of A. PM is the meridian in the XZ plane.
         """
@@ -174,11 +174,11 @@ class Revolution(OneAxis):
         """
         The surface normal should be directed towards the outside.
         """
-    def make_empty_meridian_edge(self, Ang: typing.SupportsFloat) -> mod3d.TopoDS.Edge:
+    def make_empty_meridian_edge(self, Ang: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.TopoDS.Edge:
         """
         Returns an edge with a 3D curve made from the meridian in the XZ plane rotated by Ang around the Z-axis. Ang may be 0 or myAngle.
         """
-    def meridian_value(self, V: typing.SupportsFloat) -> mod3d.gp.Pnt2d:
+    def meridian_value(self, V: typing.SupportsFloat | typing.SupportsIndex) -> mod3d.gp.Pnt2d:
         """
         Returns the meridian point at parameter V in the plane XZ.
         """
