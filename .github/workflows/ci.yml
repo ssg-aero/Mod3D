@@ -17,9 +17,19 @@ name: CI
 
 jobs:
   build-and-test:
+    name: ${{ matrix.os }} / py${{ matrix.python-version }} / occt${{ matrix.occt-spec }}
     strategy:
       fail-fast: false    # ne pas arreter les autres OS si l'un echoue
       matrix:
+        # On couvre deux combinaisons :
+        # - py3.13 + occt unpinned (stable, reflete l'env de la plupart
+        #   des utilisateurs)
+        # - py3.14 + occt>=8     (verifie la compat avec les libs les
+        #   plus recentes, OCCT 8.x ayant un nettoyage d'API non
+        #   trivial : Standard_Real deprecie, transitive includes
+        #   manquants)
+        python-version: ["3.13", "3.14"]
+        occt-spec: ["", ">=8"]
         include:
           # --- Linux : compilateur clang depuis conda ---
           - os: ubuntu-latest
@@ -57,6 +67,19 @@ jobs:
             extra-packages: ""
             cmake-extra: ""
             shell: micromamba-shell {0}
+        # On limite la combinaison py3.14 a un seul OS (Linux) pour ne
+        # pas tripler le temps CI : c'est un canary visant a detecter
+        # les regressions d'API OCCT 8.x / de typing pybind11-stubgen,
+        # pas une vraie matrice multi-OS.
+        exclude:
+          - python-version: "3.14"
+            os: windows-latest
+          - python-version: "3.14"
+            os: macos-latest
+          - python-version: "3.13"
+            occt-spec: ">=8"
+          - python-version: "3.14"
+            occt-spec: ""
 
     runs-on: ${{ matrix.os }}
     defaults:
@@ -86,11 +109,11 @@ jobs:
             channels:
               - conda-forge
           create-args: >-
-            python=3.13
+            python=${{ matrix.python-version }}
             cmake
             ninja
             pybind11
-            occt
+            occt${{ matrix.occt-spec }}
             eigen
             numpy
             pythreejs
@@ -129,11 +152,11 @@ jobs:
             channels:
               - conda-forge
           create-args: >-
-            python=3.13
+            python=${{ matrix.python-version }}
             cmake
             ninja
             pybind11
-            occt
+            occt${{ matrix.occt-spec }}
             eigen
             numpy
             pythreejs
