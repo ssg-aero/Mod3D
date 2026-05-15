@@ -25,7 +25,10 @@ jobs:
       # declarees au top-level, et lister `os` au top-level forcerait a
       # exclure 8 combos sur 12. Le format explicite ci-dessous tient en
       # 4 entrees, une par job CI :
-      # - 3 jobs stables : py3.13 + occt par defaut sur les 3 OS
+      # - 3 jobs stables : py3.13 + occt<8 sur les 3 OS, pour garantir
+      #   la compat 7.9.x visee par CLAUDE.md (sans le pin, conda-forge
+      #   resoud maintenant `occt` -> 8.x par defaut, on perdrait la
+      #   couverture 7.x silencieusement)
       # - 1 job canary  : py3.14 + occt>=8 sur Linux uniquement, pour
       #   detecter les regressions d'API OCCT 8.x (Standard_Real
       #   deprecie, transitive includes manquants) sans tripler le
@@ -35,7 +38,7 @@ jobs:
           # --- Linux / py3.13 / occt default : variante de reference ---
           - os: ubuntu-latest
             python-version: "3.13"
-            occt-spec: ""
+            occt-spec: "<8"
             extra-packages: >-
               clangxx
               clang-tools
@@ -69,7 +72,7 @@ jobs:
           # CONDA_PREFIX et PATH apres le Setup.
           - os: windows-latest
             python-version: "3.13"
-            occt-spec: ""
+            occt-spec: "<8"
             extra-packages: >-
               clangxx
               clang-tools
@@ -85,7 +88,7 @@ jobs:
           # de forcer.
           - os: macos-latest
             python-version: "3.13"
-            occt-spec: ""
+            occt-spec: "<8"
             extra-packages: ""
             cmake-extra: ""
             shell: micromamba-shell {0}
