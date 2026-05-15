@@ -109,9 +109,10 @@ they describe direction. Pick one and open an issue/branch.
 
 ### API coverage gaps
 
-- [ ] `ShapeFix`: complete `SetSurface`, multi-arg `Init`,
+- [x] `ShapeFix`: complete `SetSurface`, multi-arg `Init`,
       `ShapeAnalysis_Surface` integration (surfaced during OCCT 8.x
-      migration — partial today).
+      migration). Also bound `ShapeAnalysis_Wire` along the way so the
+      `Init(saw)` handoff is reachable.
 - [ ] `BRepFillet` / `BRepFilletAPI`: variable-radius fillets, chamfers
       with selection by edge collection.
 - [ ] `BRepOffsetAPI`: thickening, draft, shelling with face selection.
