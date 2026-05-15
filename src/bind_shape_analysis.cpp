@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 
 #include <ShapeAnalysis_Edge.hxx>
+#include <ShapeAnalysis_Surface.hxx>
 #include <ShapeExtend_Status.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
@@ -8,10 +9,12 @@
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
 #include <Geom2d_Curve.hxx>
+#include <GeomAdaptor_Surface.hxx>
 #include <TopLoc_Location.hxx>
 #include <gp_Pnt2d.hxx>
 #include <gp_Vec2d.hxx>
 #include <gp_Pnt.hxx>
+#include <Bnd_Box.hxx>
 
 namespace py = pybind11;
 // Declare opencascade::handle as a holder type
@@ -294,5 +297,223 @@ void bind_shape_analysis(py::module_ &m)
             "Checks if the first edge is overlapped with second edge.\n"
             "If distance between edges < tolerance, edges are overlapped.\n"
             "domain_dist: length of part of edges on which edges are overlapped")
+    ;
+
+    // =========================================================================
+    // ShapeAnalysis_Surface - Surface analyzer (singularities, closure,
+    //                                            UV-from-3D projection)
+    // =========================================================================
+    py::class_<ShapeAnalysis_Surface, opencascade::handle<ShapeAnalysis_Surface>>(m, "Surface",
+        R"doc(
+        Surface analyzer complementing Geom_Surface.
+
+        Detects surface singularities, checks spatial closure, and computes
+        projections of 3D points onto a surface. Caches intermediate results
+        across calls, so reuse a single instance when querying multiple
+        properties of the same surface.
+
+        Example:
+            sas = ShapeAnalysis.Surface(my_surface)
+            if sas.is_u_closed():
+                ...
+            uv = sas.value_of_uv(p3d, 1e-6)
+        )doc")
+
+        .def(py::init<const opencascade::handle<Geom_Surface>&>(),
+            py::arg("surface"),
+            "Creates an analyzer for the given Geom_Surface.")
+
+        .def("init",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&>(&ShapeAnalysis_Surface::Init),
+            py::arg("surface"),
+            "Loads a new surface and resets cached results.")
+
+        .def("init_from",
+            py::overload_cast<const opencascade::handle<ShapeAnalysis_Surface>&>(&ShapeAnalysis_Surface::Init),
+            py::arg("other"),
+            "Copies analyzer state from another instance without recomputing.")
+
+        .def("set_domain", &ShapeAnalysis_Surface::SetDomain,
+            py::arg("u1"), py::arg("u2"), py::arg("v1"), py::arg("v2"),
+            "Restricts the analyzer to a sub-domain of the surface.")
+
+        .def_property_readonly("surface", &ShapeAnalysis_Surface::Surface,
+            "Returns the underlying Geom_Surface.")
+
+        .def_property_readonly("adaptor3d", &ShapeAnalysis_Surface::Adaptor3d,
+            "Returns the GeomAdaptor_Surface (creating it on first access).")
+
+        .def_property_readonly("true_adaptor3d", &ShapeAnalysis_Surface::TrueAdaptor3d,
+            "Returns the cached GeomAdaptor_Surface, or a null handle if\n"
+            "adaptor3d has never been called.")
+
+        .def_property_readonly("gap", &ShapeAnalysis_Surface::Gap,
+            "Returns the 3D distance recorded by the last query\n"
+            "(IsDegenerated, IsUClosed/IsVClosed, ValueOfUV, ...).")
+
+        // Value computation
+        .def("value",
+            py::overload_cast<const Standard_Real, const Standard_Real>(&ShapeAnalysis_Surface::Value),
+            py::arg("u"), py::arg("v"),
+            "Returns the 3D point at parameters (u, v).")
+
+        .def("value_at",
+            py::overload_cast<const gp_Pnt2d&>(&ShapeAnalysis_Surface::Value),
+            py::arg("uv"),
+            "Returns the 3D point at the parametric point uv.")
+
+        // Closure
+        .def("is_u_closed", &ShapeAnalysis_Surface::IsUClosed,
+            py::arg("preci") = -1.0,
+            "Returns True if the surface is spatially closed in U with the\n"
+            "given precision. preci < 0 falls back to Precision::Confusion.")
+
+        .def("is_v_closed", &ShapeAnalysis_Surface::IsVClosed,
+            py::arg("preci") = -1.0,
+            "Returns True if the surface is spatially closed in V with the\n"
+            "given precision. preci < 0 falls back to Precision::Confusion.")
+
+        .def_property_readonly("u_close_val", &ShapeAnalysis_Surface::UCloseVal,
+            "Minimum precision at which the surface is considered U-closed.")
+
+        .def_property_readonly("v_close_val", &ShapeAnalysis_Surface::VCloseVal,
+            "Minimum precision at which the surface is considered V-closed.")
+
+        // Bounds and isos
+        .def("bounds",
+            [](const ShapeAnalysis_Surface& self) {
+                Standard_Real uf, ul, vf, vl;
+                self.Bounds(uf, ul, vf, vl);
+                return py::make_tuple(uf, ul, vf, vl);
+            },
+            "Returns the buffered (u_first, u_last, v_first, v_last) bounds.")
+
+        .def("compute_bound_isos", &ShapeAnalysis_Surface::ComputeBoundIsos,
+            "Pre-computes the four boundary iso-curves, protecting against\n"
+            "exceptions raised by the underlying Geom_Surface.")
+
+        .def("u_iso", &ShapeAnalysis_Surface::UIso,
+            py::arg("u"),
+            "Returns the U=const iso-curve, or a null handle on failure.\n"
+            "Boundary isos are cached.")
+
+        .def("v_iso", &ShapeAnalysis_Surface::VIso,
+            py::arg("v"),
+            "Returns the V=const iso-curve, or a null handle on failure.\n"
+            "Boundary isos are cached.")
+
+        // Singularities
+        .def("has_singularities", &ShapeAnalysis_Surface::HasSingularities,
+            py::arg("preci"),
+            "Returns True if at least one degenerated iso has size <= preci.")
+
+        .def("nb_singularities", &ShapeAnalysis_Surface::NbSingularities,
+            py::arg("preci"),
+            "Returns the count of degenerated isos with size <= preci\n"
+            "(always between 0 and 4).")
+
+        .def("singularity",
+            [](ShapeAnalysis_Surface& self, Standard_Integer num) {
+                Standard_Real preci, firstpar, lastpar;
+                gp_Pnt p3d;
+                gp_Pnt2d firstP2d, lastP2d;
+                Standard_Boolean uisodeg;
+                Standard_Boolean ok = self.Singularity(num, preci, p3d, firstP2d, lastP2d,
+                                                       firstpar, lastpar, uisodeg);
+                return py::make_tuple(ok, preci, p3d, firstP2d, lastP2d,
+                                      firstpar, lastpar, uisodeg);
+            },
+            py::arg("num"),
+            "Returns tuple (ok, preci, p3d, first_p2d, last_p2d,\n"
+            "               first_par, last_par, u_iso_deg) for singularity num.\n\n"
+            "num is 1-indexed. Returns ok=False if num is out of range.")
+
+        .def("is_degenerated",
+            [](ShapeAnalysis_Surface& self, const gp_Pnt& p3d, Standard_Real preci) {
+                return static_cast<bool>(self.IsDegenerated(p3d, preci));
+            },
+            py::arg("p3d"), py::arg("preci"),
+            "Returns True if some iso is degenerated with size <= preci\n"
+            "and p3d is within preci of the corresponding singular point.")
+
+        .def("is_degenerated_pcurve",
+            [](ShapeAnalysis_Surface& self, const gp_Pnt2d& p2d1, const gp_Pnt2d& p2d2,
+               Standard_Real tol, Standard_Real ratio) {
+                return static_cast<bool>(self.IsDegenerated(p2d1, p2d2, tol, ratio));
+            },
+            py::arg("p2d1"), py::arg("p2d2"), py::arg("tol"), py::arg("ratio"),
+            "Returns True if the straight 2D segment p2d1->p2d2 lies in a\n"
+            "surface singularity (3D length below tol while 2D length is\n"
+            "ratio times the corresponding 2D Resolution).")
+
+        .def("degenerated_values",
+            [](ShapeAnalysis_Surface& self, const gp_Pnt& p3d, Standard_Real preci,
+               Standard_Boolean forward) {
+                gp_Pnt2d firstP2d, lastP2d;
+                Standard_Real firstpar, lastpar;
+                Standard_Boolean ok = self.DegeneratedValues(p3d, preci, firstP2d, lastP2d,
+                                                             firstpar, lastpar, forward);
+                return py::make_tuple(ok, firstP2d, lastP2d, firstpar, lastpar);
+            },
+            py::arg("p3d"), py::arg("preci"), py::arg("forward") = true,
+            "Returns tuple (ok, first_p2d, last_p2d, first_par, last_par) for\n"
+            "the first degenerated iso matching p3d within preci.")
+
+        .def("project_degenerated",
+            [](ShapeAnalysis_Surface& self, const gp_Pnt& p3d, Standard_Real preci,
+               const gp_Pnt2d& neighbour) {
+                gp_Pnt2d result;
+                Standard_Boolean ok = self.ProjectDegenerated(p3d, preci, neighbour, result);
+                return py::make_tuple(ok, result);
+            },
+            py::arg("p3d"), py::arg("preci"), py::arg("neighbour"),
+            "Returns tuple (ok, uv) where uv has its indeterminate coordinate\n"
+            "filled from neighbour when p3d lies on a degenerated iso.")
+
+        // Projection
+        .def("value_of_uv", &ShapeAnalysis_Surface::ValueOfUV,
+            py::arg("p3d"), py::arg("preci"),
+            "Projects p3d onto the surface, returning its parametric uv.\n\n"
+            "Robust at boundaries/singularities where the standard\n"
+            "GeomAPI_ProjectPointOnSurface tool tends to fail.")
+
+        .def("next_value_of_uv", &ShapeAnalysis_Surface::NextValueOfUV,
+            py::arg("p2d_prev"), py::arg("p3d"), py::arg("preci"),
+            py::arg("maxpreci") = -1.0,
+            "Projects p3d onto the surface using p2d_prev as a seed.\n\n"
+            "Faster than value_of_uv when called repeatedly along a curve;\n"
+            "falls back to value_of_uv on failure or when the result is\n"
+            "farther than maxpreci from p3d (if maxpreci > 0).")
+
+        .def("uv_from_iso",
+            [](ShapeAnalysis_Surface& self, const gp_Pnt& p3d, Standard_Real preci,
+               Standard_Real u, Standard_Real v) {
+                Standard_Real refinedU = u;
+                Standard_Real refinedV = v;
+                Standard_Real dist = self.UVFromIso(p3d, preci, refinedU, refinedV);
+                return py::make_tuple(dist, refinedU, refinedV);
+            },
+            py::arg("p3d"), py::arg("preci"), py::arg("u"), py::arg("v"),
+            "Returns tuple (distance, refined_u, refined_v) by refining (u, v)\n"
+            "through projections onto surface iso-lines. distance is the best\n"
+            "achieved |p3d - Value(refined_u, refined_v)|, or a very large value\n"
+            "if no refinement succeeded.")
+
+        // Bounding boxes around each boundary iso
+        .def_property_readonly("box_u_first", &ShapeAnalysis_Surface::GetBoxUF,
+            py::return_value_policy::reference_internal,
+            "Bounding box of the U=u_first iso-curve.")
+
+        .def_property_readonly("box_u_last", &ShapeAnalysis_Surface::GetBoxUL,
+            py::return_value_policy::reference_internal,
+            "Bounding box of the U=u_last iso-curve.")
+
+        .def_property_readonly("box_v_first", &ShapeAnalysis_Surface::GetBoxVF,
+            py::return_value_policy::reference_internal,
+            "Bounding box of the V=v_first iso-curve.")
+
+        .def_property_readonly("box_v_last", &ShapeAnalysis_Surface::GetBoxVL,
+            py::return_value_policy::reference_internal,
+            "Bounding box of the V=v_last iso-curve.")
     ;
 }
