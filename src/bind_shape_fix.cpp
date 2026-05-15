@@ -162,6 +162,15 @@ void bind_shape_fix(py::module_ &m)
             &ShapeFix_Wire::Init),
             py::arg("wire"), py::arg("face"), py::arg("precision"),
             "Loads analyzer with all data for the wire and face, and drops all fixing statuses.")
+
+        .def("init", py::overload_cast<const opencascade::handle<ShapeAnalysis_Wire>&>(
+            &ShapeFix_Wire::Init),
+            py::arg("analyzer"),
+            "Loads a pre-built ShapeAnalysis.Wire analyzer.\n\n"
+            "Useful when the same wire was already analyzed: reuses the\n"
+            "analyzer's cached face / surface / precision so the fixer\n"
+            "doesn't redo that work. set_face / set_surface are then\n"
+            "unnecessary.")
         
         .def("load", py::overload_cast<const TopoDS_Wire&>(&ShapeFix_Wire::Load),
             py::arg("wire"),
