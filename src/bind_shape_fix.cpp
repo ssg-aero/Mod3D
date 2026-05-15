@@ -9,6 +9,8 @@
 #include <TopoDS_Face.hxx>
 #include <ShapeExtend_WireData.hxx>
 #include <ShapeAnalysis_Wire.hxx>
+#include <Geom_Surface.hxx>
+#include <TopLoc_Location.hxx>
 
 namespace py = pybind11;
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
@@ -168,7 +170,21 @@ void bind_shape_fix(py::module_ &m)
         .def("set_face", py::overload_cast<const TopoDS_Face&>(&ShapeFix_Wire::SetFace),
             py::arg("face"),
             "Sets the working face for the wire.")
-        
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&>(&ShapeFix_Wire::SetSurface),
+            py::arg("surface"),
+            "Sets the working surface for the wire (without location).\n\n"
+            "Use this when the wire is not bound to a face but to a raw surface,\n"
+            "e.g. when fixing a wire prior to face construction.")
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&, const TopLoc_Location&>(&ShapeFix_Wire::SetSurface),
+            py::arg("surface"), py::arg("location"),
+            "Sets the working surface for the wire with a location.\n\n"
+            "Use this when the surface carries a non-identity placement,\n"
+            "matching the convention of TopoDS_Face's underlying surface + location.")
+
         .def("set_precision", &ShapeFix_Wire::SetPrecision,
             py::arg("precision"),
             "Sets working precision.")
