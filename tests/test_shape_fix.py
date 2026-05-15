@@ -5,6 +5,7 @@ import mod3d
 from mod3d import (
     ShapeFix,
     BRepBuilderAPI,
+    Geom,
     gp,
     TopoDS,
     TopExp,
@@ -83,12 +84,37 @@ class TestShapeFixWire:
         """Test set_face method."""
         wire = self.create_simple_wire()
         face = self.create_face_from_wire(wire)
-        
+
         fixer = ShapeFix.Wire()
         fixer.load(wire)
         assert not fixer.is_ready
-        
+
         fixer.set_face(face)
+        assert fixer.is_ready
+
+    def test_set_surface(self):
+        """Test set_surface method (without location)."""
+        wire = self.create_simple_wire()
+        plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+
+        fixer = ShapeFix.Wire()
+        fixer.load(wire)
+        assert not fixer.is_ready
+
+        fixer.set_surface(plane)
+        assert fixer.is_ready
+
+    def test_set_surface_with_location(self):
+        """Test set_surface method with a TopLoc_Location."""
+        wire = self.create_simple_wire()
+        plane = Geom.Plane(gp.Ax3(gp.Pnt(0, 0, 0), gp.Dir(0, 0, 1)))
+
+        fixer = ShapeFix.Wire()
+        fixer.load(wire)
+        # Identity location is always available; the goal here is to
+        # exercise the overload that takes (surface, location).
+        identity_loc = TopoDS.TopLoc_Location()
+        fixer.set_surface(plane, identity_loc)
         assert fixer.is_ready
 
     def test_set_precision(self):

@@ -9,6 +9,8 @@
 #include <TopoDS_Face.hxx>
 #include <ShapeExtend_WireData.hxx>
 #include <ShapeAnalysis_Wire.hxx>
+#include <Geom_Surface.hxx>
+#include <TopLoc_Location.hxx>
 
 namespace py = pybind11;
 PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
@@ -160,6 +162,15 @@ void bind_shape_fix(py::module_ &m)
             &ShapeFix_Wire::Init),
             py::arg("wire"), py::arg("face"), py::arg("precision"),
             "Loads analyzer with all data for the wire and face, and drops all fixing statuses.")
+
+        .def("init", py::overload_cast<const opencascade::handle<ShapeAnalysis_Wire>&>(
+            &ShapeFix_Wire::Init),
+            py::arg("analyzer"),
+            "Loads a pre-built ShapeAnalysis.Wire analyzer.\n\n"
+            "Useful when the same wire was already analyzed: reuses the\n"
+            "analyzer's cached face / surface / precision so the fixer\n"
+            "doesn't redo that work. set_face / set_surface are then\n"
+            "unnecessary.")
         
         .def("load", py::overload_cast<const TopoDS_Wire&>(&ShapeFix_Wire::Load),
             py::arg("wire"),
@@ -168,7 +179,21 @@ void bind_shape_fix(py::module_ &m)
         .def("set_face", py::overload_cast<const TopoDS_Face&>(&ShapeFix_Wire::SetFace),
             py::arg("face"),
             "Sets the working face for the wire.")
-        
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&>(&ShapeFix_Wire::SetSurface),
+            py::arg("surface"),
+            "Sets the working surface for the wire (without location).\n\n"
+            "Use this when the wire is not bound to a face but to a raw surface,\n"
+            "e.g. when fixing a wire prior to face construction.")
+
+        .def("set_surface",
+            py::overload_cast<const opencascade::handle<Geom_Surface>&, const TopLoc_Location&>(&ShapeFix_Wire::SetSurface),
+            py::arg("surface"), py::arg("location"),
+            "Sets the working surface for the wire with a location.\n\n"
+            "Use this when the surface carries a non-identity placement,\n"
+            "matching the convention of TopoDS_Face's underlying surface + location.")
+
         .def("set_precision", &ShapeFix_Wire::SetPrecision,
             py::arg("precision"),
             "Sets working precision.")
