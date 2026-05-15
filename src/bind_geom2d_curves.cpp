@@ -27,7 +27,14 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <GeomAbs_Shape.hxx>
 
+#include <Standard_Version.hxx>
+#if OCC_VERSION_HEX >= 0x080000
 #include <GeomLProp_CLProps.hxx>
+using CLProps2d = GeomLProp_CLProps2d;
+#else
+#include <Geom2dLProp_CLProps2d.hxx>
+using CLProps2d = Geom2dLProp_CLProps2d;
+#endif
 #include <Geom2dAdaptor_Curve.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 
@@ -123,26 +130,26 @@ void bind_geom2d_curves(py::module_ &m)
              "Compute the length of the curve")
         .def("curvature", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
-          GeomLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          CLProps2d props(h_curve, u, 2, Precision::Confusion());
           return props.Curvature();
         }, py::arg("u"), "Returns (curvature, first derivative of curvature) at parameter U")
         .def("center_of_curvature", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
-          GeomLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          CLProps2d props(h_curve, u, 2, Precision::Confusion());
           gp_Pnt2d center;
           props.CentreOfCurvature(center);
           return center;
         }, py::arg("u"), "Returns the center of curvature at parameter U")
         .def("normal", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
-          GeomLProp_CLProps2d props(h_curve, u, 2, Precision::Confusion());
+          CLProps2d props(h_curve, u, 2, Precision::Confusion());
           gp_Dir2d normal;
           props.Normal(normal);
           return normal;
         }, py::arg("u"), "Returns the normal direction at parameter U ")
         .def("tangent", [](const Geom2d_Curve& self, double u) {
           const opencascade::handle<Geom2d_Curve> h_curve(&self);
-          GeomLProp_CLProps2d props(h_curve, u, 1, Precision::Confusion());
+          CLProps2d props(h_curve, u, 1, Precision::Confusion());
           gp_Dir2d tangent;
           props.Tangent(tangent);
           return tangent;
