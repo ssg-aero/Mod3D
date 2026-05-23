@@ -12,6 +12,7 @@
 #include <TopLoc_Location.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_TShape.hxx>
 #include <gp_Trsf.hxx>
 
 #include <cmath>
@@ -128,11 +129,25 @@ void MeshDistance::set_reference(const TopoDS_Shape& reference,
         throw std::runtime_error(
             "MeshDistance: failed to build BVH for reference (no triangles)");
     }
+
+    // The new reference may have a different deflection, so any previous
+    // query-side tessellation memo is stale.
+    myTessellatedQueries.clear();
 }
 
 Standard_Integer MeshDistance::nb_reference_triangles() const
 {
     return myTriangleSet.IsNull() ? 0 : myTriangleSet->Size();
+}
+
+void MeshDistance::clear_query_cache()
+{
+    myTessellatedQueries.clear();
+}
+
+Standard_Integer MeshDistance::nb_cached_queries() const
+{
+    return static_cast<Standard_Integer>(myTessellatedQueries.size());
 }
 
 MeshDistanceResult MeshDistance::distance_to(const TopoDS_Shape& shape) const
@@ -141,9 +156,42 @@ MeshDistanceResult MeshDistance::distance_to(const TopoDS_Shape& shape) const
         throw std::runtime_error("MeshDistance: reference not initialized");
     }
 
-    if (!shape_has_triangulation(shape)) {
-        render::build_mesh(shape, myDeflection, /*is_relative=*/false,
-                           myAngleDeflectionDeg, myParallel);
+    // Fast path: we've already meshed this exact TShape at the current
+    // deflection. The Handle stored in the cache keeps the TShape alive so
+    // its pointer-identity is stable (otherwise the pointer could be reused
+    // after garbage collection and yield false positives).
+    //
+    // Profiling note: BRepMesh_IncrementalMesh dominates per-call cost when
+    // the query shape is fresh. shape_has_triangulation() is cheap but scales
+    // with the face count, so on large compound queries the cache lookup
+    // still helps.
+    Handle(TopoDS_TShape) query_tshape = shape.TShape();
+    bool cache_hit = !query_tshape.IsNull()
+                   && myTessellatedQueries.count(query_tshape) > 0;
+
+    // Defensive: even on cache hit the triangulation could have been cleared
+    // externally (e.g. BRepTools::Clean by user code) since we last meshed.
+    // Probe the first face only — cheap, and a stale entry would otherwise
+    // surface as a confusing "no triangulation vertices" error below.
+    if (cache_hit) {
+        TopExp_Explorer first(shape, TopAbs_FACE);
+        if (first.More()) {
+            TopLoc_Location loc;
+            if (BRep_Tool::Triangulation(TopoDS::Face(first.Current()), loc).IsNull()) {
+                myTessellatedQueries.erase(query_tshape);
+                cache_hit = false;
+            }
+        }
+    }
+
+    if (!cache_hit) {
+        if (!shape_has_triangulation(shape)) {
+            render::build_mesh(shape, myDeflection, /*is_relative=*/false,
+                               myAngleDeflectionDeg, myParallel);
+        }
+        if (!query_tshape.IsNull()) {
+            myTessellatedQueries.insert(query_tshape);
+        }
     }
 
     PointToTriangleSetDistance probe;

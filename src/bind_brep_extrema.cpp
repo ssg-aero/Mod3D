@@ -600,5 +600,12 @@ void bind_brep_extrema(py::module_ &m)
 
         .def_property_readonly("nb_reference_triangles", &MeshDistance::nb_reference_triangles,
             "Number of triangles in the reference BVH.")
+
+        .def("clear_query_cache", &MeshDistance::clear_query_cache,
+            "Drop the memo of query shapes already tessellated at the current\n"
+            "deflection. Use after externally clearing/replacing triangulations.")
+
+        .def_property_readonly("nb_cached_queries", &MeshDistance::nb_cached_queries,
+            "Number of distinct query TShapes currently cached as tessellated.")
     ;
 }

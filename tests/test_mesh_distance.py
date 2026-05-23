@@ -117,6 +117,62 @@ def _scattered_spheres_compound(n: int, half_extent: float, radius: float, seed:
     return TopoDS.Compound(spheres)
 
 
+def test_query_cache_amortises_tessellation():
+    """When the same query TopoDS_Shape is queried repeatedly, the cache must
+    short-circuit BRepMesh_IncrementalMesh — the dominant per-call cost.
+
+    Bench: 200 calls of the same query shape should be substantially faster
+    than 200 calls each rebuilding the query shape, even though the BVH descent
+    work is identical."""
+    reference = _sphere(0.0, 0.0, 0.0, 50.0)
+    mq = BRepExtrema.MeshDistance(reference, deflection=0.2)
+
+    iterations = 200
+
+    # Warmup
+    _ = mq.distance_to(_box(80.0, 0.0, 0.0, 5.0, 5.0, 30.0))
+
+    # Fresh shape every call: no cache hit possible
+    t0 = time.perf_counter()
+    for _ in range(iterations):
+        q = _box(80.0, 0.0, 0.0, 5.0, 5.0, 30.0)
+        mq.distance_to(q)
+    t_fresh = time.perf_counter() - t0
+
+    # Same shape reused: cache should hit every time after the first call
+    q = _box(80.0, 0.0, 0.0, 5.0, 5.0, 30.0)
+    mq.clear_query_cache()
+    _ = mq.distance_to(q)  # primes the cache
+    cached_after_first = mq.nb_cached_queries
+    t0 = time.perf_counter()
+    for _ in range(iterations):
+        mq.distance_to(q)
+    t_reused = time.perf_counter() - t0
+
+    assert cached_after_first == 1
+    # The reused regime should be at least 5x faster — usually >20x.
+    assert t_reused < t_fresh / 5, (
+        f"Cache speedup is weak: fresh={t_fresh*1000:.1f} ms, "
+        f"reused={t_reused*1000:.1f} ms (ratio {t_fresh/max(t_reused, 1e-9):.1f}x)")
+    print(f"\nCache speedup: fresh={t_fresh*1000:.1f} ms vs reused={t_reused*1000:.1f} ms "
+          f"(~{t_fresh / max(t_reused, 1e-9):.1f}x)")
+
+
+def test_query_cache_invalidated_on_set_reference():
+    a = _sphere(0.0, 0.0, 0.0, 50.0)
+    a_far = _sphere(0.0, 0.0, 200.0, 50.0)
+    q = _box(80.0, 0.0, 0.0, 5.0, 5.0, 30.0)
+
+    mq = BRepExtrema.MeshDistance(a, deflection=0.2)
+    _ = mq.distance_to(q)
+    assert mq.nb_cached_queries == 1
+
+    # Changing the reference may change the deflection / triangulation regime,
+    # so the query memo is dropped.
+    mq.set_reference(a_far, deflection=0.5)
+    assert mq.nb_cached_queries == 0
+
+
 def test_bvh_culling_scaling():
     """Cylinder query against compounds of 1, 10, 50, 250 spheres.
 
