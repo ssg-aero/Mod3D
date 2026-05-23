@@ -54,6 +54,7 @@ add_library(occt-extend SHARED
     src/extend/brep/RevolveCut.cpp
     src/extend/brep/UnionFaces.cpp
     src/extend/extrema/ExtremaUtils.cpp
+    src/extend/extrema/MeshDistance.cpp
     src/extend/gbs/GbsConverters.cpp
     src/extend/geometry/GeomSurfaceCompare.cpp
     src/extend/render/TessellationUtils.cpp

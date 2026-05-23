@@ -17,6 +17,7 @@
 #include <BRepExtrema_ExtPF.hxx>
 
 #include "extend/extrema/ExtremaUtils.hpp"
+#include "extend/extrema/MeshDistance.hpp"
 
 namespace py = pybind11;
 
@@ -556,5 +557,48 @@ void bind_brep_extrema(py::module_ &m)
             return results;
         })
     ;
-    
+
+    // =========================================================================
+    // MeshDistance - approximate min-distance query via BVH on triangulation
+    // =========================================================================
+    using occt::extended::extrema::MeshDistance;
+    py::class_<MeshDistance>(m, "MeshDistance",
+        "Approximate minimum-distance query against a fixed reference shape.\n\n"
+        "Builds a BVH over the reference's triangulation once at construction;\n"
+        "each distance_to() call tessellates the query shape (if needed) and runs\n"
+        "a point-to-triangle BVH descent for every triangulation vertex.\n\n"
+        "Trade-off: result accuracy is bounded by the mesh deflection. For exact\n"
+        "NURBS-precision distance use BRepExtrema.DistShapeShape instead.\n\n"
+        "Intended use: 'same reference, many queries' workflows (optimisation\n"
+        "loops, shape-vs-reference scans). The reference can be replaced via\n"
+        "set_reference(); the query shape is passed at each call.")
+
+        .def(py::init<const TopoDS_Shape&, Standard_Real, Standard_Real, Standard_Boolean>(),
+            py::arg("reference"),
+            py::arg("deflection"),
+            py::arg("angle_deflection_deg") = 30.0,
+            py::arg("parallel") = true,
+            "Tessellate the reference and build the BVH (paid once).")
+
+        .def("set_reference", &MeshDistance::set_reference,
+            py::arg("reference"),
+            py::arg("deflection"),
+            py::arg("angle_deflection_deg") = 30.0,
+            py::arg("parallel") = true,
+            "Replace the reference and rebuild the BVH.")
+
+        .def("distance_to", [](const MeshDistance& self, const TopoDS_Shape& shape) {
+            const auto result = self.distance_to(shape);
+            return py::make_tuple(result.distance,
+                                  result.point_on_reference,
+                                  result.point_on_shape);
+        }, py::arg("shape"),
+            "Returns (distance, point_on_reference, point_on_shape).")
+
+        .def_property_readonly("deflection", &MeshDistance::deflection,
+            "Linear deflection used for tessellation.")
+
+        .def_property_readonly("nb_reference_triangles", &MeshDistance::nb_reference_triangles,
+            "Number of triangles in the reference BVH.")
+    ;
 }
