@@ -9,3 +9,9 @@ Python bindings for OpenCASCADE geometry and topology operations.
 
    api/index
    tutorials/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Theory
+
+   extend/theory/mesh_distance
