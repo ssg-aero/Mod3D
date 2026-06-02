@@ -22,5 +22,6 @@ for _name in _submodule_names:
 del _sys, _ext, _m, _name
 
 from .visualyse3js import ShapeRenderer
+from .periodic import make_periodic_compound
 
-__all__ = _submodule_names + ["ShapeRenderer"]
+__all__ = _submodule_names + ["ShapeRenderer", "make_periodic_compound"]

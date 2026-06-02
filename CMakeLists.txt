@@ -54,6 +54,7 @@ add_library(occt-extend SHARED
     src/extend/brep/RevolveCut.cpp
     src/extend/brep/UnionFaces.cpp
     src/extend/extrema/ExtremaUtils.cpp
+    src/extend/extrema/MeshDistance.cpp
     src/extend/gbs/GbsConverters.cpp
     src/extend/geometry/GeomSurfaceCompare.cpp
     src/extend/render/TessellationUtils.cpp
@@ -207,9 +208,10 @@ install(TARGETS mod3d
 
 # Install the package shim so the namespace package can resolve from Python.
 install(
-    FILES 
+    FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/__init__.py
         ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/visualyse3js.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/periodic.py
     DESTINATION ${Python3_SITEARCH}/mod3d)
 
 option(MO3D_BUILD_STUBS "Automatically build python hints" ON)
