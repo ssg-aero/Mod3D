@@ -214,6 +214,14 @@ install(
         ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/periodic.py
     DESTINATION ${Python3_SITEARCH}/mod3d)
 
+# Install the render/ subpackage (backend-neutral scene IR + renderer backends).
+# A DIRECTORY install (rather than an explicit FILES list) picks up new backend
+# modules automatically as they are added.
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/mod3d/render
+    DESTINATION ${Python3_SITEARCH}/mod3d
+    FILES_MATCHING PATTERN "*.py")
+
 option(MO3D_BUILD_STUBS "Automatically build python hints" ON)
 if(MO3D_BUILD_STUBS)
 
