@@ -1,6 +1,6 @@
 from math import hypot
 import numpy as np
-from mod3d import Render, TopoDS, Geom
+from mod3d import Render, TopoDS, TopExp, TopAbs, Geom
 from pythreejs import (
     BufferGeometry, BufferAttribute, Mesh, Scene, Points,
     PerspectiveCamera, Renderer, AmbientLight, DirectionalLight,
@@ -304,6 +304,109 @@ def mesh_vertices(vertices, color='#2194ce', size=0.1, rounded=True):
     points_mesh = Points(geometry=geometry, material=material)
     return points_mesh
 
+def _trsf_to_threejs_matrix(trsf):
+    """Convert a gp.Trsf to a three.js 4x4 matrix (column-major, length-16).
+
+    three.js Matrix4.elements is column-major; gp.Trsf is a 3x4 affine
+    (rows 1-3, cols 1-4, with an implicit [0,0,0,1] bottom row). Carrying the
+    full matrix (rather than decomposing to position/quaternion) keeps any
+    rotation, translation, scale or mirror exactly as OCCT stored it.
+    """
+    v = trsf.value
+    return [
+        v(1, 1), v(2, 1), v(3, 1), 0.0,   # column 1
+        v(1, 2), v(2, 2), v(3, 2), 0.0,   # column 2
+        v(1, 3), v(2, 3), v(3, 3), 0.0,   # column 3
+        v(1, 4), v(2, 4), v(3, 4), 1.0,   # column 4 (translation)
+    ]
+
+
+def _shape_occurrences(shape):
+    """Renderable sub-shapes of `shape`, located in their parent frame.
+
+    For a Compound (e.g. a periodic blade row) this returns the coarsest
+    non-empty level of sub-shapes (solids, else shells, else faces); periodic
+    copies share a TShape and differ only by location. Any non-compound shape
+    is its own single occurrence.
+    """
+    if shape.shape_type != TopAbs.COMPOUND:
+        return [shape]
+    for sub_type in (TopAbs.SOLID, TopAbs.SHELL, TopAbs.FACE):
+        occurrences = list(TopExp.Explorer(shape, sub_type))
+        if occurrences:
+            return occurrences
+    return [shape]
+
+
+def _group_partners(occurrences):
+    """Group occurrences sharing the same underlying TShape.
+
+    Returns a list of (representative, members). Partners differ only by
+    location/orientation, so each group can be tessellated once (from the
+    representative) and reused for every member. N is small (sector count),
+    so the O(N*groups) partner scan is negligible.
+    """
+    groups = []
+    for occ in occurrences:
+        for rep, members in groups:
+            if occ.is_partner(rep):
+                members.append(occ)
+                break
+        else:
+            groups.append((occ, [occ]))
+    return groups
+
+
+def _instanced_shape_meshes(shape, face_color, edge_color, edge_width,
+                            line_resolution, face_opacity, extract_kwargs):
+    """Build face meshes and edge lines for `shape`, sharing one geometry per
+    unique TShape instead of re-uploading the tessellation for every copy.
+
+    Each periodic copy is tessellated once (in its TShape-local frame, with the
+    location stripped) and the resulting BufferGeometry / line geometries are
+    reused across all copies; the per-copy placement is applied as the object's
+    model matrix. three.js uploads the shared geometry to the GPU only once and
+    corrects normals via the per-object normal matrix.
+    """
+    identity = TopoDS.TopLoc_Location()
+    face_meshes = []
+    edge_lines = []
+
+    for rep, members in _group_partners(_shape_occurrences(shape)):
+        # Tessellate the representative in its local frame (no location), once.
+        canonical = rep.located(identity)
+        faces_data, edges_data = Render.extract_tessellation(canonical, **extract_kwargs)
+
+        template_face = faces_mesh(faces_data, color=face_color, opacity=face_opacity)
+        template_edges = edges_mesh(edges_data, color=edge_color,
+                                    linewidth=edge_width, resolution=line_resolution)
+
+        shared_geometry = template_face.geometry if template_face is not None else None
+        shared_material = template_face.material if template_face is not None else None
+
+        for occ in members:
+            matrix = _trsf_to_threejs_matrix(occ.location.transformation)
+
+            if shared_geometry is not None:
+                mesh = Mesh(geometry=shared_geometry, material=shared_material)
+                mesh.matrixAutoUpdate = False
+                mesh.matrix = matrix
+                mesh.renderOrder = 0
+                face_meshes.append(mesh)
+
+            if template_edges:
+                for template_line in template_edges:
+                    # Reuse the line geometry/material; only the placement differs.
+                    line = type(template_line)(geometry=template_line.geometry,
+                                               material=template_line.material)
+                    line.matrixAutoUpdate = False
+                    line.matrix = matrix
+                    line.renderOrder = 1
+                    edge_lines.append(line)
+
+    return face_meshes, edge_lines
+
+
 def occt_to_threejs(shape, deflection=0.01, points_color='blue', points_size=5.0, points_rounded=True, curve_color='lime', edge_color='black', curve_width=2, edge_width=0.5, line_resolution=None, surface_color='#2194ce', face_opacity=1.0, color=None, **kwargs):
     """
     Convert an OCCT shape to pythreejs mesh and edge lines.
@@ -341,11 +444,19 @@ def occt_to_threejs(shape, deflection=0.01, points_color='blue', points_size=5.0
 
         return None, mesh_edges
     elif(isinstance(shape, TopoDS.Shape)):
-        faces_data, edges_data = Render.extract_tessellation(shape,  **kwargs)
-        
         face_color = color if color is not None else surface_color
-        mesh_face = faces_mesh(faces_data, color=face_color, opacity=face_opacity)
-        mesh_edges = edges_mesh(edges_data, color=edge_color, linewidth=edge_width, resolution=line_resolution)
+        # Instancing-aware path: shapes sharing a TShape (e.g. periodic blade
+        # rows) are tessellated once and the geometry reused across copies,
+        # rather than re-uploading the mesh for every occurrence.
+        mesh_face, mesh_edges = _instanced_shape_meshes(
+            shape,
+            face_color=face_color,
+            edge_color=edge_color,
+            edge_width=edge_width,
+            line_resolution=line_resolution,
+            face_opacity=face_opacity,
+            extract_kwargs=kwargs,
+        )
 
         return mesh_face, mesh_edges
 
@@ -359,7 +470,12 @@ def occt_to_threejs(shape, deflection=0.01, points_color='blue', points_size=5.0
         for subshape in shape:
             mf, me = occt_to_threejs(subshape,  line_resolution=line_resolution, **kwargs)
             if mf is not None:
-                mesh_face.append(mf)
+                # The TopoDS.Shape branch now returns a list of meshes (one per
+                # instance); flatten it so render() sees a flat children list.
+                if isinstance(mf, list):
+                    mesh_face.extend(mf)
+                else:
+                    mesh_face.append(mf)
             if me is not None:
                 mesh_edges.extend(me)
 
