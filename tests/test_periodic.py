@@ -35,6 +35,36 @@ def test_periodic_compound_has_n_copies():
     assert count == n
 
 
+def test_periodic_preserves_master_placement():
+    """A master that already carries a location must keep it: each copy is the
+    master rotated about the axis, not the master with its placement discarded.
+
+    Regression: make_periodic_compound used located() (which *replaces* the
+    location) instead of moved() (which *composes* R_k * L0)."""
+    from mod3d import BRep, TopExp
+
+    base = BRepBuilderAPI.MakeBox(gp.Pnt(40.0, -5.0, 0.0), 10.0, 10.0, 30.0).shape()
+    # Pre-place the master with a non-identity location (lift it by z+100).
+    pre = gp.Trsf()
+    pre.set_translation(gp.Vec(0.0, 0.0, 100.0))
+    master = base.moved(pre)
+
+    n = 6
+    compound = make_periodic_compound(master, _z_axis(), n)
+
+    solids = list(TopExp.Explorer(compound, TopAbs.SOLID))
+    assert len(solids) == n
+
+    # The whole row must live at the pre-placed height (z in [100, 130]); a
+    # rotation about Z does not change z. Without the fix located() drops the
+    # placement and the row collapses back to z in [0, 30].
+    zs = []
+    for vexp in TopExp.Explorer(compound, TopAbs.VERTEX):
+        zs.append(BRep.Tool.pnt(TopoDS.Vertex(vexp)).z)
+    assert min(zs) >= 100.0 - 1e-6, (
+        f"master placement (z+100) was lost: min vertex z is {min(zs)}")
+
+
 def test_periodic_distance_matches_exact_extrema():
     """MeshDistance on a periodic compound agrees with the exact NURBS
     DistShapeShape to within the tessellation deflection."""

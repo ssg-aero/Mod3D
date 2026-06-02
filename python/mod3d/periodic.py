@@ -23,6 +23,10 @@ def make_periodic_compound(master, axis, n_sectors, angular_step=None):
     BRepMesh_IncrementalMesh on the returned compound computes the master's
     triangulation only once and the N located faces all reference it.
 
+    Any location already carried by `master` is preserved: each copy's
+    rotation is *composed* with the master's own placement (via Moved, which
+    multiplies the location) rather than replacing it.
+
     Parameters
     ----------
     master : TopoDS.Shape
@@ -50,5 +54,8 @@ def make_periodic_compound(master, axis, n_sectors, angular_step=None):
     for k in range(n_sectors):
         trsf = gp.Trsf()
         trsf.set_rotation(axis, k * step)
-        copies.append(master.located(TopoDS.TopLoc_Location(trsf)))
+        # Moved multiplies the existing location by `trsf` (R_k * L0), so a
+        # master that already carries a placement is rotated about `axis`
+        # rather than having its placement discarded by located().
+        copies.append(master.moved(trsf))
     return TopoDS.Compound(copies)
