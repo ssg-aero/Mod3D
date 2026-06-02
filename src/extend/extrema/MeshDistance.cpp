@@ -5,7 +5,6 @@
 #include <BRep_Tool.hxx>
 #include <BVH_Distance.hxx>
 #include <BVH_Tools.hxx>
-#include <NCollection_Vector.hxx>
 #include <Poly_Triangulation.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp_Explorer.hxx>
@@ -14,6 +13,18 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_TShape.hxx>
 #include <gp_Trsf.hxx>
+
+// BRepExtrema_TriangleSet::Init takes the face collection by a type renamed in
+// OCCT 8.0: the 7.x typedef BRepExtrema_ShapeList (NCollection_Vector<TopoDS_Shape>,
+// declared in BRepExtrema_TriangleSet.hxx) was dropped, and Init now takes
+// NCollection_DynamicArray<TopoDS_Shape>. NCollection_Vector still exists in 8.x
+// but only as a deprecated alias, so include the right header per version.
+#include <Standard_Version.hxx>
+#if OCC_VERSION_HEX >= 0x080000
+#include <NCollection_DynamicArray.hxx>
+#else
+#include <NCollection_Vector.hxx>
+#endif
 
 #include <cmath>
 #include <limits>
@@ -68,9 +79,15 @@ private:
     BVH_Vec3d myClosestPoint;
 };
 
-BRepExtrema_ShapeList collect_faces(const TopoDS_Shape& shape)
+#if OCC_VERSION_HEX >= 0x080000
+using FaceList = NCollection_DynamicArray<TopoDS_Shape>;
+#else
+using FaceList = BRepExtrema_ShapeList;
+#endif
+
+FaceList collect_faces(const TopoDS_Shape& shape)
 {
-    BRepExtrema_ShapeList faces;
+    FaceList faces;
     for (TopExp_Explorer explorer(shape, TopAbs_FACE); explorer.More(); explorer.Next()) {
         faces.Append(explorer.Current());
     }
@@ -118,7 +135,7 @@ void MeshDistance::set_reference(const TopoDS_Shape& reference,
     render::build_mesh(reference, deflection, /*is_relative=*/false,
                        angle_deflection_deg, parallel);
 
-    const BRepExtrema_ShapeList faces = collect_faces(reference);
+    const FaceList faces = collect_faces(reference);
     if (faces.IsEmpty()) {
         throw std::invalid_argument("MeshDistance: reference shape contains no faces");
     }
