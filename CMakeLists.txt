@@ -145,6 +145,7 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_step_control.cpp
         src/bind_step_data.cpp
         src/bind_render.cpp
+        src/bind_helix_geom.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 

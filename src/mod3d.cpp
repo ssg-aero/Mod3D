@@ -1,5 +1,6 @@
 #include <TopoDS_Shell.hxx>
 #include <pybind11/pybind11.h>
+#include <Standard_Version.hxx>
 
 #include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -39,6 +40,7 @@ void bind_shape_upgrade(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
 void bind_render(py::module_ &m);
+void bind_helix_geom(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -141,4 +143,11 @@ PYBIND11_MODULE(mod3d, m)
     
     // Bind rendering/tessellation functions to main module
     bind_render(Render);
+
+#if OCC_VERSION_HEX >= 0x080000
+    // New OCCT 8.0 packages (absent on 7.9.x builds).
+    py::module_ HelixGeom = m.def_submodule(
+        "HelixGeom", "Analytic helix curves (OCCT >= 8.0)");
+    bind_helix_geom(HelixGeom);
+#endif
 }
