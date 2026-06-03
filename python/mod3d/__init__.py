@@ -21,7 +21,19 @@ for _name in _submodule_names:
 
 del _sys, _ext, _m, _name
 
-from .render import ShapeRenderer
 from .periodic import make_periodic_compound
 
-__all__ = _submodule_names + ["ShapeRenderer", "make_periodic_compound"]
+
+# The renderers pull heavy optional dependencies (pythreejs / pyvista), so
+# expose them lazily: `import mod3d` stays light and only the renderer actually
+# accessed triggers its backend import.
+def __getattr__(name):
+    if name in ("ShapeRenderer", "PyVistaRenderer"):
+        from . import render
+        return getattr(render, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+__all__ = _submodule_names + [
+    "ShapeRenderer", "PyVistaRenderer", "make_periodic_compound",
+]
