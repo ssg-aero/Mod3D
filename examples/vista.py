@@ -64,8 +64,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sectors", type=int, default=24,
                         help="number of blades in the periodic row")
-    parser.add_argument("--mode", choices=("window", "notebook", "html"),
-                        default="window", help="render target")
+    parser.add_argument("--mode", choices=("auto", "window", "notebook", "html"),
+                        default="auto", help="render target")
     parser.add_argument("--output", default="blade_row.html",
                         help="output file for --mode html")
     parser.add_argument("--deflection", type=float, default=0.4,

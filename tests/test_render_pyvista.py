@@ -178,3 +178,24 @@ def test_pyvista_export_html(tmp_path):
     result = renderer.render(mode="html", path=str(out))
     assert result == str(out)
     assert out.exists() and out.stat().st_size > 0
+
+
+def test_pyvista_render_default_mode_is_auto():
+    """The default render mode defers to PyVista's environment / global toggle."""
+    pytest.importorskip("pyvista")
+    import inspect
+    from mod3d.render.pyvista import PyVistaRenderer
+
+    default = inspect.signature(PyVistaRenderer.render).parameters["mode"].default
+    assert default == "auto"
+
+
+def test_pyvista_render_rejects_unknown_mode():
+    """An unknown mode is rejected up front (before any rendering happens)."""
+    pytest.importorskip("pyvista")
+    from mod3d.render.pyvista import PyVistaRenderer
+
+    renderer = PyVistaRenderer()
+    renderer.add_shape(BRepBuilderAPI.MakeBox(gp.Pnt(0, 0, 0), 1.0, 1.0, 1.0).shape())
+    with pytest.raises(ValueError, match="mode must be one of"):
+        renderer.render(mode="desktop")
