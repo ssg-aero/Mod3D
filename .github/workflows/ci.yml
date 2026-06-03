@@ -93,6 +93,31 @@ jobs:
             cmake-extra: ""
             shell: micromamba-shell {0}
 
+          # --- Linux / py3.13 / occt default / backend PyVista ---
+          # Job dedie qui installe PyVista + la stack trame pour *executer*
+          # les tests de rendu pyvista (ailleurs ils sont importorskip, donc
+          # skippes). Les tests d'instancing construisent des acteurs sans
+          # rendu ; seul export_html a besoin d'un contexte GL, fourni par
+          # xvfb (installe plus bas). `render-backend: pyvista` aiguille les
+          # steps de test specifiques a ce job.
+          - os: ubuntu-latest
+            python-version: "3.13"
+            occt-spec: "<8"
+            extra-packages: >-
+              clangxx
+              clang-tools
+              llvm-tools
+              lld
+              pyvista
+              trame
+              trame-vtk
+              trame-vuetify
+            cmake-extra: >-
+              -DCMAKE_C_COMPILER=clang
+              -DCMAKE_CXX_COMPILER=clang++
+            shell: micromamba-shell {0}
+            render-backend: pyvista
+
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -213,5 +238,21 @@ jobs:
           pytest tests/ -v
 
       - name: Test (Unix)
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && matrix.render-backend != 'pyvista'
         run: pytest tests/ -v
+
+      # PyVista's offscreen / export_html path needs a GL context; xvfb gives
+      # a virtual display. apt runs in the host bash (not the micromamba env).
+      - name: Install xvfb (headless GL for PyVista)
+        if: matrix.render-backend == 'pyvista'
+        shell: bash
+        run: >-
+          sudo apt-get update &&
+          sudo apt-get install -y xvfb libgl1 libglu1-mesa libxrender1 libxext6
+
+      # Runs the pyvista render tests for real (they importorskip otherwise).
+      - name: Test (Unix, PyVista headless)
+        if: matrix.render-backend == 'pyvista'
+        env:
+          PYVISTA_OFF_SCREEN: "true"
+        run: xvfb-run -a pytest tests/ -v
