@@ -256,26 +256,34 @@ class PyVistaRenderer:
             edge_actors.extend(e)
         return mesh_actors, edge_actors
 
-    def render(self, mode="window", path=None, jupyter_backend="trame",
+    def render(self, mode="auto", path=None, jupyter_backend=None,
                background=None, off_screen=None):
         """Render every queued shape.
 
         Parameters
         ----------
-        mode : {"window", "notebook", "html"}
-            ``window`` opens an interactive desktop VTK window; ``notebook``
-            returns an interactive trame widget for Jupyter; ``html`` writes a
-            self-contained interactive HTML file to `path` and returns `path`.
+        mode : {"auto", "window", "notebook", "html"}
+            ``auto`` (default) defers to PyVista's environment / global backend
+            (toggled with :func:`pyvista.set_jupyter_backend`): an inline trame
+            widget inside Jupyter, an interactive desktop window otherwise.
+            ``window`` forces the desktop window, ``notebook`` forces the trame
+            widget, and ``html`` writes a self-contained interactive HTML file
+            to `path` and returns `path`.
         path : str, optional
             Output file for ``mode="html"`` (required in that mode).
-        jupyter_backend : str
-            Backend passed to ``plotter.show`` in notebook mode.
+        jupyter_backend : str, optional
+            Override the PyVista Jupyter backend for this call. Defaults to
+            None (PyVista's global setting); ``notebook`` mode falls back to
+            ``"trame"`` when unset.
         background : color, optional
             Overrides the renderer's background for this call.
         off_screen : bool, optional
             Force offscreen rendering (defaults to True for ``html``). Useful
             for headless tests of the window/notebook paths.
         """
+        valid_modes = ("auto", "window", "notebook", "html")
+        if mode not in valid_modes:
+            raise ValueError(f"mode must be one of {valid_modes}, got {mode!r}")
         if not self._models:
             raise RuntimeError("No shapes have been queued for rendering")
         if mode == "html" and path is None:
@@ -303,5 +311,11 @@ class PyVistaRenderer:
             plotter.close()
             return path
         if mode == "notebook":
-            return plotter.show(jupyter_backend=jupyter_backend, return_viewer=True)
-        return plotter.show()
+            return plotter.show(jupyter_backend=jupyter_backend or "trame",
+                                return_viewer=True)
+        if mode == "window":
+            # Force the desktop window even when called from a Jupyter kernel.
+            return plotter.show(jupyter_backend="none")
+        # auto: let PyVista's environment / global backend decide (trame widget
+        # in Jupyter, desktop window otherwise).
+        return plotter.show(jupyter_backend=jupyter_backend)
