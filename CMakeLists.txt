@@ -57,6 +57,7 @@ add_library(occt-extend SHARED
     src/extend/extrema/MeshDistance.cpp
     src/extend/gbs/GbsConverters.cpp
     src/extend/geometry/GeomSurfaceCompare.cpp
+    src/extend/geometry/GordonSurface.cpp
     src/extend/render/TessellationUtils.cpp
     src/extend/topology/shapes.cpp
     src/extend/topology/TopologyUtils.cpp
@@ -144,6 +145,11 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_step_control.cpp
         src/bind_step_data.cpp
         src/bind_render.cpp
+        src/bind_helix_geom.cpp
+        src/bind_geom_eval.cpp
+        src/bind_geom_hash.cpp
+        src/bind_geom_bndlib.cpp
+        src/bind_extrema_pc.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 

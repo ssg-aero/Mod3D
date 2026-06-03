@@ -1,5 +1,6 @@
 #include <TopoDS_Shell.hxx>
 #include <pybind11/pybind11.h>
+#include <Standard_Version.hxx>
 
 #include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -39,6 +40,11 @@ void bind_shape_upgrade(py::module_ &m);
 void bind_step_control(py::module_ &m);
 void bind_step_data(py::module_ &m);
 void bind_render(py::module_ &m);
+void bind_helix_geom(py::module_ &m);
+void bind_geom_eval(py::module_ &m);
+void bind_geom_hash(py::module_ &m);
+void bind_geom_bndlib(py::module_ &m);
+void bind_extrema_pc(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -141,4 +147,27 @@ PYBIND11_MODULE(mod3d, m)
     
     // Bind rendering/tessellation functions to main module
     bind_render(Render);
+
+#if OCC_VERSION_HEX >= 0x080000
+    // New OCCT 8.0 packages (absent on 7.9.x builds).
+    py::module_ HelixGeom = m.def_submodule(
+        "HelixGeom", "Analytic helix curves (OCCT >= 8.0)");
+    bind_helix_geom(HelixGeom);
+
+    py::module_ GeomEval = m.def_submodule(
+        "GeomEval", "Analytic evaluation geometries (OCCT >= 8.0)");
+    bind_geom_eval(GeomEval);
+
+    py::module_ GeomHash = m.def_submodule(
+        "GeomHash", "Geometry hashing / fuzzy equality (OCCT >= 8.0)");
+    bind_geom_hash(GeomHash);
+
+    py::module_ GeomBndLib = m.def_submodule(
+        "GeomBndLib", "Bounding boxes from Geom_* geometry (OCCT >= 8.0)");
+    bind_geom_bndlib(GeomBndLib);
+
+    py::module_ ExtremaPC = m.def_submodule(
+        "ExtremaPC", "Point-to-curve extrema (OCCT >= 8.0)");
+    bind_extrema_pc(ExtremaPC);
+#endif
 }
