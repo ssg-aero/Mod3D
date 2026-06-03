@@ -44,6 +44,7 @@ void bind_helix_geom(py::module_ &m);
 void bind_geom_eval(py::module_ &m);
 void bind_geom_hash(py::module_ &m);
 void bind_geom_bndlib(py::module_ &m);
+void bind_extrema_pc(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -164,5 +165,9 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ GeomBndLib = m.def_submodule(
         "GeomBndLib", "Bounding boxes from Geom_* geometry (OCCT >= 8.0)");
     bind_geom_bndlib(GeomBndLib);
+
+    py::module_ ExtremaPC = m.def_submodule(
+        "ExtremaPC", "Point-to-curve extrema (OCCT >= 8.0)");
+    bind_extrema_pc(ExtremaPC);
 #endif
 }

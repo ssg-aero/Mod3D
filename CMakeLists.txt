@@ -149,6 +149,7 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_geom_eval.cpp
         src/bind_geom_hash.cpp
         src/bind_geom_bndlib.cpp
+        src/bind_extrema_pc.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 
