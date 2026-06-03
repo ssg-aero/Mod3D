@@ -146,6 +146,9 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_step_data.cpp
         src/bind_render.cpp
         src/bind_helix_geom.cpp
+        src/bind_geom_eval.cpp
+        src/bind_geom_hash.cpp
+        src/bind_geom_bndlib.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 
