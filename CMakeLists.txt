@@ -150,6 +150,10 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_geom_hash.cpp
         src/bind_geom_bndlib.cpp
         src/bind_extrema_pc.cpp
+        src/bind_geom2d_eval.cpp
+        src/bind_geom_grid_eval.cpp
+        src/bind_helix_brep.cpp
+        src/bind_step_tidy.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 

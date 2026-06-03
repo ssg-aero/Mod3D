@@ -6,6 +6,7 @@
 #include <STEPControl_StepModelType.hxx>
 #include <IFSelect_ReturnStatus.hxx>
 #include <XSControl_WorkSession.hxx>
+#include <Standard_Version.hxx>
 #include <StepData_StepModel.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
@@ -52,6 +53,16 @@ void bind_step_control(py::module_ &m)
         .value("RetStop", IFSelect_RetStop, "Operation stopped.")
         .export_values();
 
+#if OCC_VERSION_HEX >= 0x080000
+    // XSControl_WorkSession - exposed (opaque) so OCCT 8.0 helpers such as
+    // StepTidy can operate on a Reader/Writer's session. Obtain it via the
+    // .work_session property below.
+    py::class_<XSControl_WorkSession,
+               opencascade::handle<XSControl_WorkSession>>(m, "WorkSession",
+        "Opaque XSControl work session (OCCT >= 8.0). Get it from a\n"
+        "Reader/Writer via .work_session and pass it to StepTidy.");
+#endif
+
     // -------------------------------------------------------------------------
     // STEPControl_Writer
     // -------------------------------------------------------------------------
@@ -68,6 +79,13 @@ void bind_step_control(py::module_ &m)
         // Constructors
         .def(py::init<>(),
             "Creates a Writer from scratch.")
+
+#if OCC_VERSION_HEX >= 0x080000
+        .def_property_readonly("work_session",
+            [](STEPControl_Writer& self) { return self.WS(); },
+            "The underlying XSControl work session (OCCT >= 8.0). Pass it to\n"
+            "StepTidy.remove_duplicates() before write() to shrink the file.")
+#endif
 
         // Tolerance
         .def("set_tolerance", &STEPControl_Writer::SetTolerance,
@@ -174,6 +192,13 @@ void bind_step_control(py::module_ &m)
         // Constructors
         .def(py::init<>(),
             "Creates a Reader with an empty STEP model.")
+
+#if OCC_VERSION_HEX >= 0x080000
+        .def_property_readonly("work_session",
+            [](STEPControl_Reader& self) { return self.WS(); },
+            "The underlying XSControl work session (OCCT >= 8.0). Pass it to\n"
+            "StepTidy.remove_duplicates() to merge duplicate entities.")
+#endif
 
         // File I/O
         .def("read_file",

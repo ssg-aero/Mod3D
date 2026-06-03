@@ -45,6 +45,10 @@ void bind_geom_eval(py::module_ &m);
 void bind_geom_hash(py::module_ &m);
 void bind_geom_bndlib(py::module_ &m);
 void bind_extrema_pc(py::module_ &m);
+void bind_geom2d_eval(py::module_ &m);
+void bind_geom_grid_eval(py::module_ &m);
+void bind_helix_brep(py::module_ &m);
+void bind_step_tidy(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -169,5 +173,21 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ ExtremaPC = m.def_submodule(
         "ExtremaPC", "Point-to-curve extrema (OCCT >= 8.0)");
     bind_extrema_pc(ExtremaPC);
+
+    py::module_ Geom2dEval = m.def_submodule(
+        "Geom2dEval", "Analytic 2D evaluation curves (OCCT >= 8.0)");
+    bind_geom2d_eval(Geom2dEval);
+
+    py::module_ GeomGridEval = m.def_submodule(
+        "GeomGridEval", "Batch grid evaluation of Geom_* (OCCT >= 8.0)");
+    bind_geom_grid_eval(GeomGridEval);
+
+    py::module_ HelixBRep = m.def_submodule(
+        "HelixBRep", "Helix / spiral wire construction (OCCT >= 8.0)");
+    bind_helix_brep(HelixBRep);
+
+    py::module_ StepTidy = m.def_submodule(
+        "StepTidy", "STEP duplicate-entity cleanup (OCCT >= 8.0)");
+    bind_step_tidy(StepTidy);
 #endif
 }
