@@ -59,6 +59,7 @@ add_library(occt-extend SHARED
     src/extend/geometry/GeomSurfaceCompare.cpp
     src/extend/geometry/GordonSurface.cpp
     src/extend/render/TessellationUtils.cpp
+    src/extend/render/MeshExport.cpp
     src/extend/topology/shapes.cpp
     src/extend/topology/TopologyUtils.cpp
 )
@@ -78,6 +79,7 @@ if(MOD3D_BUILD_OCCTEXT OR MOD3D_BUILD_PYTHON)
         ${OpenCASCADE_ModelingData_LIBRARIES}
         ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
         ${OpenCASCADE_DataExchange_LIBRARIES}
+        ${OpenCASCADE_ApplicationFramework_LIBRARIES}
         $<$<BOOL:${Gbs_FOUND}>:GBS::gbs>
     )
 
@@ -154,6 +156,7 @@ if(MOD3D_BUILD_PYTHON)
         src/bind_geom_grid_eval.cpp
         src/bind_helix_brep.cpp
         src/bind_step_tidy.cpp
+        src/bind_geom2d_grid_eval.cpp
     )
     target_compile_definitions(mod3d PRIVATE 
         VERSION_INFO=\"${PROJECT_VERSION}\" 
@@ -171,6 +174,7 @@ if(MOD3D_BUILD_PYTHON)
         ${OpenCASCADE_ModelingData_LIBRARIES}
         ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
         ${OpenCASCADE_DataExchange_LIBRARIES}
+        ${OpenCASCADE_ApplicationFramework_LIBRARIES}
         $<$<BOOL:${Gbs_FOUND}>:GBS::gbs>
     )
 
