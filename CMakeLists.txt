@@ -57,6 +57,7 @@ add_library(occt-extend SHARED
     src/extend/extrema/MeshDistance.cpp
     src/extend/gbs/GbsConverters.cpp
     src/extend/geometry/GeomSurfaceCompare.cpp
+    src/extend/geometry/GordonSurface.cpp
     src/extend/render/TessellationUtils.cpp
     src/extend/topology/shapes.cpp
     src/extend/topology/TopologyUtils.cpp
