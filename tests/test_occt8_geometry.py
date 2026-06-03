@@ -69,18 +69,6 @@ def test_circular_helix_accessors():
 # GeomBndLib
 # --------------------------------------------------------------------------- #
 @requires_geombndlib
-def test_bndlib_curve_box():
-    curve = _segment((0.0, 0.0, 0.0), (1.0, 2.0, 3.0))
-    box = mod3d.GeomBndLib.Curve(curve).box(1e-7)
-    assert box is not None
-    xmin, ymin, zmin, xmax, ymax, zmax = box
-    assert xmin == pytest.approx(0.0, abs=1e-6)
-    assert xmax == pytest.approx(1.0, abs=1e-6)
-    assert ymax == pytest.approx(2.0, abs=1e-6)
-    assert zmax == pytest.approx(3.0, abs=1e-6)
-
-
-@requires_geombndlib
 def test_bndlib_surface_box_brackets_ellipsoid():
     ell = _ellipsoid(3.0, 2.0, 1.0)
     box = mod3d.GeomBndLib.Surface(ell).box_optimal(1e-6)
@@ -97,13 +85,17 @@ def test_bndlib_surface_box_brackets_ellipsoid():
 # --------------------------------------------------------------------------- #
 @requires_geomhash
 def test_surface_hasher_equal_and_hash():
+    # Use a standard analytic surface (Geom.Plane): GeomHash value-compares the
+    # classic OCCT surface types. (The new GeomEval analytic types are treated
+    # as identity-based "Other", so they are not used here.)
     hasher = mod3d.GeomHash.SurfaceHasher()
-    e1 = _ellipsoid(3.0, 2.0, 1.0)
-    e2 = _ellipsoid(3.0, 2.0, 1.0)
-    e3 = _ellipsoid(3.0, 2.0, 1.5)
-    assert hasher.equal(e1, e2)
-    assert hasher.hash(e1) == hasher.hash(e2)
-    assert not hasher.equal(e1, e3)
+    ax = gp.Ax3(gp.Pnt(0.0, 0.0, 0.0), gp.Dir(0.0, 0.0, 1.0))
+    p1 = Geom.Plane(ax)
+    p2 = Geom.Plane(ax)
+    p3 = Geom.Plane(gp.Ax3(gp.Pnt(0.0, 0.0, 5.0), gp.Dir(0.0, 0.0, 1.0)))
+    assert hasher.equal(p1, p2)
+    assert hasher.hash(p1) == hasher.hash(p2)
+    assert not hasher.equal(p1, p3)
 
 
 @requires_geomhash

@@ -39,11 +39,13 @@ py::dict result_to_dict(const ExtremaPC::Result &res) {
     out["is_infinite"] = res.IsInfinite();
     out["extrema"] = std::move(extrema);
     out["min_index"] = res.MinIndex();
-    out["min_distance"] =
-        res.NbExt() > 0 ? std::sqrt(res.MinSquareDistance()) : py::none();
-    out["max_distance"] =
-        res.NbExt() > 0 ? py::cast(std::sqrt(res.MaxSquareDistance()))
-                        : py::none();
+    if (res.NbExt() > 0) {
+        out["min_distance"] = std::sqrt(res.MinSquareDistance());
+        out["max_distance"] = std::sqrt(res.MaxSquareDistance());
+    } else {
+        out["min_distance"] = py::none();
+        out["max_distance"] = py::none();
+    }
     return out;
 }
 } // namespace

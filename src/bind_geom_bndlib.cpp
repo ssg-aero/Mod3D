@@ -10,10 +10,14 @@ PYBIND11_DECLARE_HOLDER_TYPE(T, opencascade::handle<T>);
 #if OCC_VERSION_HEX >= 0x080000
 
 #include <GeomBndLib_Surface.hxx>
-#include <GeomBndLib_Curve.hxx>
 #include <Geom_Surface.hxx>
-#include <Geom_Curve.hxx>
 #include <Bnd_Box.hxx>
+// NOTE: GeomBndLib_Curve is intentionally NOT bound. Its header transitively
+// includes GeomBndLib_Line.hxx, which pulls the private implementation header
+// GeomBndLib_InfiniteHelpers.pxx -- not shipped by the conda-forge OCCT 8.0.0
+// package, so it cannot be compiled against. The surface dispatcher headers do
+// not have this problem. Re-add the Curve binding once the upstream feedstock
+// installs the .pxx (or stops including it from a public header).
 
 namespace {
 // Bnd_Box is not exposed as a Python type, so report boxes as
@@ -59,29 +63,6 @@ void bind_geom_bndlib(py::module_ &m) {
              },
              py::arg("tol"),
              "Tighter (optimal) bounding box of the whole surface.");
-
-    py::class_<GeomBndLib_Curve>(m, "Curve",
-        "Bounding-box dispatcher for a Geom.Curve (new in OCCT 8.0).")
-        .def(py::init<const opencascade::handle<Geom_Curve> &>(),
-             py::arg("curve"))
-        .def("box",
-             [](const GeomBndLib_Curve &self, double tol) {
-                 return box_to_tuple(self.Box(tol));
-             },
-             py::arg("tol"),
-             "Bounding box of the whole curve within tolerance `tol`.")
-        .def("box",
-             [](const GeomBndLib_Curve &self, double u1, double u2, double tol) {
-                 return box_to_tuple(self.Box(u1, u2, tol));
-             },
-             py::arg("u1"), py::arg("u2"), py::arg("tol"),
-             "Bounding box of the arc [u1, u2].")
-        .def("box_optimal",
-             [](const GeomBndLib_Curve &self, double tol) {
-                 return box_to_tuple(self.BoxOptimal(tol));
-             },
-             py::arg("tol"),
-             "Tighter (optimal) bounding box of the whole curve.");
 }
 
 #else // OCC_VERSION_HEX < 0x080000
