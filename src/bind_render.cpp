@@ -17,6 +17,7 @@
 #include <IMeshTools_Parameters.hxx>
 
 #include "extend/render/TessellationUtils.hpp"
+#include "extend/render/MeshExport.hpp"
 
 namespace py = pybind11;
 namespace render = occt::extended::render;
@@ -306,4 +307,28 @@ void bind_render(py::module_ &m)
         "    - vertex indices (numpy array of int, shape (n_points,))\n"
         "    - vertex positions (numpy array of float, shape (n_points, 3))"
     );
+
+    // -------------------------------------------------------------------------
+    // Mesh export helpers (extend/render): tessellate a shape and write it to
+    // a file. Available on all supported OCCT versions.
+    // -------------------------------------------------------------------------
+    m.def("export_stl", &render::export_stl,
+        py::arg("shape"), py::arg("path"), py::arg("deflection") = 0.1,
+        py::arg("ascii") = false,
+        "Mesh `shape` and write it as STL.\n\n"
+        "deflection: linear deflection of the triangulation (smaller = finer)\n"
+        "ascii     : write ASCII STL instead of binary\n"
+        "Raises RuntimeError on write failure.");
+
+    m.def("export_obj", &render::export_obj,
+        py::arg("shape"), py::arg("path"), py::arg("deflection") = 0.1,
+        "Mesh `shape` and write it as Wavefront OBJ (+ .mtl).\n"
+        "Raises RuntimeError on write failure.");
+
+    m.def("export_gltf", &render::export_gltf,
+        py::arg("shape"), py::arg("path"), py::arg("deflection") = 0.1,
+        py::arg("binary") = false,
+        "Mesh `shape` and write it as glTF.\n\n"
+        "binary: write a binary .glb (otherwise a text .gltf + .bin)\n"
+        "Raises RuntimeError on write failure.");
 }

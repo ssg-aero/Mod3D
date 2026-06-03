@@ -49,6 +49,7 @@ void bind_geom2d_eval(py::module_ &m);
 void bind_geom_grid_eval(py::module_ &m);
 void bind_helix_brep(py::module_ &m);
 void bind_step_tidy(py::module_ &m);
+void bind_geom2d_grid_eval(py::module_ &m);
 
 
 static py::dict create_box_summary(double dx, double dy, double dz)
@@ -189,5 +190,9 @@ PYBIND11_MODULE(mod3d, m)
     py::module_ StepTidy = m.def_submodule(
         "StepTidy", "STEP duplicate-entity cleanup (OCCT >= 8.0)");
     bind_step_tidy(StepTidy);
+
+    py::module_ Geom2dGridEval = m.def_submodule(
+        "Geom2dGridEval", "Batch grid evaluation of Geom2d_* (OCCT >= 8.0)");
+    bind_geom2d_grid_eval(Geom2dGridEval);
 #endif
 }
