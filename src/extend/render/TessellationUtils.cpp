@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numbers>
 #include <numeric>
 #include <stdexcept>
 
@@ -33,7 +34,7 @@ namespace {
 
 constexpr double degrees_to_radians(double angle)
 {
-    return angle * std::acos(-1.0) / 180.0;
+    return angle * std::numbers::pi / 180.0;
 }
 
 FaceTessellation extract_face_tessellation(const TopoDS_Face& face, bool compute_normals)
