@@ -83,6 +83,24 @@ jobs:
               -DCMAKE_CXX_COMPILER=clang++
             shell: bash
 
+          # --- Windows / py3.13 / occt>=8 / MSVC : miroir de conda-forge ---
+          # conda-forge compile Windows avec MSVC (cl.exe), pas clang. MSVC
+          # est plus strict que clang (ex : std::acos n'y est pas constexpr,
+          # ce qui a donne l'erreur C3615 lors du rebuild occt8). Ce job
+          # reproduit l'environnement de build du feedstock (MSVC + occt>=8)
+          # pour attraper ces regressions MSVC-only avant la release. On
+          # n'installe pas clang ici (extra-packages vide) pour eviter toute
+          # ambiguite de compilateur ; la step "Setup MSVC" active cl.exe.
+          - os: windows-latest
+            python-version: "3.13"
+            occt-spec: ">=8"
+            extra-packages: ""
+            cmake-extra: >-
+              -DCMAKE_C_COMPILER=cl
+              -DCMAKE_CXX_COMPILER=cl
+            shell: bash
+            compiler: msvc
+
           # --- macOS / py3.13 / occt default ---
           # Compilateur Apple clang (pre-installe via Xcode), pas besoin
           # de forcer.
@@ -203,6 +221,14 @@ jobs:
             ${{ matrix.extra-packages }}
           cache-environment: true
           init-shell: bash
+
+      # Active l'environnement MSVC (cl.exe, link.exe, vcvars) pour le job
+      # MSVC. L'action exporte les variables via $GITHUB_ENV/$GITHUB_PATH,
+      # donc cl.exe est disponible dans les steps Configure/Build suivantes
+      # (y compris sous Git Bash).
+      - name: Setup MSVC dev environment (Windows/MSVC)
+        if: matrix.compiler == 'msvc'
+        uses: ilammy/msvc-dev-cmd@v1
 
       # Sur Windows conda, les libs sont dans CONDA_PREFIX/Library
       # (pas directement dans CONDA_PREFIX comme sur Unix).
