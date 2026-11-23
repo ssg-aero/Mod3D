@@ -128,6 +128,7 @@ jobs:
               lld
               pyvista
               trame
+              trame-pyvista
               trame-vtk
               trame-vuetify
               nest-asyncio2
