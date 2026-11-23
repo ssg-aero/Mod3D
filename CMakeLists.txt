@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(Mod3DPybind VERSION 0.2.1 LANGUAGES CXX)
+project(Mod3DPybind VERSION 0.2.4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,7 +18,7 @@ message("  -> libs: " ${CMAKE_INSTALL_LIBDIR})
 message("  -> includes: " ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(OpenCASCADE REQUIRED COMPONENTS
     FoundationClasses
     ModelingData
